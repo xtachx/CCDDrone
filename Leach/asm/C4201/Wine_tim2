@@ -1,0 +1,33 @@
+#!/bin/bash
+#
+	echo ""
+	echo "Assembling DSP code for a CCD"
+	echo ""
+#
+# DOWNLOAD selects application code to be loaded from EEPROM or 
+#   downloaded from the host over the fiber optic link
+#
+# DOWNLOAD = HOST or ROM
+
+DOWNLOAD="HOST"
+WAVEFORM_FILE="current.waveforms.2x2"
+DST_FILE="tim2x2_short"
+
+wine ./motorolaCompiler/ASM56300 -b -ltim.ls -d DOWNLOAD $DOWNLOAD -d WAVEFORM_FILE "$WAVEFORM_FILE" tim2x2.asm
+wine ./motorolaCompiler/DSPLNK -btim.cld -v tim2x2.cln 
+rm -f "$DST_FILE".lod
+wine ./motorolaCompiler/CLDLOD tim.cld > "$DST_FILE".lod
+rm -f tim2x2.cln ; rm -f tim.cld
+#dos2unix "$DST_FILE".lod
+
+#	echo ""
+#	echo "Created file 'tim.lod' for downloading over optical fiber"
+#	echo ""
+
+if [ "$DOWNLOAD" = "HOST" ] ; then
+	echo ""
+	echo "Created file 'tim.lod' for downloading over optical fiber"
+	echo ""
+fi
+
+
