@@ -19,13 +19,31 @@ This file is used to generate boot DSP code for the 250 MHz fiber optic
 
 CC      EQU     CCDVIDREV3B+TIMREV5+UTILREV3+SHUTTER_CC+TEMP_POLY+SUBARRAY+SPLIT_SERIAL
 
+
+
 ; Put number of words of application in P: for loading application from EEPROM
 	DC	TIMBOOT_X_MEMORY-@LCV(L)-1
 
 ; Keep the CCD idling when not reading out
+
 IDLE	DO      Y:<NSR,IDL1     	; Loop over number of pixels per line
-	MOVE    #<SERIAL_IDLE,R0 	; Serial transfer on pixel
+	
+	MOVE    #<SERIAL_IDLE_T,R0 	; Serial transfer on pixel
 	JSR     <CLOCK  		; Go to it
+
+	;DO	Y:<PIT_SKREPEAT,PIT_SK
+	;	MOVE    #<PIT_SK_SERIAL_READ_LSUB,R0 	; Serial transfer on pixel
+	;	JSR     <CLOCK  		; Go to it
+	;NOP
+;PIT_SK	NOP
+
+	;MOVE    #<PIT_SK_SERIAL_READ_LSUB,R0 	; Serial transfer on pixel
+	;JSR     <CLOCK  		; Go to it
+
+	MOVE    #<SERIAL_IDLE_B,R0 	; Serial transfer on pixel
+	JSR     <CLOCK  		; Go to it
+
+
 	MOVE	#COM_BUF,R3
 	JSR	<GET_RCV		; Check for FO or SSI commands
 	JCC	<NO_COM			; Continue IDLE if no commands received
@@ -35,7 +53,9 @@ NO_COM	NOP
 IDL1
 	MOVE    #<PARALLEL,R0		; Address of parallel clocking waveform
 	JSR     <CLOCK  		; Go clock out the CCD charge
-	JMP     <IDLE
+	JMP     <IDLE	
+
+	
 
 ;  *****************  Exposure and readout routines  *****************
 
@@ -50,7 +70,7 @@ RDCCD	CLR	A
 	MOVE	A1,Y:<NS_SKP1
 	MOVE	A1,Y:<NS_SKP2
 	MOVE	Y:<NSR,A		; NS_READ = NSR / 2
-; !!!	ASR	A			; Effectively split serial since there
+	; !!!	ASR	A			; Effectively split serial since there
         ; if _LR readout then split the serial for full images (garbage for roi)
 	JCLR	#SPLIT_S,X:STATUS,*+3
 	ASR	A			; Split serials requires / 2
@@ -124,8 +144,18 @@ L_SKP1
 
 ; Finally read some real pixels
 L_READ	DO	Y:<NS_READ,L_RD
-	MOVE	Y:<SERIAL_READ,R0
+	MOVE	#<SERIAL_READ_L1,R0
 	JSR     <CLOCK  		; Go clock out the CCD charge			; Go clock out the CCD charge
+	
+	DO	Y:<PIT_SKREPEAT,PIT_SK
+		MOVE    #<PIT_SK_SERIAL_READ_LSUB,R0 	; Serial transfer on pixel
+		JSR     <CLOCK  		; Go to it
+	NOP
+PIT_SK	NOP
+
+	MOVE	#<SERIAL_READ_L2,R0
+	JSR     <CLOCK
+	
 	NOP
 L_RD
 
@@ -210,7 +240,7 @@ TIMBOOT_X_MEMORY	EQU	@LCV(L)
 	DC	'SBN',SET_BIAS_NUMBER
 	DC	'SMX',SET_MUX
 	DC	'CSW',CLR_SWS
-	DC	'SOS',SEL_OS
+	;DC	'SOS',SEL_OS
 	DC	'SSS',SET_SUBARRAY_SIZES
 	DC	'SSP',SET_SUBARRAY_POSITIONS
 	DC	'RCC',READ_CONTROLLER_CONFIGURATION 
@@ -218,8 +248,8 @@ TIMBOOT_X_MEMORY	EQU	@LCV(L)
 ; New LBNL commands
         DC      'ERS',ERASE             ; Persistent Image Erase        
         DC      'HLD',HOLD_CLK          ; Stop clocking during erase    
-        DC      'SPP',SET_PK_PAR        ; Set pumping and EL_shutter parameters 
-        DC      'PMP',POCKET            ; Start pocket pumping  
+        ;DC      'SPP',SET_PK_PAR        ; Set pumping and EL_shutter parameters 
+        ;DC      'PMP',POCKET            ; Start pocket pumping  
         
 END_APPLICATON_COMMAND_TABLE	EQU	@LCV(L)
 
@@ -265,9 +295,9 @@ GAIN	DC	END_APPLICATON_Y_MEMORY-@LCV(L)-1
 ;NSR     DC      560   	 	; Number Serial Read, prescan + image + bias
 ;NPR     DC      512     	; Number Parallel Read
 ;GAINRA  DC      0               ; can not add new vars here or image will not complete being sent. r.a.
-NSR     DC      300   	 	; Number Serial Read, prescan + image + bias
-NPR     DC      300     	; Number Parallel Read
-;NS_CLR	DC      1120	  	; To clear the serial register
+NSR     DC      10   	 	; Number Serial Read, prescan + image + bias
+NPR     DC      10	     	; Number Parallel Read
+;NS_CLR	DC      0	  	; To clear the serial register
 NSCLR   DC      NS_CLR             ;see waveform file 4 this one and next
 NPCLR   DC      NP_CLR    	; To clear the parallel register
 NSBIN   DC      1       	; Serial binning parameter
@@ -277,27 +307,24 @@ SH_DEL	DC	10		; Delay in milliseconds between shutter closing
 				;   and image readout
 CONFIG	DC	CC		; Controller configuration
 NS_READ DC      0               ; brought in for roi r.a. 3/21/2011
-OS	DC	'ALL'		; Output Source selection (1side 9/25/07 JE) 
+;OS	DC	'ALL'		; Output Source selection (1side 9/25/07 JE) 
+OS	DC	'L'		; Output Source selection (1side 9/25/07 JE) 
 ;OS	DC	'LR'		; Output Source selection (2sides)
 ; RCOLS	DC      300             ; Real # of cols to read in array
 ; RROWS	DC      300            ; Real # of rows to read in array
-RCOLS	DC      2180     ;2060      ;320            ; Real # of cols to read in array
-RROWS	DC      2200       ;1100            ; Real # of rows to read in array
-;
-;;NSR     DC      4200   	 	; Number Serial Read, prescan + image + bias
-;;NPR     DC      4200     	; Number Parallel Read
-;;NS_CLR	DC      4200	  	; To clear the serial register
-;;NPCLR   DC      4200    	; To clear the parallel register
-;;RCOLS	DC      2300            ; Real # of cols to read in array
-;;RROWS	DC      2220            ; Real # of rows to read in array
+;RCOLS	DC      10     ;2060      ;320            ; Real # of cols to read in array
+;RROWS	DC      10       ;1100            ; Real # of rows to read in array
+
 
 ; Multiple readout addresses
 ;SERIAL_READ	DC	SERIAL_READ_LR	; Address of serial reading waveforms  (2sides)
 ;SERIAL_CLEAR	DC	SERIAL_SKIP_LR	; Address of serial skipping waveforms (2sides)
 
-SERIAL_SKIP 	DC	SERIAL_SKIP_L	; Serial skipping waveforms
-SERIAL_READ	DC	SERIAL_READ_L	; Address of serial reading waveforms (1side 9/25/07 JE)
-SERIAL_CLEAR	DC	SERIAL_SKIP_L	; Address of serial skipping waveforms(1side 9/25/07 JE)
+SERIAL_SKIP 	DC	SERIAL_SKIP_L	; Serial skipping waveforms was L
+SERIAL_READ	DC	SERIAL_READ_L	; Address of serial reading waveforms (1side 9/25/07 JE) was L
+SERIAL_CLEAR	DC	SERIAL_SKIP_L	; Address of serial skipping waveforms(1side 9/25/07 JE) was L
+
+
 
 ; These parameters are set in "timCCDmisc.asm"
 NP_SKIP	DC	0	; Number of rows to skip
@@ -306,6 +333,8 @@ NS_SKP2	DC	0	; Number of serials to clear after read
 NRBIAS	DC	0	; Number of bias pixels to read
 NSREAD	DC	0	; Number of columns in subimage read
 NPREAD	DC	0	; Number of rows in subimage read
+
+
 
 ; Definitions for CCD HV erase
 TIME1   DC      1000            ; Erase time
@@ -320,6 +349,8 @@ PK_CY   DC      100     ; Number of pumping cycles
 ; EPER slit width. running pocket pumping with non zero EPER value will
 EPER    DC      0       ; activate EPER code instead of pumping code.
 GAINRA  DC      0       ; try it at the end this way.. sigh. r.a. 4/21/2011
+
+PIT_SKREPEAT DC 4
 
 ; Include the waveform table for the designated type of CCD
 	INCLUDE "WAVEFORM_FILE" ; Readout and clocking waveform file
