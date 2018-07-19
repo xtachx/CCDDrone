@@ -69,11 +69,8 @@ RDCCD	CLR	A
 	MOVE	A1,Y:<NP_SKIP		; Zero these all out
 	MOVE	A1,Y:<NS_SKP1
 	MOVE	A1,Y:<NS_SKP2
-	MOVE	Y:<NSR,A		; NS_READ = NSR / 2
-	; !!!	ASR	A			; Effectively split serial since there
-        ; if _LR readout then split the serial for full images (garbage for roi)
-	JCLR	#SPLIT_S,X:STATUS,*+3
-	ASR	A			; Split serials requires / 2
+	MOVE	Y:<NSR,A		; Move NSR into Y which sotres the value of numColumns
+	ASR	#3,A,A                    ; 3 byte shift or division by 8 for a skipper seq of 8
 	NOP                             ; else not for roi for __L or __R
 	MOVE	A,Y:<NS_READ		; Number of columns in each subimage
 	JMP	<WT_CLK
@@ -350,7 +347,7 @@ PK_CY   DC      100     ; Number of pumping cycles
 EPER    DC      0       ; activate EPER code instead of pumping code.
 GAINRA  DC      0       ; try it at the end this way.. sigh. r.a. 4/21/2011
 
-PIT_SKREPEAT DC 4
+PIT_SKREPEAT DC 8
 
 ; Include the waveform table for the designated type of CCD
 	INCLUDE "WAVEFORM_FILE" ; Readout and clocking waveform file
