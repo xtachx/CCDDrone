@@ -69,8 +69,9 @@ RDCCD	CLR	A
 	MOVE	A1,Y:<NP_SKIP		; Zero these all out
 	MOVE	A1,Y:<NS_SKP1
 	MOVE	A1,Y:<NS_SKP2
-	MOVE	Y:<NSR,A		; Move NSR into Y which sotres the value of numColumns
-	ASR	#3,A,A                    ; 3 byte shift or division by 8 for a skipper seq of 8
+	NOP
+	MOVE	Y:<NSR,A		; Move NSR into Y which stores the value of numColumns
+	;ASR	#3,A,A                    ; 3 byte shift or division by 8 for a skipper seq of 8	
 	NOP                             ; else not for roi for __L or __R
 	MOVE	A,Y:<NS_READ		; Number of columns in each subimage
 	JMP	<WT_CLK
@@ -231,6 +232,7 @@ TIMBOOT_X_MEMORY	EQU	@LCV(L)
 	DC	'AEX',ABORT_EXPOSURE
 	DC	'ABR',ABR_RDC
 	DC	'CRD',CONTINUE_READ
+	DC	'SSR',SET_SKIPPER_REPEAT
 
 ; Support routines
 	DC	'SGN',ST_GAIN      
@@ -348,6 +350,8 @@ EPER    DC      0       ; activate EPER code instead of pumping code.
 GAINRA  DC      0       ; try it at the end this way.. sigh. r.a. 4/21/2011
 
 PIT_SKREPEAT DC 8
+
+
 
 ; Include the waveform table for the designated type of CCD
 	INCLUDE "WAVEFORM_FILE" ; Readout and clocking waveform file
