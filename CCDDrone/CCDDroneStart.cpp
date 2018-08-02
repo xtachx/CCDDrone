@@ -208,6 +208,10 @@ int main( int argc, char **argv )
 
         std::cout<<"Erase and reset procedure complete. \n";
 
+	std::cout<<"Now setting video offset. \n";
+	pArcDev->Command( TIM_ID, SBN, 0,  2, VID, 0 );
+	pArcDev->Command( TIM_ID, SBN, 0,  3, VID, 0 );
+	std::cout<<"done. \n";
 
 
         //cout << SetDots( "Setting up number of skipper repeat measurements\n");
