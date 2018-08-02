@@ -14,19 +14,19 @@ SET(CMAKE_EXE_LINKER_FLAGS "-LArcAPI/ARC_API/3.5/Release/x64 -lCArcDeinterlace -
 
 
 
-#set(SOURCE
-#   ${CMAKE_CURRENT_SOURCE_DIR}/ArcAPI35Ex_1.cpp
-#)
-#set(HEADERS
-   #${CMAKE_CURRENT_SOURCE_DIR}/common/CommonDatatypes.h
+set(SOURCE
+   ${CMAKE_CURRENT_SOURCE_DIR}/BiasReset.cpp
+)
+set(HEADERS
+   ${CMAKE_CURRENT_SOURCE_DIR}/BiasReset.hpp
 
-#)
+)
 
 
 
-add_executable( CCDDrone ArcAPI35Ex_2.cpp )
+add_executable( CCDDrone CCDDroneStart.cpp )
 #target_link_libraries( abub3hs ${OpenCV_LIBS} ${SOURCE} ${HEADERS} lbpuser AbubEntropySubsystem AbubUtility)
 #target_link_libraries( abub ${OpenCV_LIBS} ${SOURCE} ${HEADERS} )
 
-target_link_libraries( CCDDrone )
+target_link_libraries( CCDDrone ${SOURCE} ${HEADERS})
 
