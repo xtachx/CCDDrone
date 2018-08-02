@@ -25,6 +25,7 @@ set(HEADERS
 
 
 add_executable( CCDDrone CCDDroneStart.cpp )
+#add_executable( CCDDrone ArcAPI35Ex_2.cpp )
 #target_link_libraries( abub3hs ${OpenCV_LIBS} ${SOURCE} ${HEADERS} lbpuser AbubEntropySubsystem AbubUtility)
 #target_link_libraries( abub ${OpenCV_LIBS} ${SOURCE} ${HEADERS} )
 

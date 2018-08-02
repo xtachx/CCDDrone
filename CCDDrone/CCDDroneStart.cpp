@@ -91,7 +91,7 @@ int main( int argc, char **argv )
 	//
 	// Set host device
 	//
-	if ( argc < 2 )
+		if ( argc < 2 )
 	{
 		  cout << "Error: Invalid number of minimum parameters!" << endl;
 		  USAGE( argv[ 0 ] );
@@ -99,11 +99,22 @@ int main( int argc, char **argv )
 		  exit( EXIT_FAILURE );
 	}
 
+	string sDev = argv[ 1 ];
+
+	if ( sDev.compare( "PCIe" ) != 0 && sDev.compare( "PCI" ) != 0 )
+	{
+		  cout << "Error: Invalid device parameter: " << sDev << endl;
+		  USAGE( argv[ 0 ] );
+		  cout << endl;
+		  exit( EXIT_FAILURE );
+	}
+
+
 
 	//
 	// Handle program arguments
 	//
-	for ( int i=1; i<argc; i++ )
+	for ( int i=2; i<argc; i++ )
 	{
 		  std::string sArgv = argv[ i ];
 
@@ -137,11 +148,11 @@ int main( int argc, char **argv )
 				cout << "Deinterlace Set: " << dDeintAlg << endl;
 		  }
 
-		  else if ( sArgv.compare( "-s" ) == 0 && argc >= ( i + 1 ) )
-		  {
-				nSkipperR = atoi( argv[ i + 1 ] );
-				cout << "Number of skipper repeat measurements set: " << nSkipperR << endl;
-		  }
+		  //else if ( sArgv.compare( "-s" ) == 0 && argc >= ( i + 1 ) )
+		  //{
+		  //		nSkipperR = atoi( argv[ i + 1 ] );
+		  //		cout << "Number of skipper repeat measurements set: " << nSkipperR << endl;
+		  //}
 
 		  else if ( sArgv.compare( "-h" ) == 0 )
 		  {
@@ -189,6 +200,14 @@ int main( int argc, char **argv )
 										sTimFile.c_str() );
         cout << "done!" << endl;
 
+        //Select Amplifier
+        std::cout<<"Setting amplifier. \n";
+        int SOS_response=pArcDev->Command( TIM_ID, SOS, AMP_L);
+        if (SOS_response != DON)
+            std::cout<<"Amplifier settings could not be applied. \n";
+        else
+            std::cout<<"Amplifier selected. \n";
+
         //CCD Erase and SetBias Voltages
         //Step 1 - Apply the reset on the V clocks
         std::cout<<"Flush the charges from the CCD using the erase procedure. \n";
@@ -208,10 +227,10 @@ int main( int argc, char **argv )
 
         std::cout<<"Erase and reset procedure complete. \n";
 
-	std::cout<<"Now setting video offset. \n";
-	pArcDev->Command( TIM_ID, SBN, 0,  2, VID, 0 );
-	pArcDev->Command( TIM_ID, SBN, 0,  3, VID, 0 );
-	std::cout<<"done. \n";
+        std::cout<<"Now setting video offset. \n";
+        pArcDev->Command( TIM_ID, SBN, 0,  2, VID, 0 );
+        pArcDev->Command( TIM_ID, SBN, 0,  3, VID, 0 );
+        std::cout<<"done. \n";
 
 
         //cout << SetDots( "Setting up number of skipper repeat measurements\n");

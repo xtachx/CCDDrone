@@ -32,11 +32,10 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
-		<Unit filename="ArcAPI35Ex_2.cpp" />
 		<Unit filename="BiasReset.cpp" />
 		<Unit filename="BiasReset.hpp" />
+		<Unit filename="CCDDroneStart.cpp" />
 		<Unit filename="CMakeLists.txt" />
-		<Unit filename="main.cpp" />
 		<Extensions>
 			<code_completion />
 			<debugger />
