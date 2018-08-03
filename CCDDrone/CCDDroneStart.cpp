@@ -192,12 +192,24 @@ int main( int argc, char **argv )
 		// Setup the controller
 		//
 		cout << SetDots( "Setting up controller" );
-		pArcDev->SetupController( true,
-										true,
-										true,
-										dRows,
-										dCols,
-										sTimFile.c_str() );
+
+		/* Setup controller syntax: void SetupController( bool bReset, bool bTdl, bool bPower, int dRows, int dCols, const
+char *pszTimFile, const char *pszUtilFile, const char *pszPciFile, const bool& bAbort );
+
+Parameters: bReset True to reset the controller. Typically be set to true.
+bTdl: True to test the data link between the host computer and the host device ( PCI, PCIe ), and the host device 
+and the camera controller. Typically set to true.
+bPower True to power-on the camera controller. Typically set to true.
+dRows Image row dimension ( in pixels )
+dCols Image column dimension ( in pixels )
+pszTimFile DSP timing board file ( .lod )
+pszUtilFile DSP utility board file ( .lod ). Default = NULL
+pszPciFile DSP PCI board file ( .lod ). Default = NULL
+bAbort Reference variable to allow external program to exit this method. Default = false
+*/
+
+
+		pArcDev->SetupController( true,true,true,dRows,dCols,sTimFile.c_str() );
         cout << "done!" << endl;
 
         //Select Amplifier
@@ -208,6 +220,7 @@ int main( int argc, char **argv )
         else
             std::cout<<"Amplifier selected. \n";
 
+	CCDRestoreBiasVoltages(&pArcDev);
         //CCD Erase and SetBias Voltages
         //Step 1 - Apply the reset on the V clocks
         std::cout<<"Flush the charges from the CCD using the erase procedure. \n";
@@ -215,15 +228,16 @@ int main( int argc, char **argv )
         sleep(2);
         //Turn relay OFF
         std::cout<<"Turn the relay switch OFF and wait 5 seconds. \n";
-        pArcDev->Command( TIM_ID, SBN, 2,  2, VID, 0 );
+	SetDACValueBias(pArcDev, 11, 0)
         sleep(5);
         //Turn relay ON
         std::cout<<"Turn the relay switch ON and wait 5 seconds. \n";
-        pArcDev->Command( TIM_ID, SBN, 2,  2, VID, 2048 );
+	SetDACValueBias(pArcDev, 11, 4000)
         sleep(5);
         //Set the correct biases
         std::cout<<"Set the correct biases for CCD operation. \n";
-        CCDRestoreBiasVoltages(&pArcDev);
+        CCDRestoreClockVoltages(&pArcDev);
+        
 
         std::cout<<"Erase and reset procedure complete. \n";
 
@@ -248,7 +262,7 @@ int main( int argc, char **argv )
 		//
 		// Expose
 		//
-		pArcDev->Expose( fExpTime, dRows, dCols, bAbort, &cExposeListener );
+		//pArcDev->Expose( fExpTime, dRows, dCols, bAbort, &cExposeListener );
 
 		//
 		// Deinterlace the image
@@ -265,8 +279,8 @@ int main( int argc, char **argv )
 		// Save the image to FITS
 		//
 		cout << SetDots( "Writing FITS" );
-		CArcFitsFile cFits( "Image.fit", dRows, dCols*nSkipperR );
-		cFits.Write( pArcDev->CommonBufferVA() );
+		//CArcFitsFile cFits( "Image.fit", dRows, dCols*nSkipperR );
+		//cFits.Write( pArcDev->CommonBufferVA() );
 		cout << "done!" << endl;
 
 		//

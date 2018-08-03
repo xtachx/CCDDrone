@@ -20,7 +20,10 @@
 int ClockVoltToADC(double );
 void CCDChargeFlushReset(arc::device::CArcDevice** );
 void CCDRestoreBiasVoltages(arc::device::CArcDevice** );
+void CCDRestoreClockVoltages(arc::device::CArcDevice** );
+
 void SetDACValue(arc::device::CArcDevice** , int , int , int );
+void SetDACValueBias(arc::device::CArcDevice** , int, int);
 
 
 #endif
