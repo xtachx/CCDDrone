@@ -51,6 +51,7 @@ using namespace arc::fits;
 
 
 
+#define SSR 0x00535352
 
 // ------------------------------------------------------
 //  Function prototypes
@@ -80,9 +81,9 @@ int main( int argc, char **argv )
 {
 	std::string sTimFile		= "tim.lod";
 	float       fExpTime		= 0.5;
-	int			dRows			= 1024;
-	int	        dCols			= 1200;
-	int         nSkipperR           = 1;
+	int			dRows			= 1;
+	int	        dCols			= 4;
+	int         nSkipperR           = 3;
 	int	        dDeintAlg		= CArcDeinterlace::DEINTERLACE_NONE;
 	bool        bAbort			= false;
 
@@ -148,11 +149,11 @@ int main( int argc, char **argv )
 				cout << "Deinterlace Set: " << dDeintAlg << endl;
 		  }
 
-		  //else if ( sArgv.compare( "-s" ) == 0 && argc >= ( i + 1 ) )
-		  //{
-		  //		nSkipperR = atoi( argv[ i + 1 ] );
-		  //		cout << "Number of skipper repeat measurements set: " << nSkipperR << endl;
-		  //}
+		  else if ( sArgv.compare( "-s" ) == 0 && argc >= ( i + 1 ) )
+		  {
+		  		nSkipperR = atoi( argv[ i + 1 ] );
+		  		cout << "Number of skipper repeat measurements set: " << nSkipperR << endl;
+		  }
 
 		  else if ( sArgv.compare( "-h" ) == 0 )
 		  {
@@ -220,40 +221,14 @@ bAbort Reference variable to allow external program to exit this method. Default
         else
             std::cout<<"Amplifier selected. \n";
 
-	CCDRestoreBiasVoltages(&pArcDev);
-        //CCD Erase and SetBias Voltages
-        //Step 1 - Apply the reset on the V clocks
-        std::cout<<"Flush the charges from the CCD using the erase procedure. \n";
-        CCDChargeFlushReset(&pArcDev);
-        sleep(2);
-        //Turn relay OFF
-        std::cout<<"Turn the relay switch OFF and wait 5 seconds. \n";
-	SetDACValueBias(&pArcDev, 11, 0);
-        sleep(5);
-        //Turn relay ON
-        std::cout<<"Turn the relay switch ON and wait 5 seconds. \n";
-	SetDACValueBias(&pArcDev, 11, 4000);
-        sleep(5);
-        //Set the correct biases
-        std::cout<<"Set the correct biases for CCD operation. \n";
-        CCDRestoreClockVoltages(&pArcDev);
 
 
-        std::cout<<"Erase and reset procedure complete. \n";
 
-        std::cout<<"Now setting video offset. \n";
-        pArcDev->Command( TIM_ID, SBN, 0,  2, VID, 0 );
-        pArcDev->Command( TIM_ID, SBN, 0,  3, VID, 0 );
-        std::cout<<"done. \n";
-
-
-        //cout << SetDots( "Setting up number of skipper repeat measurements\n");
-        //CArcPCIe::Command( TIM_ID, SSR, nSkipperR);
-        //int dReply = 0;
-        //dReply = pArcDev.get()->Command( 2, 0x00535352, nSkipperR);
-        //if ( dReply == 0x00444F4E ) cout<<" done!";
-        //else printf("Error setting skipper sequences: %X\n", dReply);
-        //pArcDev.get()->SetSkipperRepeats(8);
+        cout << SetDots( "Setting up number of skipper repeat measurements\n");
+        int dReply = 0;
+        dReply = pArcDev->Command( 2, SSR, nSkipperR);
+        if ( dReply == 0x00444F4E ) cout<<" done!";
+        else printf("Error setting skipper sequences: %X\n", dReply);
 
 
 
@@ -263,7 +238,7 @@ bAbort Reference variable to allow external program to exit this method. Default
 		// Expose
 		//
 		pArcDev->Expose( fExpTime, dRows, dCols, bAbort, &cExposeListener );
-
+        pArcDev->Command( 2, STP);
 		//
 		// Deinterlace the image
 		//
@@ -278,10 +253,10 @@ bAbort Reference variable to allow external program to exit this method. Default
 		//
 		// Save the image to FITS
 		//
-		cout << SetDots( "Writing FITS" );
-		CArcFitsFile cFits( "Image.fit", dRows, dCols*nSkipperR );
-		cFits.Write( pArcDev->CommonBufferVA() );
-		cout << "done!" << endl;
+		//cout << SetDots( "Writing FITS" );
+		//CArcFitsFile cFits( "Image.fit", dRows, dCols*nSkipperR );
+		//cFits.Write( pArcDev->CommonBufferVA() );
+		//cout << "done!" << endl;
 
 		//
 		// Close the device connection

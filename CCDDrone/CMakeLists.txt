@@ -24,10 +24,22 @@ set(HEADERS
 
 
 
-add_executable( CCDDrone CCDDroneStart.cpp )
 #add_executable( CCDDrone ArcAPI35Ex_2.cpp )
 #target_link_libraries( abub3hs ${OpenCV_LIBS} ${SOURCE} ${HEADERS} lbpuser AbubEntropySubsystem AbubUtility)
 #target_link_libraries( abub ${OpenCV_LIBS} ${SOURCE} ${HEADERS} )
 
+add_executable( CCDDrone CCDDroneStart.cpp )
 target_link_libraries( CCDDrone ${SOURCE} ${HEADERS})
+
+
+add_executable( CCDDroneE CCDDroneEraseProcedure.cpp )
+target_link_libraries( CCDDroneE ${SOURCE} ${HEADERS})
+
+
+add_executable( CCDDroneNoErase CCDDroneNoErase.cpp )
+target_link_libraries( CCDDroneNoErase ${SOURCE} ${HEADERS})
+
+
+add_executable( CCDDroneSk CCDDroneSk.cpp )
+target_link_libraries( CCDDroneSk ${SOURCE} ${HEADERS})
 

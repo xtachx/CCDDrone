@@ -247,48 +247,15 @@ bAbort Reference variable to allow external program to exit this method. Default
         std::cout<<"done. \n";
 
 
-        //cout << SetDots( "Setting up number of skipper repeat measurements\n");
-        //CArcPCIe::Command( TIM_ID, SSR, nSkipperR);
-        //int dReply = 0;
-        //dReply = pArcDev.get()->Command( 2, 0x00535352, nSkipperR);
-        //if ( dReply == 0x00444F4E ) cout<<" done!";
-        //else printf("Error setting skipper sequences: %X\n", dReply);
-        //pArcDev.get()->SetSkipperRepeats(8);
-
-
-
-
-
-		//
-		// Expose
-		//
-		pArcDev->Expose( fExpTime, dRows, dCols, bAbort, &cExposeListener );
-
-		//
-		// Deinterlace the image
-		//
-//		cout << SetDots( "Deinterlacing image" );
-//		CArcDeinterlace cDlacer;
-//		cDlacer.RunAlg( pArcDev.get()->CommonBufferVA(),
-//						dRows,
-//						dCols*nSkipperR,
-//						dDeintAlg );
-//		cout << "done!" << endl;
-
-		//
-		// Save the image to FITS
-		//
-		cout << SetDots( "Writing FITS" );
-		CArcFitsFile cFits( "Image.fit", dRows, dCols*nSkipperR );
-		cFits.Write( pArcDev->CommonBufferVA() );
-		cout << "done!" << endl;
-
-		//
-		// Close the device connection
 		//
 		cout << SetDots( "Closing device" );
 		pArcDev->Close();
 		cout << "done!" << endl;
+
+
+		std::cout<<"Erase procedure complete.\n Clock voltages set, biases set and video offset done. Thank you.\n";
+
+
 	}
 	catch ( std::runtime_error &e )
 	{

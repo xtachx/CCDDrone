@@ -209,8 +209,6 @@ bAbort Reference variable to allow external program to exit this method. Default
 */
 
 
-		pArcDev->SetupController( true,true,true,dRows,dCols,sTimFile.c_str() );
-        cout << "done!" << endl;
 
         //Select Amplifier
         std::cout<<"Setting amplifier. \n";
@@ -220,31 +218,6 @@ bAbort Reference variable to allow external program to exit this method. Default
         else
             std::cout<<"Amplifier selected. \n";
 
-	CCDRestoreBiasVoltages(&pArcDev);
-        //CCD Erase and SetBias Voltages
-        //Step 1 - Apply the reset on the V clocks
-        std::cout<<"Flush the charges from the CCD using the erase procedure. \n";
-        CCDChargeFlushReset(&pArcDev);
-        sleep(2);
-        //Turn relay OFF
-        std::cout<<"Turn the relay switch OFF and wait 5 seconds. \n";
-	SetDACValueBias(&pArcDev, 11, 0);
-        sleep(5);
-        //Turn relay ON
-        std::cout<<"Turn the relay switch ON and wait 5 seconds. \n";
-	SetDACValueBias(&pArcDev, 11, 4000);
-        sleep(5);
-        //Set the correct biases
-        std::cout<<"Set the correct biases for CCD operation. \n";
-        CCDRestoreClockVoltages(&pArcDev);
-
-
-        std::cout<<"Erase and reset procedure complete. \n";
-
-        std::cout<<"Now setting video offset. \n";
-        pArcDev->Command( TIM_ID, SBN, 0,  2, VID, 0 );
-        pArcDev->Command( TIM_ID, SBN, 0,  3, VID, 0 );
-        std::cout<<"done. \n";
 
 
         //cout << SetDots( "Setting up number of skipper repeat measurements\n");

@@ -39,7 +39,7 @@ void SetDACValueClock(arc::device::CArcDevice** pArcDev, int dac_chan, double dm
     resp2 = pArcDevice->Command( TIM_ID, SBN, CLOCK_JUMPER,  2*dac_chan+1, CLK, ClockVoltToADC(dmin) ); //MIN
 
     if (resp1 != 0x00444F4E || resp2 != 0x00444F4E )
-        printf ("Error setting CVIon channel: %d | code (max, min): (%X, %X)\n", DAC, resp1, resp2);
+        printf ("Error setting CVIon channel: %d | code (max, min): (%X, %X)\n", dac_chan, resp1, resp2);
 
     //printf ("Written: %X, %X, %d, %d , %X, %d\n", TIM_ID, SBN, CLOCK_JUMPER, 2*DAC, CLK, ClockVoltToADC(dmax));
 }
@@ -56,7 +56,7 @@ void SetDACValueBias(arc::device::CArcDevice** pArcDev, int dac_chan, int val){
     if (resp != 0x00444F4E )
         printf ("Error setting CVIon channel: %d | code: %X\n", dac_chan, resp);
 
-    printf ("Written: %X, %X, %d, %d , %X, %d\n", TIM_ID, SBN, CLOCK_JUMPER, dac_chan, VID, val);
+    //printf ("Written: %X, %X, %d, %d , %X, %d\n", TIM_ID, SBN, CLOCK_JUMPER, dac_chan, VID, val);
 
 }
 
