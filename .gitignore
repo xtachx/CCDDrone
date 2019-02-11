@@ -5,6 +5,7 @@ cmake_install.cmake
 Makefile
 *.fit
 *.layout
+.DS_Store
 
 CCDDrone/CCDDrone
 # but do track lib.a, even though you're ignoring .a files above
