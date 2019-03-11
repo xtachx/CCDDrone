@@ -1,45 +1,36 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.1)
 project( CCDDrone )
 
-
-set(CMAKE_MODULE_PATH "cmake_modules")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
 find_package( CFITSIO )
+
 #find_package(sqlite3 REQUIRED)
 #MESSAGE( STATUS "Found : ${SQLITE3_LIBRARIES}" )
 
-
-SET(CMAKE_CXX_FLAGS "-std=gnu++1y -O2 -march=native -m64 -LArcAPI/ARC_API/3.5/Release/x64 -IArcAPI/ARC_API/3.5/CArcDevice/src -IArcAPI/ARC_API/3.5/CArcDeinterlace/src -IArcAPI/ARC_API/3.5/CArcFitsFile/src -IArcAPI/ARC_API/3.5/cfitsio-3330/linux/x64/include -lCArcDeinterlace -lcfitsio -lCArcFitsFile -lCArcDevice")
-
-SET(CMAKE_EXE_LINKER_FLAGS "-LArcAPI/ARC_API/3.5/Release/x64 -lCArcDeinterlace -lcfitsio -lCArcFitsFile -lCArcDevice")
-
+SET(CMAKE_CXX_FLAGS "-std=gnu++1y -O2 -march=native -m64")
 
 
 set(SOURCE
-   ${CMAKE_CURRENT_SOURCE_DIR}/BiasReset.cpp
-)
+   ${CMAKE_CURRENT_SOURCE_DIR}/LeachController.cpp)
 set(HEADERS
-   ${CMAKE_CURRENT_SOURCE_DIR}/BiasReset.hpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/picosha2.h
+   ${CMAKE_CURRENT_SOURCE_DIR}/LeachController.hpp)
 
-)
+INCLUDE_DIRECTORIES(
+    ${CMAKE_CURRENT_SOURCE_DIR}/ArcAPI/CArcDevice/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/ArcAPI/CArcDeinterlace/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/ArcAPI/CArcFitsFile/src
+    ${CFITSIO_INCLUDE_DIR}
+    #${CMAKE_CURRENT_SOURCE_DIR}/ArcAPI/ARC_API/3.5/cfitsio-3330/linux/x64/include
+    )
 
-
-
-#add_executable( CCDDrone ArcAPI35Ex_2.cpp )
-#target_link_libraries( abub3hs ${OpenCV_LIBS} ${SOURCE} ${HEADERS} lbpuser AbubEntropySubsystem AbubUtility)
-#target_link_libraries( abub ${OpenCV_LIBS} ${SOURCE} ${HEADERS} )
-
-add_executable( CCDDrone CCDDroneStart.cpp )
-target_link_libraries( CCDDrone ${SOURCE} ${HEADERS})
-
-
-add_executable( CCDDroneE CCDDroneEraseProcedure.cpp )
-target_link_libraries( CCDDroneE ${SOURCE} ${HEADERS})
+LINK_DIRECTORIES("ArcAPI/Release/x64")
 
 
-add_executable( CCDDroneNoErase CCDDroneNoErase.cpp )
-target_link_libraries( CCDDroneNoErase ${SOURCE} ${HEADERS})
 
+add_executable( CCDDExpose CCDDExpose.cpp ${SOURCE} ${HEADERS} )
+target_link_libraries( CCDDExpose -lCArcDeinterlace -lCArcFitsFile -lCArcDevice ${CFITSIO_LIBRARIES})
 
-add_executable( CCDDroneSk CCDDroneSk.cpp )
-target_link_libraries( CCDDroneSk ${SOURCE} ${HEADERS})
+#add_executable( CCDDStartupAndErase CCDDStartupAndErase.cpp ${SOURCE} ${HEADERS})
+#target_link_libraries( CCDDroneE -lCArcDeinterlace -lCArcFitsFile -lCArcDevice ${CFITSIO_LIBRARIES})
 

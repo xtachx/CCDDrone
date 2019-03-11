@@ -1,4 +1,4 @@
-#- Try to find CFITSIO
+# - Try to find CFITSIO
 # Once done this will define
 #
 #  CFITSIO_FOUND - system has CFITSIO
@@ -65,3 +65,4 @@ else (CFITSIO_INCLUDE_DIR AND CFITSIO_LIBRARIES)
   mark_as_advanced(CFITSIO_INCLUDE_DIR CFITSIO_LIBRARIES)
 
 endif (CFITSIO_INCLUDE_DIR AND CFITSIO_LIBRARIES)
+
