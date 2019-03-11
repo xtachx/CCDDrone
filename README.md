@@ -1,3 +1,3 @@
-You will have to modify the setlibpath.sh to match the path of the compiled ArcAPI .so files, it may not be under /home/damic/Leach.
+You will have to install cFITSIO. If you are using the Leach system to drive a DES or a Skipper CCD, this should work for you. For a skipper CCD, use the UW firmware. The ASM code for that is on gitlab and is not made public. Please check the pin numbering before you run the code. 
 
-CMakeLists.txt may not need a change. You will also have to install cFitsIO.
+Note: You will need to re-compile the Leach kernel module with extra memory if you want to run larger CCDs or skipper CCDs with a lot of charge measurements.
