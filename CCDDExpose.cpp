@@ -4,7 +4,6 @@
 #include <unistd.h>
 
 #include "LeachController.hpp"
-#include "BiasReset.hpp"
 
 
 #define USAGE( x ) \
@@ -44,10 +43,10 @@ int main( int argc, char **argv )
 
 
 
-	LeachController _ThisRunControllerInstance;
+	LeachController _ThisRunControllerInstance("config/FirstTest.ini");
 
 	/*First, check if the settings file has changed in any way*/
-	_ThisRunControllerInstance.CheckForSettingsChange();
+	_ThisRunControllerInstance.LoadAndCheckForSettingsChange();
 
 
 	/*Expose*/
@@ -57,15 +56,8 @@ int main( int argc, char **argv )
 
 	int nSkipperR;
 	if (_ThisRunControllerInstance.CCDParams.CCDType=="DES")	_ThisRunControllerInstance.CCDParams.nSkipperR=1;
-	arc::fits::CArcFitsFile cFits( OutFileName.c_str(), _ThisRunControllerInstance.CCDParams.dRows, _ThisRunControllerInstance.CCDParams.dCols*_ThisRunControllerInstance.CCDParams.nSkipperR );
 
-	cFits.WriteKeyword("CCDType",(void*) _ThisRunControllerInstance.CCDParams.CCDType.c_str(), cFits.FITS_STRING_KEY, "CCD Array technology");
-	cFits.WriteKeyword("AMPL",(void*) _ThisRunControllerInstance.CCDParams.AmplifierDirection.c_str(), cFits.FITS_STRING_KEY, "Amplifier direction");
-	cFits.WriteKeyword("ASMFile",(void*) _ThisRunControllerInstance.CCDParams.sTimFile.c_str(), cFits.FITS_STRING_KEY, "Timing file used");
-	cFits.WriteKeyword("NDCMs",(void*) _ThisRunControllerInstance.CCDParams.nSkipperR, cFits.FITS_STRING_KEY, "NDCMs (1 for DES)");
-	cFits.WriteKeyword("ExposeSeconds",(void*) ExposeSeconds, cFits.FITS_STRING_KEY, "Exposure");
-
-	cFits.Write( ImageBufferV );
+	_ThisRunControllerInstance.SaveFits(OutFileName);
 
 
 

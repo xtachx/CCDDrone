@@ -29,7 +29,7 @@
 
 
 
-LeachController::LeachController() {
+LeachController::LeachController(std::string INIFileLoc) {
 
     /*New ArcDevice*/
     pArcDev = new arc::device::CArcPCIe;
@@ -37,6 +37,8 @@ LeachController::LeachController() {
     /*Open the Arc controller by loading a timing file*/
     arc::device::CArcPCIe::FindDevices();
     pArcDev->Open(0);
+
+    this->INIFileLoc = INIFileLoc;
 
 
 }
@@ -104,7 +106,7 @@ void LeachController::ParseCCDSettings(CCDVariables &_CCDSettings, ClockVariable
 }
 
 
-int LeachController::CheckForSettingsChange(void) {
+int LeachController::LoadAndCheckForSettingsChange(void) {
 
     std::ifstream f3("do_not_touch/LastHashes.txt", std::fstream::in);
     std::string OldSettingsHash;
@@ -135,6 +137,8 @@ int LeachController::CheckForSettingsChange(void) {
         return -2;
     }
 
+    this->ParseCCDSettings(this->CCDParams,this->ClockParams,this->BiasParams);
+
     return 0;
 
 
@@ -144,7 +148,7 @@ void LeachController::CopyOldAndStoreFileHashes(void) {
 
     //Copy the settings file first for later comparisons.
     std::ifstream f1(this->INIFileLoc, std::fstream::binary);
-    std::ofstream f2("do_not_touch/LastSettings.ini", std::fstream::trunc | std::fstream::binary);
+    std::ofstream f2("do_not_touch/LastSettings.ini", std::fstream::trunc);
     f2 << f1.rdbuf();
 
 
@@ -154,6 +158,7 @@ void LeachController::CopyOldAndStoreFileHashes(void) {
     std::vector<unsigned char> s2(picosha2::k_digest_size);
     picosha2::hash256(fSeq, s2.begin(), s2.end());
 
+
     std::string f1s(s1.begin(), s1.end());
     std::string f2s(s2.begin(), s2.end());
 
@@ -161,126 +166,18 @@ void LeachController::CopyOldAndStoreFileHashes(void) {
     f3 << f1s << "\n" << f2s;
 
 
-}
 
-
-void LeachController::ExposeCCD_DES(int ExposeTime) {
-
-    int ImageMemorySize = this->CCDParams.dCols * this->CCDParams.dRows * sizeof(short);
-    pArcDev->MapCommonBuffer(ImageMemorySize);
-
-    //Select amplifiers and de-interlacing
-    int dDeintAlg, SOS_response;
-    if (this->CCDParams.AmplifierDirection == "LR") {
-        dDeintAlg = arc::deinterlace::CArcDeinterlace::DEINTERLACE_PARALLEL;
-        SOS_response = pArcDev->Command(TIM_ID, SOS, AMP_LR);
-
-    } else if (this->CCDParams.AmplifierDirection == "L") {
-        dDeintAlg = arc::deinterlace::CArcDeinterlace::DEINTERLACE_NONE;
-        SOS_response = pArcDev->Command(TIM_ID, SOS, AMP_L);
-
-    } else if (this->CCDParams.AmplifierDirection == "R") {
-        dDeintAlg = arc::deinterlace::CArcDeinterlace::DEINTERLACE_NONE;
-        SOS_response = pArcDev->Command(TIM_ID, SOS, AMP_R);
-
-    } else {
-        std::cout << "The amplifier selected does not exist. Stop and verify!\n";
-    }
-
-    if (SOS_response != DON)
-        std::cout << "Amplifier settings could not be applied. \n";
-    else
-        std::cout << "Amplifier selected. \n";
-
-    std::cout << "Starting exposure\n";
-    pArcDev->Expose(ExposeTime, this->CCDParams.dRows, this->CCDParams.dCols, false, &this->cExposeListener);
-
-
-    if (this->CCDParams.AmplifierDirection == "LR") {
-        std::cout << "Since amplifier selected was LR, the image will now be de-interlaced.\n";
-        arc::deinterlace::CArcDeinterlace cDlacer;
-        unsigned short *pU16Buf = (unsigned short *) pArcDev->CommonBufferVA();
-        cDlacer.RunAlg(pU16Buf, this->CCDParams.dRows, this->CCDParams.dCols, dDeintAlg);
-    }
-
-}
-
-
-void LeachController::ExposeCCD_SK(int ExposeTime) {
-
-    int ImageMemorySize = this->CCDParams.dCols * this->CCDParams.dRows * this->CCDParams.nSkipperR * sizeof(short);
-    //Implement a memory size check here.
-    pArcDev->MapCommonBuffer(ImageMemorySize);
-
-    //Select amplifiers and de-interlacing
-    int dDeintAlg, SOS_response;
-    if (this->CCDParams.AmplifierDirection == "LR") {
-        dDeintAlg = arc::deinterlace::CArcDeinterlace::DEINTERLACE_PARALLEL;
-        SOS_response = pArcDev->Command(TIM_ID, SOS, AMP_LR);
-
-    } else if (this->CCDParams.AmplifierDirection == "L") {
-        dDeintAlg = arc::deinterlace::CArcDeinterlace::DEINTERLACE_NONE;
-        SOS_response = pArcDev->Command(TIM_ID, SOS, AMP_L);
-
-    } else if (this->CCDParams.AmplifierDirection == "R") {
-        dDeintAlg = arc::deinterlace::CArcDeinterlace::DEINTERLACE_NONE;
-        SOS_response = pArcDev->Command(TIM_ID, SOS, AMP_R);
-
-    } else {
-        std::cout << "The amplifier selected does not exist. Stop and verify!\n";
-    }
-
-    if (SOS_response != DON)
-        std::cout << "Amplifier settings could not be applied. \n";
-    else
-        std::cout << "Amplifier selected. \n";
-
-    std::cout << "Starting exposure\n";
-    pArcDev->Expose(ExposeTime, this->CCDParams.dRows, this->CCDParams.dCols * this->CCDParams.nSkipperR, false,
-                    &this->cExposeListener);
-
-
-    if (this->CCDParams.AmplifierDirection == "LR") {
-        unsigned short *pU16Buf = (unsigned short *) pArcDev->CommonBufferVA();
-        std::cout << "Since amplifier selected was LR, the image will now be de-interlaced.\n";
-        arc::deinterlace::CArcDeinterlace cDlacer;
-        cDlacer.RunAlg(pU16Buf, this->CCDParams.dRows, this->CCDParams.dCols * this->CCDParams.nSkipperR, dDeintAlg);
-    }
 
 
 }
 
-void LeachController::ExposeCCD(int ExposureTime, unsigned short *ImageBuffer) {
+void LeachController::LoadCCDSettingsFresh(void){
 
-    try {
-        if (this->CCDParams.CCDType == "SK") this->ExposeCCD_SK(ExposureTime);
-        else this->ExposeCCD_DES(ExposureTime);
-
-        ImageBuffer = (unsigned short *) this->pArcDev->CommonBufferVA();
-
-    }
-    catch (std::runtime_error &e) {
-        std::cout << "failed!" << std::endl;
-        std::cerr << std::endl << e.what() << std::endl;
-
-        if (pArcDev->IsReadout()) {
-            pArcDev->StopExposure();
-        }
-
-        //pArcDev->Close();
-    }
-    catch (...) {
-        std::cerr << std::endl << "Error: unknown exception occurred!!!" << std::endl;
-
-        if (pArcDev->IsReadout()) {
-            pArcDev->StopExposure();
-        }
-
-        //pArcDev->Close();
-    }
-
-
+    this->ParseCCDSettings(this->CCDParams,this->ClockParams,this->BiasParams);
+    this->CopyOldAndStoreFileHashes( );
 }
+
+
 
 void LeachController::ApplyAllCCDClocks(CCDVariables &_CCDSettings, ClockVariables &_clockSettings){
 
@@ -366,13 +263,16 @@ int LeachController::ClockVoltToADC(double PD){
 int LeachController::BiasVoltToADC(double PD, int line){
 
     int biasVoltADC;
+    double ADCVal;
+    PD = fabs(PD);
 
     //Line 0-7 have 25V reference, lines 8-12 have a 5V reference **CHECK**!!
-    if (line<8) ADCval = PD*4095/25.0;
+    if (line<8) ADCVal = PD*4095/25.0;
     else ADCVal = PD*4095/5.0;
 
     biasVoltADC = (int)ADCVal;
     if (biasVoltADC > 4095) printf ("Warning: Bias on line %d is %d which is more than the limit 4095.\n ",line,biasVoltADC);
+
     return 0x00000FFF & biasVoltADC;
 
 }
@@ -414,10 +314,44 @@ void LeachController::ApplyAllPositiveVPixelArray(){
 
 }
 
+void LeachController::RestoreVClockVoltages(void ){
+
+    this->SetDACValueClock(0, this->ClockParams.vclock_lo, this->ClockParams.vclock_hi); //Channel 0: V1
+    this->SetDACValueClock(1, this->ClockParams.vclock_lo, this->ClockParams.vclock_hi); //Channel 1: V2
+    this->SetDACValueClock(2, this->ClockParams.vclock_lo, this->ClockParams.vclock_hi); //Channel 2: V3
+
+}
+
 
 void LeachController::CCDBiasToggle (bool state){
 
-    if (state) this->SetDACValueBias(11,BiasVoltToADC(_BiasSettings.battrelay,11));
+    if (state) this->SetDACValueBias(11,BiasVoltToADC(this->BiasParams.battrelay,11));
     else this->SetDACValueBias(11,0);
+
+}
+
+void LeachController::IdleClockToggle (void ){
+
+    this->pArcDev->Command(TIM_ID, IDL);
+
+}
+
+
+void LeachController::StartupController(void ){
+
+    //RESET
+    pArcDev->ResetController();
+    //Test Data Link
+    for (int i=0; i<123; i++){
+        if ( pArcDev->Command( TIM_ID, TDL, 0x123456 ) != 0x123456 ){
+                std::cout<<"TIM TDL failed.\n";
+                throw 10;
+        }
+    }
+
+    //Load controller file
+    pArcDev->LoadControllerFile(this->CCDParams.sTimFile.c_str());
+    pArcDev->Command( TIM_ID, PON ); //Power ON
+    pArcDev->SetImageSize(this->CCDParams.dRows,this->CCDParams.dCols); //Set image size for idle
 
 }
