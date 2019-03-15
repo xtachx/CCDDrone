@@ -46,20 +46,23 @@ int main( int argc, char **argv )
 	LeachController _ThisRunControllerInstance("config/FirstTest.ini");
 
 	/*First, check if the settings file has changed in any way*/
-	_ThisRunControllerInstance.LoadAndCheckForSettingsChange();
+	int _CCDSettingsStatus = _ThisRunControllerInstance.LoadAndCheckForSettingsChange();
+
+    if (_CCDSettingsStatus == 0){
+
+        _ThisRunControllerInstance.CCDParams.fExpTime = ExposeSeconds;
+        if (_ThisRunControllerInstance.CCDParams.CCDType=="DES")	_ThisRunControllerInstance.CCDParams.nSkipperR=1;
 
 
-	/*Expose*/
-	unsigned short *ImageBufferV;
-	_ThisRunControllerInstance.ExposeCCD(ExposeSeconds, ImageBufferV);
+        /*Expose*/
+        unsigned short *ImageBufferV;
+        _ThisRunControllerInstance.PrepareAndExposeCCD(ExposeSeconds, ImageBufferV);
 
-
-	int nSkipperR;
-	if (_ThisRunControllerInstance.CCDParams.CCDType=="DES")	_ThisRunControllerInstance.CCDParams.nSkipperR=1;
-
-	_ThisRunControllerInstance.SaveFits(OutFileName);
-
-
+        /*Save FITS*/
+        _ThisRunControllerInstance.SaveFits(OutFileName);
+    } else {
+        std::cout<<"CCD was not exposed and an image was not taken. Please resolve the conflicts in the config section first.\n";
+    }
 
 
 }

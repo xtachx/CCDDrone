@@ -24,13 +24,8 @@ int main( int argc, char **argv )
 
 	LeachController _ThisRunControllerInstance("config/FirstTest.ini");
 
-	/*First, check if the settings file has changed in any way*/
 	std::cout<<"Checking for new settings and loading them.\n";
 	_ThisRunControllerInstance.LoadCCDSettingsFresh();
-
-	/*Startup the CCD*/
-	std::cout<<"Starting up the controller.\n";
-    _ThisRunControllerInstance.StartupController();
 
 	/*Apply biases and clocks*/
 	std::cout<<"Applying biases and clocks.\n";
@@ -39,13 +34,11 @@ int main( int argc, char **argv )
 
 
 	/*Erase procedure*/
-	std::cout<<"Set IDLE clocks to ON and then start erase procedure in 5 seconds.\n";
+	std::cout<<"Set IDLE clocks to ON.\n";
     _ThisRunControllerInstance.IdleClockToggle();
-    std::this_thread::sleep_for(std::chrono::seconds(5));
-    _ThisRunControllerInstance.PerformEraseProcedure();
 
 
-    std::cout<<"Leach system is now ready to take data.\n";
+    std::cout<<"New settings have been uploaded to the Leach system.\n";
 
 
 }

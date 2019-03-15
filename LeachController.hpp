@@ -15,6 +15,8 @@
 
 #include "CCDControlDataTypes.hpp"
 
+#define SSR 0x00535352
+
 
 
 // ------------------------------------------------------
@@ -44,54 +46,60 @@ private:
     /*Start the listener object for callback interactions*/
     CExposeListener cExposeListener;
 
+    /*LeachControllerClkBiasMethods*/
     int ClockVoltToADC( double );
     int BiasVoltToADC(double, int);
-
     void SetDACValueClock(int , double , double );
     void SetDACValueBias(int , int );
 
-    void SaveFits(std::string );
-
-
+    /*LeachControllerMiscHardwareProcedures - private part*/
+    int SetSSR(void );
+    /*LeachControllerExpose - private part*/
+    int ExposeCCD(int );
 
 
 public:
 
     LeachController(std::string );
-
     ~LeachController();
 
     /*Variables that will need to be set before exposure*/
     std::string INIFileLoc;
-
     CCDVariables CCDParams;
     ClockVariables ClockParams;
     BiasVariables BiasParams;
 
-
-
-    /*Routines*/
-    void ParseCCDSettings(CCDVariables&, ClockVariables&, BiasVariables& );
-    void ApplyNewCCDSettings(void);
-    void CheckForChanges(void );
-
-    void ExposeCCD_DES(int );
-    void ExposeCCD_SK(int );
-    void ExposeCCD(int, unsigned short*);
-
-    int LoadAndCheckForSettingsChange(void );
-    void CopyOldAndStoreFileHashes(void );
-
+    /*Routines - UW specific and defined in LeachController.cpp*/
     void ApplyAllCCDClocks(CCDVariables &, ClockVariables & );
     void ApplyAllBiasVoltages(CCDVariables &, BiasVariables & );
+
+
+    /*Routines - Generic and organized by filename*/
+
+    /*LeachControllerConfigHandler*/
+    void ParseCCDSettings(CCDVariables&, ClockVariables&, BiasVariables& );
+    int LoadAndCheckForSettingsChange(void );
+    void CopyOldAndStoreFileHashes(void );
+    void LoadCCDSettingsFresh(void );
+
+
+    /*LeachControllerExpose - public part*/
+    void PrepareAndExposeCCD(int, unsigned short*);
+
+
+    /*LeachControllerMiscHardwareProcedures - public part*/
     void CCDBiasToggle(bool );
     void StartupController(void );
-
+    void PerformEraseProcedure(void);
     void ApplyAllPositiveVPixelArray(void );
     void RestoreVClockVoltages (void);
     void IdleClockToggle(void );
 
-    void LoadCCDSettingsFresh(void );
+    /*FitsOps*/
+    void SaveFits(std::string );
+
+    /*Not written yet*/
+    void ApplyNewCCDSettings(void);
 
 
 };

@@ -2,8 +2,6 @@
 // Created by Pitam Mitra on 2019-02-13.
 //
 
-#include "LeachController.hpp"
-#include "INIReader.h"
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -12,11 +10,12 @@
 #include "CArcPCIe.h"
 #include "CArcPCI.h"
 #include "CArcDeinterlace.h"
-#include "CArcFitsFile.h"
 #include "CExpIFace.h"
 #include "ArcDefs.h"
 
-#include "picosha2.h"
+
+#include "LeachController.hpp"
+#include "CCDControlDataTypes.hpp"
 
 
 /*Click driver jumper setting*/
@@ -29,7 +28,8 @@
 
 
 
-LeachController::LeachController(std::string INIFileLoc) {
+LeachController::LeachController(std::string INIFileLoc)
+{
 
     /*New ArcDevice*/
     pArcDev = new arc::device::CArcPCIe;
@@ -43,145 +43,21 @@ LeachController::LeachController(std::string INIFileLoc) {
 
 }
 
-LeachController::~LeachController() {
+LeachController::~LeachController()
+{
 
     pArcDev->Close();
 
 }
 
 
-void LeachController::ParseCCDSettings(CCDVariables &_CCDSettings, ClockVariables &_clockSettings, BiasVariables &_biasSettings) {
+/*
+ *The lines are UW specific, so keeping this function here makes sense since people might edit
+ *these values if they change the second stage board
+ */
 
-    INIReader _LeachConfig(INIFileLoc.c_str());
-
-    if (_LeachConfig.ParseError() != 0) {
-        std::cout << "Can't load init file\n";
-
-    }
-
-
-    _clockSettings.vclock_hi = _LeachConfig.GetReal("clocks", "vclock_hi", 6);
-    _clockSettings.vclock_lo = _LeachConfig.GetReal("clocks", "vclock_lo", 0);
-
-    _clockSettings.u_hclock_hi = _LeachConfig.GetReal("clocks", "u_hclock_hi", 5);
-    _clockSettings.u_hclock_lo = _LeachConfig.GetReal("clocks", "u_hclock_lo", 0);
-    _clockSettings.l_hclock_hi = _LeachConfig.GetReal("clocks", "l_hclock_hi", 5);
-    _clockSettings.l_hclock_lo = _LeachConfig.GetReal("clocks", "l_hclock_lo", 0);
-
-    _clockSettings.tg_hi = _LeachConfig.GetReal("clocks", "tg_hi", 6);
-    _clockSettings.tg_lo = _LeachConfig.GetReal("clocks", "tg_lo", 6);
-
-    _clockSettings.dg_hi = _LeachConfig.GetReal("clocks", "dg_hi", 5);
-    _clockSettings.dg_lo = _LeachConfig.GetReal("clocks", "dg_lo", -4);
-    _clockSettings.rg_hi = _LeachConfig.GetReal("clocks", "rg_hi", -6);
-    _clockSettings.rg_lo = _LeachConfig.GetReal("clocks", "rg_lo", 0);
-
-    _clockSettings.sw_hi = _LeachConfig.GetReal("clocks", "sw_hi", 4);
-    _clockSettings.sw_lo = _LeachConfig.GetReal("clocks", "sw_lo", -4);
-    _clockSettings.og_hi = _LeachConfig.GetReal("clocks", "og_hi", 2);
-    _clockSettings.og_lo = _LeachConfig.GetReal("clocks", "og_lo", -2);
-
-    /*CCD Specific settings*/
-    _CCDSettings.CCDType = _LeachConfig.Get("ccd", "type", "DES");
-    _CCDSettings.dCols = _LeachConfig.GetInteger("ccd", "columns", 4000);
-    _CCDSettings.dRows = _LeachConfig.GetInteger("ccd", "rows", 4000);
-    _CCDSettings.nSkipperR = _LeachConfig.GetInteger("ccd", "NDCM", 1);
-    _CCDSettings.sTimFile = _LeachConfig.Get("ccd", "sequencer_loc", "tim_current.lod");
-    _CCDSettings.InvRG = _LeachConfig.GetBoolean("ccd", "RG_inv", true);
-
-    _CCDSettings.AmplifierDirection = _LeachConfig.Get("ccd", "AmplifierDirection", "LR");
-    _CCDSettings.HClkDirection = _LeachConfig.Get("ccd", "HClkDirection", "LR");
-    _CCDSettings.VClkDirection = _LeachConfig.Get("ccd", "VClkDirection", "NORM");
-
-
-    /*Bias Voltages*/
-    _biasSettings.vdd = _LeachConfig.GetReal("bias", "vdd", -22);
-    _biasSettings.vrefsk = _LeachConfig.GetReal("bias", "vrefsk", -12.5);
-    _biasSettings.vref = _LeachConfig.GetReal("bias", "vref", -13.12);
-    _biasSettings.drain = _LeachConfig.GetReal("bias", "drain", -15.26);
-    _biasSettings.opg = _LeachConfig.GetReal("bias", "opg", -2.21);
-    _biasSettings.battrelay = _LeachConfig.GetReal("bias", "battrelay", -4.88);
-    _biasSettings.video_offsets = _LeachConfig.GetInteger("bias", "video_offsets", 0);
-
-}
-
-
-int LeachController::LoadAndCheckForSettingsChange(void) {
-
-    std::ifstream f3("do_not_touch/LastHashes.txt", std::fstream::in);
-    std::string OldSettingsHash;
-    std::string OldFirmwareHash;
-
-    std::getline(f3, OldSettingsHash);
-    std::getline(f3, OldFirmwareHash);
-
-
-    std::ifstream f1(this->INIFileLoc, std::fstream::binary);
-    std::ifstream fSeq(this->CCDParams.sTimFile, std::ios::binary);
-    std::vector<unsigned char> s1(picosha2::k_digest_size);
-    picosha2::hash256(f1, s1.begin(), s1.end());
-    std::vector<unsigned char> s2(picosha2::k_digest_size);
-    picosha2::hash256(fSeq, s2.begin(), s2.end());
-
-    std::string f1s(s1.begin(), s1.end());
-    std::string f2s(s2.begin(), s2.end());
-
-
-    if (f1s != OldSettingsHash) {
-        std::cout << "You have changed the settings, but did not apply them to the controller.\n";
-        return -1;
-    }
-
-    if (f2s != OldFirmwareHash) {
-        std::cout << "You have changed the firmware, but did not upload it to the leach.\n";
-        return -2;
-    }
-
-    this->ParseCCDSettings(this->CCDParams,this->ClockParams,this->BiasParams);
-
-    return 0;
-
-
-}
-
-void LeachController::CopyOldAndStoreFileHashes(void) {
-
-    //Copy the settings file first for later comparisons.
-    std::ifstream f1(this->INIFileLoc, std::fstream::binary);
-    std::ofstream f2("do_not_touch/LastSettings.ini", std::fstream::trunc);
-    f2 << f1.rdbuf();
-
-
-    std::ifstream fSeq(this->CCDParams.sTimFile, std::ios::binary);
-    std::vector<unsigned char> s1(picosha2::k_digest_size);
-    picosha2::hash256(f1, s1.begin(), s1.end());
-    std::vector<unsigned char> s2(picosha2::k_digest_size);
-    picosha2::hash256(fSeq, s2.begin(), s2.end());
-
-
-    std::string f1s(s1.begin(), s1.end());
-    std::string f2s(s2.begin(), s2.end());
-
-    std::ofstream f3("do_not_touch/LastHashes.txt", std::fstream::trunc | std::fstream::out);
-    f3 << f1s << "\n" << f2s;
-
-
-
-
-
-}
-
-void LeachController::LoadCCDSettingsFresh(void){
-
-    this->ParseCCDSettings(this->CCDParams,this->ClockParams,this->BiasParams);
-    this->CopyOldAndStoreFileHashes( );
-}
-
-
-
-void LeachController::ApplyAllCCDClocks(CCDVariables &_CCDSettings, ClockVariables &_clockSettings){
-
-
+void LeachController::ApplyAllCCDClocks(CCDVariables &_CCDSettings, ClockVariables &_clockSettings)
+{
     /*Set Clocks*/
     this->SetDACValueClock(0, _clockSettings.vclock_lo, _clockSettings.vclock_hi); //Channel 0: V1
     this->SetDACValueClock(1, _clockSettings.vclock_lo, _clockSettings.vclock_hi); //Channel 1: V2
@@ -200,10 +76,13 @@ void LeachController::ApplyAllCCDClocks(CCDVariables &_CCDSettings, ClockVariabl
     this->SetDACValueClock(23, _clockSettings.sw_lo, _clockSettings.sw_hi); //Channel 23: SWU
 
     //Reset gate needs to be checked against the current timing file and be flipped if necessary
-    if (_CCDSettings.InvRG){
+    if (_CCDSettings.InvRG)
+    {
         this->SetDACValueClock(20, _clockSettings.rg_hi, _clockSettings.rg_lo); //Channel 20: RGL
         this->SetDACValueClock(21, _clockSettings.rg_hi, _clockSettings.rg_lo); //Channel 21: RGU
-    } else {
+    }
+    else
+    {
         this->SetDACValueClock(20, _clockSettings.rg_lo, _clockSettings.rg_hi); //Channel 20: RGL
         this->SetDACValueClock(21, _clockSettings.rg_lo, _clockSettings.rg_hi); //Channel 21: RGU
     }
@@ -211,7 +90,8 @@ void LeachController::ApplyAllCCDClocks(CCDVariables &_CCDSettings, ClockVariabl
 }
 
 
-void LeachController::ApplyAllBiasVoltages(CCDVariables &_CCDSettings, BiasVariables &_BiasSettings ){
+void LeachController::ApplyAllBiasVoltages(CCDVariables &_CCDSettings, BiasVariables &_BiasSettings )
+{
 
     /*Set Biases*/
     //Vdd
@@ -222,21 +102,26 @@ void LeachController::ApplyAllBiasVoltages(CCDVariables &_CCDSettings, BiasVaria
 
 
     //VR(1-4)
-    if (_CCDSettings.CCDType=="DES"){
+    if (_CCDSettings.CCDType=="DES")
+    {
         this->SetDACValueBias(4,BiasVoltToADC(_BiasSettings.vref,4));
         this->SetDACValueBias(5,BiasVoltToADC(_BiasSettings.vref,5));
-    } else {
+    }
+    else
+    {
         this->SetDACValueBias(4,BiasVoltToADC(_BiasSettings.vrefsk,4));
         this->SetDACValueBias(5,BiasVoltToADC(_BiasSettings.vrefsk,5));
     }
     //DrainL and DrainU
-    if(_CCDSettings.CCDType=="SK"){
+    if(_CCDSettings.CCDType=="SK")
+    {
         this->SetDACValueBias(6,BiasVoltToADC(_BiasSettings.drain,6));
         this->SetDACValueBias(7,BiasVoltToADC(_BiasSettings.drain,7));
     }
 
     //OG(1-4)
-    if (_CCDSettings.CCDType=="DES"){
+    if (_CCDSettings.CCDType=="DES")
+    {
         this->SetDACValueBias(8,BiasVoltToADC(_BiasSettings.opg,8));
         this->SetDACValueBias(9,BiasVoltToADC(_BiasSettings.opg,9));
     }
@@ -251,107 +136,3 @@ void LeachController::ApplyAllBiasVoltages(CCDVariables &_CCDSettings, BiasVaria
 
 }
 
-
-int LeachController::ClockVoltToADC(double PD){
-
-    int clkVoltADC;
-    double ADCVal = 4095.0*(PD-MIN_CLOCK)/(MAX_CLOCK-MIN_CLOCK);
-    clkVoltADC = (int)ADCVal;
-    return 0x00000FFF & clkVoltADC;
-}
-
-int LeachController::BiasVoltToADC(double PD, int line){
-
-    int biasVoltADC;
-    double ADCVal;
-    PD = fabs(PD);
-
-    //Line 0-7 have 25V reference, lines 8-12 have a 5V reference **CHECK**!!
-    if (line<8) ADCVal = PD*4095/25.0;
-    else ADCVal = PD*4095/5.0;
-
-    biasVoltADC = (int)ADCVal;
-    if (biasVoltADC > 4095) printf ("Warning: Bias on line %d is %d which is more than the limit 4095.\n ",line,biasVoltADC);
-
-    return 0x00000FFF & biasVoltADC;
-
-}
-
-void LeachController::SetDACValueClock(int dac_chan, double dmin, double dmax){
-
-
-
-    int resp1, resp2;
-
-    resp1 = this->pArcDev->Command( TIM_ID, SBN, CLOCK_JUMPER,  2*dac_chan, CLK, ClockVoltToADC(dmax) ); //MAX
-    resp2 = this->pArcDev->Command( TIM_ID, SBN, CLOCK_JUMPER,  2*dac_chan+1, CLK, ClockVoltToADC(dmin) ); //MIN
-
-    if (resp1 != 0x00444F4E || resp2 != 0x00444F4E )
-        printf ("Error setting CVIon channel: %d | code (max, min): (%X, %X)\n", dac_chan, resp1, resp2);
-
-    //printf ("Written: %X, %X, %d, %d , %X, %d\n", TIM_ID, SBN, CLOCK_JUMPER, 2*DAC, CLK, ClockVoltToADC(dmax));
-}
-
-
-void LeachController::SetDACValueBias(int dac_chan, int val){
-
-    int resp;
-
-    resp = this->pArcDev->Command( TIM_ID, SBN, CLOCK_JUMPER, dac_chan, VID, val ); //MAX
-
-    if (resp != 0x00444F4E )
-        printf ("Error setting CVIon channel: %d | code: %X\n", dac_chan, resp);
-
-    //printf ("Written: %X, %X, %d, %d , %X, %d\n", TIM_ID, SBN, CLOCK_JUMPER, dac_chan, VID, val);
-
-}
-
-void LeachController::ApplyAllPositiveVPixelArray(){
-
-    this->SetDACValueClock(0, 9.0, 9.0); //Channel 0: Min 9V Max 9V
-    this->SetDACValueClock(1, 9.0, 9.0); //Channel 1: Min 9V Max 9V
-    this->SetDACValueClock(2, 9.0, 9.0); //Channel 2: Min 9V Max 9V
-
-}
-
-void LeachController::RestoreVClockVoltages(void ){
-
-    this->SetDACValueClock(0, this->ClockParams.vclock_lo, this->ClockParams.vclock_hi); //Channel 0: V1
-    this->SetDACValueClock(1, this->ClockParams.vclock_lo, this->ClockParams.vclock_hi); //Channel 1: V2
-    this->SetDACValueClock(2, this->ClockParams.vclock_lo, this->ClockParams.vclock_hi); //Channel 2: V3
-
-}
-
-
-void LeachController::CCDBiasToggle (bool state){
-
-    if (state) this->SetDACValueBias(11,BiasVoltToADC(this->BiasParams.battrelay,11));
-    else this->SetDACValueBias(11,0);
-
-}
-
-void LeachController::IdleClockToggle (void ){
-
-    this->pArcDev->Command(TIM_ID, IDL);
-
-}
-
-
-void LeachController::StartupController(void ){
-
-    //RESET
-    pArcDev->ResetController();
-    //Test Data Link
-    for (int i=0; i<123; i++){
-        if ( pArcDev->Command( TIM_ID, TDL, 0x123456 ) != 0x123456 ){
-                std::cout<<"TIM TDL failed.\n";
-                throw 10;
-        }
-    }
-
-    //Load controller file
-    pArcDev->LoadControllerFile(this->CCDParams.sTimFile.c_str());
-    pArcDev->Command( TIM_ID, PON ); //Power ON
-    pArcDev->SetImageSize(this->CCDParams.dRows,this->CCDParams.dCols); //Set image size for idle
-
-}

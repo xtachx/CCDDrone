@@ -13,6 +13,9 @@ SET(CMAKE_CXX_FLAGS "-std=gnu++1y -O2 -march=native -m64")
 set(SOURCE
    ${CMAKE_CURRENT_SOURCE_DIR}/LeachController.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/LeachControllerExpose.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/LeachControllerClkBiasMethods.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/LeachControllerMiscHardwareProcedures.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/LeachControllerConfigHandler.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/FitsOps.cpp
    )
 set(HEADERS
@@ -34,8 +37,14 @@ LINK_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/ArcAPI/Release/x64)
 
 
 add_executable( CCDDExpose CCDDExpose.cpp ${SOURCE} ${HEADERS} )
-target_link_libraries( CCDDExpose -lCArcDeinterlace -lCArcFitsFile -lCArcDevice ${CFITSIO_LIBRARIES})
+target_link_libraries( CCDDExpose -lCArcDeinterlace -lCArcDevice ${CFITSIO_LIBRARIES})
 
 add_executable( CCDDStartupAndErase CCDDStartupAndErase.cpp ${SOURCE} ${HEADERS})
-target_link_libraries( CCDDStartupAndErase -lCArcDeinterlace -lCArcFitsFile -lCArcDevice ${CFITSIO_LIBRARIES})
+target_link_libraries( CCDDStartupAndErase -lCArcDeinterlace -lCArcDevice ${CFITSIO_LIBRARIES})
+
+add_executable( CCDDPerformEraseProcedure CCDDPerformEraseProcedure.cpp ${SOURCE} ${HEADERS})
+target_link_libraries( CCDDPerformEraseProcedure -lCArcDeinterlace -lCArcDevice ${CFITSIO_LIBRARIES})
+
+add_executable( CCDDApplyNewSettings CCDDApplyNewSettings.cpp ${SOURCE} ${HEADERS})
+target_link_libraries( CCDDApplyNewSettings -lCArcDeinterlace -lCArcDevice ${CFITSIO_LIBRARIES})
 

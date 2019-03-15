@@ -3,6 +3,8 @@
 
 #include "fitsio.h"
 #include "LeachController.hpp"
+#include "CCDControlDataTypes.hpp"
+
 
 /*Function to write an SK Merged image as a FITS file.*/
 void LeachController::SaveFits(std::string outFileName){
