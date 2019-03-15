@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <cmath>
 
 #include "CArcDevice.h"
 #include "CArcPCIe.h"

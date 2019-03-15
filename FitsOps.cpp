@@ -37,14 +37,14 @@ void LeachController::SaveFits(std::string outFileName){
 
 
     /* Write the Meta keywords - CCD*/
-    fits_write_key(fptr, TSTRING, "CCDType", &this->CCDParams.CCDType.c_str(), "Number of charge measurements", &status);
+    fits_write_key(fptr, TSTRING, "CCDType", (char*) this->CCDParams.CCDType.c_str(), "Number of charge measurements", &status);
     fits_write_key(fptr, TFLOAT, "Exp", &this->CCDParams.fExpTime, "Number of charge measurements", &status);
     fits_write_key(fptr, TSHORT, "NDCMs", &this->CCDParams.nSkipperR, "Number of charge measurements", &status);
-    fits_write_key(fptr, TSTRING, "AMPL", &this->CCDParams.AmplifierDirection.c_str(), "Number of charge measurements", &status);
-    fits_write_key(fptr, TSTRING, "ASMFile", &this->CCDParams.sTimFile.c_str(), "Number of charge measurements", &status);
+    fits_write_key(fptr, TSTRING, "AMPL", (char*) this->CCDParams.AmplifierDirection.c_str(), "Number of charge measurements", &status);
+    fits_write_key(fptr, TSTRING, "ASMFile", (char*) this->CCDParams.sTimFile.c_str(), "Number of charge measurements", &status);
     fits_write_key(fptr, TBIT, "InvRG", &this->CCDParams.InvRG, "Is RG inverted", &status);
-    fits_write_key(fptr, TSTRING, "HCKDirn", &this->CCDParams.HClkDirection.c_str(), "Serial register h-clock direction", &status);
-    fits_write_key(fptr, TSTRING, "VCKDirn", &this->CCDParams.VClkDirection.c_str(), "Vertical clock direction", &status);
+    fits_write_key(fptr, TSTRING, "HCKDirn", (char*) this->CCDParams.HClkDirection.c_str(), "Serial register h-clock direction", &status);
+    fits_write_key(fptr, TSTRING, "VCKDirn", (char*) this->CCDParams.VClkDirection.c_str(), "Vertical clock direction", &status);
 
     /*Write the Meta keywords - Clocks*/
     fits_write_key(fptr, TDOUBLE, "VCKHi", &this->ClockParams.vclock_hi, "V clock Hi", &status);

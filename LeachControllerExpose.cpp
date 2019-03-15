@@ -28,7 +28,7 @@ int LeachController::ExposeCCD(int ExposeTime) {
     int ImageMemorySize = this->CCDParams.dCols * this->CCDParams.dRows * this->CCDParams.nSkipperR * sizeof(short);
 
     pArcDev->MapCommonBuffer(ImageMemorySize);
-    if ( pArcDev->CommonBufferSize() != BUFFER1_SIZE )
+    if ( pArcDev->CommonBufferSize() != ImageMemorySize )
     {
         std::cerr << "Failed to map image buffer!" << std::endl;
         return 1;

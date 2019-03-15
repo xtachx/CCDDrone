@@ -10,6 +10,7 @@
 #include "LeachController.hpp"
 #include "CCDControlDataTypes.hpp"
 #include "picosha2.h"
+#include "INIReader.h"
 
 
 void LeachController::ParseCCDSettings(CCDVariables &_CCDSettings, ClockVariables &_clockSettings, BiasVariables &_biasSettings)

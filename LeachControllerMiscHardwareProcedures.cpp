@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <chrono>
+#include <thread>
 
 #include "CArcDevice.h"
 #include "CArcPCIe.h"
