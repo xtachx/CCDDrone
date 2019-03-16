@@ -15,12 +15,8 @@ int main( int argc, char **argv )
 {
 
 
-    std::cout << "This code will power on the leach and apply the clock and bias voltages.\n"
-              << "Then it will perform an erase procedure.\n"
-              << "The process starts in 10 seconds. Please ensure that the Leach is switched ON.\n";
-
-    std::this_thread::sleep_for(std::chrono::seconds(10));
-
+    std::cout << "This code apply new settings on the the clock and bias voltages.\n";
+    
 
 	LeachController _ThisRunControllerInstance("config/FirstTest.ini");
 
