@@ -82,12 +82,16 @@ int LeachController::LoadAndCheckForSettingsChange(void)
     std::getline(f3, OldFirmwareHash);
 
 
+
     std::ifstream f1(this->INIFileLoc, std::fstream::binary);
-    std::ifstream fSeq(this->CCDParams.sTimFile, std::ios::binary);
     std::vector<unsigned char> s1(picosha2::k_digest_size);
     picosha2::hash256(f1, s1.begin(), s1.end());
+
+
+    std::ifstream fSeq(this->CCDParams.sTimFile, std::ios::binary);
     std::vector<unsigned char> s2(picosha2::k_digest_size);
     picosha2::hash256(fSeq, s2.begin(), s2.end());
+
 
     std::string f1s = picosha2::bytes_to_hex_string(s1.begin(), s1.end());
     std::string f2s = picosha2::bytes_to_hex_string(s2.begin(), s2.end());
@@ -99,11 +103,11 @@ int LeachController::LoadAndCheckForSettingsChange(void)
         return -1;
     }
 
-    if (f2s != OldFirmwareHash)
-    {
-        std::cout << "You have changed the firmware, but did not upload it to the leach.\n";
-        return -2;
-    }
+    //if (f2s != OldFirmwareHash)
+    //{
+    //    std::cout << "You have changed the firmware, but did not upload it to the leach.\n";
+    //    return -2;
+    //}
 
     this->ParseCCDSettings(this->CCDParams,this->ClockParams,this->BiasParams);
 
@@ -119,6 +123,9 @@ void LeachController::CopyOldAndStoreFileHashes(void)
     std::ofstream f2("do_not_touch/LastSettings.ini", std::fstream::trunc);
     f2 << f1.rdbuf();
 
+    f1.clear();
+    f1.seekg(0);
+
 
     std::ifstream fSeq(this->CCDParams.sTimFile, std::ios::binary);
     std::vector<unsigned char> s1(picosha2::k_digest_size);
@@ -132,6 +139,7 @@ void LeachController::CopyOldAndStoreFileHashes(void)
 
     std::ofstream f3("do_not_touch/LastHashes.txt", std::fstream::trunc | std::fstream::out);
     f3 << f1s << "\n" << f2s;
+    f3.close();
 
 }
 

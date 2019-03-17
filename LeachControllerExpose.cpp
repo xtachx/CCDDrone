@@ -25,11 +25,17 @@
 
 int LeachController::ExposeCCD(int ExposeTime) {
 
-    int ImageMemorySize = this->CCDParams.dCols * this->CCDParams.dRows * this->CCDParams.nSkipperR * sizeof(short);
+    int ImageMemorySize = this->CCDParams.dCols * this->CCDParams.dRows * this->CCDParams.nSkipperR * sizeof(unsigned short);
+    
+    //pArcDev->UnMapCommonBuffer();
+    pArcDev->SetImageSize( this->CCDParams.dRows, this->CCDParams.dCols*this->CCDParams.nSkipperR );
+    pArcDev->ReMapCommonBuffer(ImageMemorySize);
 
-    pArcDev->MapCommonBuffer(ImageMemorySize);
-    if ( pArcDev->CommonBufferSize() != ImageMemorySize )
+    printf("Rows %d, Cols %d \n",pArcDev->GetImageRows(), pArcDev->GetImageCols());
+
+    if ( pArcDev->CommonBufferSize() < ImageMemorySize )
     {
+        std::cout<<"Common buffer size: "<<pArcDev->CommonBufferSize()<<"  | Image memory requirement: "<<ImageMemorySize<<"\n";
         std::cerr << "Failed to map image buffer!" << std::endl;
         return 1;
     }
@@ -37,7 +43,7 @@ int LeachController::ExposeCCD(int ExposeTime) {
     //Select amplifiers and de-interlacing
     int dDeintAlg, SOS_response;
     if (this->CCDParams.AmplifierDirection == "UL") {
-        dDeintAlg = arc::deinterlace::CArcDeinterlace::DEINTERLACE_PARALLEL;
+        dDeintAlg = arc::deinterlace::CArcDeinterlace::DEINTERLACE_SERIAL;
         SOS_response = pArcDev->Command(TIM_ID, SOS, AMP_LR);
 
     } else if (this->CCDParams.AmplifierDirection == "U") {
@@ -60,11 +66,11 @@ int LeachController::ExposeCCD(int ExposeTime) {
     std::cout << "Starting exposure\n";
     pArcDev->Expose(ExposeTime, this->CCDParams.dRows, this->CCDParams.dCols * this->CCDParams.nSkipperR, false,
                     &this->cExposeListener);
+    std::cout << "\nExposure complete.\n";
 
-
-    if (this->CCDParams.AmplifierDirection == "LR") {
+    if (this->CCDParams.AmplifierDirection == "UL" || this->CCDParams.AmplifierDirection == "LU") {
         unsigned short *pU16Buf = (unsigned short *) pArcDev->CommonBufferVA();
-        std::cout << "Since amplifier selected was LR, the image will now be de-interlaced.\n";
+        std::cout << "Since amplifier selected was UL / LU, the image will now be de-interlaced.\n";
         arc::deinterlace::CArcDeinterlace cDlacer;
         cDlacer.RunAlg(pU16Buf, this->CCDParams.dRows, this->CCDParams.dCols * this->CCDParams.nSkipperR, dDeintAlg);
     }

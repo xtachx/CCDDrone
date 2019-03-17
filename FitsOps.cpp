@@ -19,14 +19,15 @@ void LeachController::SaveFits(std::string outFileName){
     fitsfile *fptr;       /* pointer to the FITS file; defined in fitsio.h */
     int status, nAxis=2;
     long fpixel[2] = {1,1};
+    int dfpixel = 1;
     long nPixelsToWrite;
-    long imageSizeXY[2] = { this->CCDParams.dRows, this->CCDParams.dCols*this->CCDParams.nSkipperR };
+    long imageSizeXY[2] = { this->CCDParams.dCols*this->CCDParams.nSkipperR, this->CCDParams.dRows};
     nPixelsToWrite = imageSizeXY[0] * imageSizeXY[1];
 
 
     status = 0;         /* initialize status before calling fitsio routines */
     fits_create_file(&fptr, outFileName.c_str(), &status);
-    fits_create_img(fptr, LONG_IMG, nAxis, imageSizeXY, &status);
+    fits_create_img(fptr, USHORT_IMG, nAxis, &imageSizeXY[0], &status);
     int nullValue=0;
 
     /*Write processed comment*/
@@ -35,14 +36,15 @@ void LeachController::SaveFits(std::string outFileName){
             "Processed by CCDDrone - Pitam Mitra @ UW. If you have questions, please send them to pitamm@uw.edu";
     fits_write_comment(fptr, sKFixedCmt.c_str(), &status);
 
-
     /* Write the Meta keywords - CCD*/
-    fits_write_key(fptr, TSTRING, "CCDType", (char*) this->CCDParams.CCDType.c_str(), "Number of charge measurements", &status);
-    fits_write_key(fptr, TFLOAT, "Exp", &this->CCDParams.fExpTime, "Number of charge measurements", &status);
+    std::string SequencerUsed = "ASMFILE: Sequencer file used "+this->CCDParams.sTimFile;
+
+    fits_write_key(fptr, TSTRING, "CCDType", (char*) this->CCDParams.CCDType.c_str(), "CCD Type (DES or SK)", &status);
+    fits_write_key(fptr, TFLOAT, "Exp", &this->CCDParams.fExpTime, "Exposure time (s)", &status);
     fits_write_key(fptr, TSHORT, "NDCMs", &this->CCDParams.nSkipperR, "Number of charge measurements", &status);
-    fits_write_key(fptr, TSTRING, "AMPL", (char*) this->CCDParams.AmplifierDirection.c_str(), "Number of charge measurements", &status);
-    fits_write_key(fptr, TSTRING, "ASMFile", (char*) this->CCDParams.sTimFile.c_str(), "Number of charge measurements", &status);
-    fits_write_key(fptr, TBIT, "InvRG", &this->CCDParams.InvRG, "Is RG inverted", &status);
+    fits_write_key(fptr, TSTRING, "AMPL", (char*) this->CCDParams.AmplifierDirection.c_str(), "Amplifier(s) used", &status);
+    fits_write_comment(fptr, SequencerUsed.c_str(), &status);
+    fits_write_key(fptr, TBYTE, "InvRG", &this->CCDParams.InvRG, "Is RG inverted", &status);
     fits_write_key(fptr, TSTRING, "HCKDirn", (char*) this->CCDParams.HClkDirection.c_str(), "Serial register h-clock direction", &status);
     fits_write_key(fptr, TSTRING, "VCKDirn", (char*) this->CCDParams.VClkDirection.c_str(), "Vertical clock direction", &status);
 
@@ -62,7 +64,6 @@ void LeachController::SaveFits(std::string outFileName){
     fits_write_key(fptr, TDOUBLE, "SWHi", &this->ClockParams.sw_hi, "Summing Well Hi", &status);
     fits_write_key(fptr, TDOUBLE, "SWLo", &this->ClockParams.sw_lo, "Summing Well Lo", &status);
 
-
     if(this->CCDParams.CCDType == "SK"){
         fits_write_key(fptr, TDOUBLE, "DGHi", &this->ClockParams.dg_hi, "DG Hi (SK only)", &status);
         fits_write_key(fptr, TDOUBLE, "DGLo", &this->ClockParams.dg_lo, "DG Lo (SK only)", &status);
@@ -75,7 +76,7 @@ void LeachController::SaveFits(std::string outFileName){
         fits_write_key(fptr, TDOUBLE, "OGHi", &_DESPlaceHolder, "OG Hi (SK only)", &status);
         fits_write_key(fptr, TDOUBLE, "OGLo", &_DESPlaceHolder, "OG Lo (SK only)", &status);
     }
-
+    
     /*Write the Meta keywords - Biases*/
     fits_write_key(fptr, TDOUBLE, "BATTR", &this->BiasParams.battrelay, "Battery box relay TTL Line", &status);
     fits_write_key(fptr, TDOUBLE, "VDD", &this->BiasParams.vdd, "Vdd", &status);
@@ -94,9 +95,9 @@ void LeachController::SaveFits(std::string outFileName){
     }
 
     /*Write image*/
-    void *pData = pArcDev->CommonBufferVA();
-    fits_write_pix(fptr, TUINT, fpixel, nPixelsToWrite, ( unsigned int * )pData, &status);
-
+    unsigned short *pData = (unsigned short *)pArcDev->CommonBufferVA();
+    if (pData==NULL) printf ("Why is the data a null pointer?\n");
+    fits_write_img(fptr, TUSHORT, dfpixel, nPixelsToWrite, pData, &status);
     /*Done*/
     fits_close_file(fptr, &status);
     fits_report_error(stderr, status);

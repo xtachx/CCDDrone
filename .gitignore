@@ -4,11 +4,15 @@ CMakeCache.txt
 cmake_install.cmake
 Makefile
 *.fit
+*.fits
 *.layout
 .DS_Store
 
 CCDDrone/CCDDrone
 ArcAPI/
+do_not_touch/LastHashes.txt
+do_not_touch/LastSettings.ini
+
 # but do track lib.a, even though you're ignoring .a files above
 #!lib.a
 
