@@ -21,21 +21,29 @@ int main( int argc, char **argv )
 	LeachController _ThisRunControllerInstance("config/FirstTest.ini");
 
 	std::cout<<"Checking for new settings and loading them.\n";
-	_ThisRunControllerInstance.LoadCCDSettingsFresh();
+	//_ThisRunControllerInstance.LoadCCDSettingsFresh();
+	bool config, sequencer;
+	int _CCDSettingsStatus = _ThisRunControllerInstance.LoadAndCheckForSettingsChange(config, sequencer);
+
 
 	/*Apply biases and clocks*/
 	std::cout<<"Applying biases and clocks.\n";
 	_ThisRunControllerInstance.ApplyAllBiasVoltages(_ThisRunControllerInstance.CCDParams, _ThisRunControllerInstance.BiasParams);
 	_ThisRunControllerInstance.ApplyAllCCDClocks(_ThisRunControllerInstance.CCDParams, _ThisRunControllerInstance.ClockParams);
 
+	if (sequencer){
+		std::cout<<"Applying new sequencer.\n";
+		_ThisRunControllerInstance.ApplyNewSequencer(_ThisRunControllerInstance.CCDParams.sTimFile);
+	}
 
-	/*Erase procedure*/
+	_ThisRunControllerInstance.CopyOldAndStoreFileHashes();
+
 	std::cout<<"Set IDLE clocks to ON.\n";
     _ThisRunControllerInstance.IdleClockToggle();
 
 
     std::cout<<"New settings have been uploaded to the Leach system.\n";
 
-
+	return 0;
 }
 

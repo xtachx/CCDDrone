@@ -100,3 +100,8 @@ int LeachController::SetSSR(void ){
 
 
 }
+
+
+void LeachController::ApplyNewSequencer(std::string seqFile) {
+    pArcDev->LoadDeviceFile(seqFile.c_str());
+}

@@ -11,6 +11,8 @@
 #include "CCDControlDataTypes.hpp"
 #include "picosha2.h"
 #include "INIReader.h"
+#include "CCDControlDataTypes.hpp"
+
 
 
 void LeachController::ParseCCDSettings(CCDVariables &_CCDSettings, ClockVariables &_clockSettings, BiasVariables &_biasSettings)
@@ -71,9 +73,10 @@ void LeachController::ParseCCDSettings(CCDVariables &_CCDSettings, ClockVariable
 }
 
 
-int LeachController::LoadAndCheckForSettingsChange(void)
+int LeachController::LoadAndCheckForSettingsChange(bool &config, bool &sequencer )
 {
 
+    /*Load the old SHA256 keys*/
     std::ifstream f3("do_not_touch/LastHashes.txt", std::fstream::in);
     std::string OldSettingsHash;
     std::string OldFirmwareHash;
@@ -81,37 +84,41 @@ int LeachController::LoadAndCheckForSettingsChange(void)
     std::getline(f3, OldSettingsHash);
     std::getline(f3, OldFirmwareHash);
 
+    /*Load the new settings*/
+    this->ParseCCDSettings(this->CCDParams,this->ClockParams,this->BiasParams);
 
-
+    /*Calculate new SHA256 keys*/
     std::ifstream f1(this->INIFileLoc, std::fstream::binary);
     std::vector<unsigned char> s1(picosha2::k_digest_size);
     picosha2::hash256(f1, s1.begin(), s1.end());
+    f1.close();
 
-
-    std::ifstream fSeq(this->CCDParams.sTimFile, std::ios::binary);
+    std::ifstream fSeq(this->CCDParams.sTimFile, std::fstream::binary);
     std::vector<unsigned char> s2(picosha2::k_digest_size);
     picosha2::hash256(fSeq, s2.begin(), s2.end());
+    fSeq.close();
 
-
+    /*Compare keys and return based on the match conditions*/
     std::string f1s = picosha2::bytes_to_hex_string(s1.begin(), s1.end());
     std::string f2s = picosha2::bytes_to_hex_string(s2.begin(), s2.end());
-
+    config = 0;
+    sequencer = 0;
 
     if (f1s != OldSettingsHash)
     {
-        std::cout << "You have changed the settings, but did not apply them to the controller.\n";
-        return -1;
+        //std::cout << "You have changed the settings, but did not apply them to the controller.\n";
+        config = 1;
+
     }
 
-    //if (f2s != OldFirmwareHash)
-    //{
-    //    std::cout << "You have changed the firmware, but did not upload it to the leach.\n";
-    //    return -2;
-    //}
+    if (f2s != OldFirmwareHash)
+    {
+        //std::cout << "You have changed the firmware, but did not upload it to the leach.\n";
+        sequencer = 1;
+    }
 
-    this->ParseCCDSettings(this->CCDParams,this->ClockParams,this->BiasParams);
-
-    return 0;
+    if (config | sequencer) return -1;
+    else return 0;
 
 }
 
@@ -150,3 +157,5 @@ void LeachController::LoadCCDSettingsFresh(void)
     this->ParseCCDSettings(this->CCDParams,this->ClockParams,this->BiasParams);
     this->CopyOldAndStoreFileHashes( );
 }
+
+

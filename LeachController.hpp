@@ -5,6 +5,8 @@
 #ifndef CCDDRONE_LEACHCONTROLLER_HPP
 #define CCDDRONE_LEACHCONTROLLER_HPP
 
+#include <string>
+
 #include "CArcDevice.h"
 #include "CArcDevice.h"
 #include "CArcPCIe.h"
@@ -14,6 +16,7 @@
 #include "ArcDefs.h"
 
 #include "CCDControlDataTypes.hpp"
+
 
 #define SSR 0x00535352
 
@@ -78,7 +81,7 @@ public:
 
     /*LeachControllerConfigHandler*/
     void ParseCCDSettings(CCDVariables&, ClockVariables&, BiasVariables& );
-    int LoadAndCheckForSettingsChange(void );
+    int LoadAndCheckForSettingsChange(bool&, bool& );
     void CopyOldAndStoreFileHashes(void );
     void LoadCCDSettingsFresh(void );
 
@@ -94,6 +97,7 @@ public:
     void ApplyAllPositiveVPixelArray(void );
     void RestoreVClockVoltages (void);
     void IdleClockToggle(void );
+    void ApplyNewSequencer(std::string );
 
     /*FitsOps*/
     void SaveFits(std::string );

@@ -32,10 +32,23 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
-		<Unit filename="BiasReset.cpp" />
-		<Unit filename="BiasReset.hpp" />
-		<Unit filename="CCDDroneStart.cpp" />
+		<Unit filename="CCDControlDataTypes.hpp" />
+		<Unit filename="CCDDApplyNewSettings.cpp" />
+		<Unit filename="CCDDExpose.cpp" />
+		<Unit filename="CCDDPerformEraseProcedure.cpp" />
+		<Unit filename="CCDDStartupAndErase.cpp" />
 		<Unit filename="CMakeLists.txt" />
+		<Unit filename="FitsOps.cpp">
+			<Option compile="0" />
+			<Option link="0" />
+		</Unit>
+		<Unit filename="LeachController.cpp" />
+		<Unit filename="LeachController.hpp" />
+		<Unit filename="LeachControllerClkBiasMethods.cpp" />
+		<Unit filename="LeachControllerConfigHandler.cpp" />
+		<Unit filename="LeachControllerExpose.cpp" />
+		<Unit filename="LeachControllerMiscHardwareProcedures.cpp" />
+		<Unit filename="config/FirstTest.ini" />
 		<Extensions>
 			<code_completion />
 			<debugger />

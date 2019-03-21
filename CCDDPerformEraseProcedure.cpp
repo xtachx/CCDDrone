@@ -24,7 +24,8 @@ int main( int argc, char **argv )
 	LeachController _ThisRunControllerInstance("config/FirstTest.ini");
 
 	/*First, check if the settings file has changed in any way*/
-	int _CCDSettingsStatus = _ThisRunControllerInstance.LoadAndCheckForSettingsChange();
+	bool config,sequencer;
+	int _CCDSettingsStatus = _ThisRunControllerInstance.LoadAndCheckForSettingsChange(config, sequencer);
 
     if (_CCDSettingsStatus == 0){
         std::this_thread::sleep_for(std::chrono::seconds(5));
@@ -32,6 +33,8 @@ int main( int argc, char **argv )
         _ThisRunControllerInstance.IdleClockToggle();
         std::cout<<"Leach system is now ready to take data.\n";
     } else {
+        if (config) std::cout<<"Error: The config file has changed but the new settings were not uploaded.\n";
+        if (sequencer) std::cout<<"Error: The sequencer has changed but it was not uploaded.\n";
         std::cout<<"Erase procedure was not performed. Please resolve the conflicts in the config section first.\n";
     }
 
