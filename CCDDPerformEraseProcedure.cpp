@@ -21,7 +21,7 @@ int main( int argc, char **argv )
     std::this_thread::sleep_for(std::chrono::seconds(10));
 
 
-	LeachController _ThisRunControllerInstance("config/FirstTest.ini");
+	LeachController _ThisRunControllerInstance("config/Config.ini");
 
 	/*First, check if the settings file has changed in any way*/
 	bool config,sequencer;

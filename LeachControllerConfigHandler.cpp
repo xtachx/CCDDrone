@@ -57,8 +57,16 @@ void LeachController::ParseCCDSettings(CCDVariables &_CCDSettings, ClockVariable
     _CCDSettings.InvRG = _LeachConfig.GetBoolean("ccd", "RG_inv", true);
 
     _CCDSettings.AmplifierDirection = _LeachConfig.Get("ccd", "AmplifierDirection", "LR");
+    if(_CCDSettings.AmplifierDirection == "RL") _CCDSettings.AmplifierDirection = "LR";
+
     _CCDSettings.HClkDirection = _LeachConfig.Get("ccd", "HClkDirection", "LR");
-    _CCDSettings.VClkDirection = _LeachConfig.Get("ccd", "VClkDirection", "NORM");
+    if(_CCDSettings.HClkDirection == "RL") _CCDSettings.HClkDirection = "LR";
+
+    _CCDSettings.VClkDirection = _LeachConfig.Get("ccd", "VClkDirection", "1");
+    if(_CCDSettings.VClkDirection == "21") _CCDSettings.VClkDirection = "12";
+
+    _CCDSettings.super_sequencer = _LeachConfig.GetBoolean("ccd","super_sequencer", false);
+    _CCDSettings.IntegralTime = _LeachConfig.GetReal("ccd","IntegralTime",30.0);
 
 
     /*Bias Voltages*/

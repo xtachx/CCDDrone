@@ -22,11 +22,12 @@ int main( int argc, char **argv )
     std::this_thread::sleep_for(std::chrono::seconds(10));
 
 
-	LeachController _ThisRunControllerInstance("config/FirstTest.ini");
+	LeachController _ThisRunControllerInstance("config/Config.ini");
 
 	/*First, check if the settings file has changed in any way*/
 	std::cout<<"Checking for new settings and loading them.\n";
-	_ThisRunControllerInstance.LoadCCDSettingsFresh();
+	bool config, sequencer;
+	int _CCDSettingsStatus = _ThisRunControllerInstance.LoadAndCheckForSettingsChange(config, sequencer);
 
 	/*Startup the CCD*/
 	std::cout<<"Starting up the controller.\n";
@@ -34,8 +35,11 @@ int main( int argc, char **argv )
 
 	/*Apply biases and clocks*/
 	std::cout<<"Applying biases and clocks.\n";
-	_ThisRunControllerInstance.ApplyAllBiasVoltages(_ThisRunControllerInstance.CCDParams, _ThisRunControllerInstance.BiasParams);
-	_ThisRunControllerInstance.ApplyAllCCDClocks(_ThisRunControllerInstance.CCDParams, _ThisRunControllerInstance.ClockParams);
+	_ThisRunControllerInstance.ApplyAllCCDBasic();
+	_ThisRunControllerInstance.ApplyAllBiasVoltages();
+	_ThisRunControllerInstance.ApplyAllCCDClocks();
+	/*Store the file hashes since new settings were applied*/
+	_ThisRunControllerInstance.CopyOldAndStoreFileHashes();
 
 
 	/*Erase procedure*/

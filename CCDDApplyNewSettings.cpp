@@ -16,25 +16,27 @@ int main( int argc, char **argv )
 
 
     std::cout << "This code apply new settings on the the clock and bias voltages.\n";
-    
 
-	LeachController _ThisRunControllerInstance("config/FirstTest.ini");
+
+	LeachController _ThisRunControllerInstance("config/Config.ini");
 
 	std::cout<<"Checking for new settings and loading them.\n";
 	//_ThisRunControllerInstance.LoadCCDSettingsFresh();
 	bool config, sequencer;
 	int _CCDSettingsStatus = _ThisRunControllerInstance.LoadAndCheckForSettingsChange(config, sequencer);
 
-
-	/*Apply biases and clocks*/
-	std::cout<<"Applying biases and clocks.\n";
-	_ThisRunControllerInstance.ApplyAllBiasVoltages(_ThisRunControllerInstance.CCDParams, _ThisRunControllerInstance.BiasParams);
-	_ThisRunControllerInstance.ApplyAllCCDClocks(_ThisRunControllerInstance.CCDParams, _ThisRunControllerInstance.ClockParams);
-
-	if (sequencer){
+    if (sequencer){
 		std::cout<<"Applying new sequencer.\n";
 		_ThisRunControllerInstance.ApplyNewSequencer(_ThisRunControllerInstance.CCDParams.sTimFile);
 	}
+
+	/*Apply biases and clocks*/
+	std::cout<<"Applying biases and clocks.\n";
+	_ThisRunControllerInstance.ApplyAllCCDBasic();
+	_ThisRunControllerInstance.ApplyAllBiasVoltages();
+	_ThisRunControllerInstance.ApplyAllCCDClocks();
+
+
 
 	_ThisRunControllerInstance.CopyOldAndStoreFileHashes();
 

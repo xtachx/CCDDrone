@@ -28,12 +28,17 @@ set(HEADERS
 INCLUDE_DIRECTORIES(
     ${CMAKE_CURRENT_SOURCE_DIR}/ArcAPI/CArcDevice/src
     ${CMAKE_CURRENT_SOURCE_DIR}/ArcAPI/CArcDeinterlace/src
-    #${CMAKE_CURRENT_SOURCE_DIR}/ArcAPI/CArcFitsFile/src
     ${CFITSIO_INCLUDE_DIR}
-    #${CMAKE_CURRENT_SOURCE_DIR}/ArcAPI/ARC_API/3.5/cfitsio-3330/linux/x64/include
     )
 
+if(UNIX AND NOT APPLE)
 LINK_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/ArcAPI/Release/x64)
+endif(UNIX AND NOT APPLE)
+
+if(APPLE)
+LINK_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/ArcAPI/Release/apple_x64)
+SET(CMAKE_EXE_LINKER_FLAGS "-framework IOKit")
+endif(APPLE)
 
 
 
@@ -49,3 +54,5 @@ target_link_libraries( CCDDPerformEraseProcedure -lCArcDeinterlace -lCArcDevice 
 add_executable( CCDDApplyNewSettings CCDDApplyNewSettings.cpp ${SOURCE} ${HEADERS})
 target_link_libraries( CCDDApplyNewSettings -lCArcDeinterlace -lCArcDevice ${CFITSIO_LIBRARIES})
 
+#add_executable( CCDDUnitTests CCDDUnitTests.cpp ${SOURCE} ${HEADERS})
+#target_link_libraries( CCDDUnitTests -lCArcDeinterlace -lCArcDevice ${CFITSIO_LIBRARIES})

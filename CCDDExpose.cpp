@@ -43,7 +43,7 @@ int main( int argc, char **argv )
 
 
 
-	LeachController _ThisRunControllerInstance("config/FirstTest.ini");
+	LeachController _ThisRunControllerInstance("config/Config.ini");
 
 	/*First, check if the settings file has changed in any way*/
 	bool config, sequencer;

@@ -51,84 +51,108 @@ LeachController::~LeachController()
 }
 
 
-/*
- *The lines are UW specific, so keeping this function here makes sense since people might edit
- *these values if they change the second stage board
- */
+void LeachController::ApplyAllCCDBasic(void ){
 
-void LeachController::ApplyAllCCDClocks(CCDVariables &_CCDSettings, ClockVariables &_clockSettings)
-{
-    /*Set Clocks*/
-    this->SetDACValueClock(0, _clockSettings.vclock_lo, _clockSettings.vclock_hi); //Channel 0: V1
-    this->SetDACValueClock(1, _clockSettings.vclock_lo, _clockSettings.vclock_hi); //Channel 1: V2
-    this->SetDACValueClock(2, _clockSettings.vclock_lo, _clockSettings.vclock_hi); //Channel 2: V3
-
-    this->SetDACValueClock(6, _clockSettings.tg_lo,_clockSettings.tg_hi); //Channel 6: TG
-
-    this->SetDACValueClock(12, _clockSettings.l_hclock_lo, _clockSettings.l_hclock_hi); //Channel 12: H1L
-    this->SetDACValueClock(13, _clockSettings.l_hclock_lo, _clockSettings.l_hclock_hi); //Channel 13: H2L
-    this->SetDACValueClock(14, _clockSettings.l_hclock_lo, _clockSettings.l_hclock_hi); //Channel 14: H3L
-    this->SetDACValueClock(15, _clockSettings.u_hclock_lo, _clockSettings.u_hclock_hi); //Channel 15: H1U
-    this->SetDACValueClock(16, _clockSettings.u_hclock_lo, _clockSettings.u_hclock_hi); //Channel 16: H2U
-    this->SetDACValueClock(17, _clockSettings.u_hclock_lo, _clockSettings.u_hclock_hi); //Channel 17: H3U
-
-    this->SetDACValueClock(18, _clockSettings.sw_lo, _clockSettings.sw_hi); //Channel 18: SWL
-    this->SetDACValueClock(23, _clockSettings.sw_lo, _clockSettings.sw_hi); //Channel 23: SWU
-
-    //Reset gate needs to be checked against the current timing file and be flipped if necessary
-    if (_CCDSettings.InvRG)
-    {
-        this->SetDACValueClock(20, _clockSettings.rg_hi, _clockSettings.rg_lo); //Channel 20: RGL
-        this->SetDACValueClock(21, _clockSettings.rg_hi, _clockSettings.rg_lo); //Channel 21: RGU
+    if (this->CCDParams.super_sequencer){
+        /*Set CCD type for the sequencer - DES or SK sequence*/
+        this->SetCCDType();
+        /*Now set the amplifier direction since this affects IDLE mode*/
+        this->SelectAmplifierAndHClocks();
+        /*AFTER amplifiers are selected, change the H-clock directions if necessary*/
+        if (this->CCDParams.AmplifierDirection != this->CCDParams.HClkDirection)
+            this->SetHDR();
+        /*Set V-Clock direction*/
+        this->SetVDR();
+        /*Next, set the integral time*/
+        this->ApplyNewIntegralTime(this->CCDParams.IntegralTime);
     }
-    else
-    {
-        this->SetDACValueClock(20, _clockSettings.rg_lo, _clockSettings.rg_hi); //Channel 20: RGL
-        this->SetDACValueClock(21, _clockSettings.rg_lo, _clockSettings.rg_hi); //Channel 21: RGU
+
+    if (this->CCDParams.CCDType == "SK"){
+        this->SetSSR();
     }
 
 }
 
 
-void LeachController::ApplyAllBiasVoltages(CCDVariables &_CCDSettings, BiasVariables &_BiasSettings )
+
+/*
+ *The lines are UW specific, so keeping this function here makes sense since people might edit
+ *these values if they change the second stage board
+ */
+
+void LeachController::ApplyAllCCDClocks(void )
+{
+    /*Set Clocks*/
+    this->SetDACValueClock(0, this->ClockParams.vclock_lo, this->ClockParams.vclock_hi); //Channel 0: V1
+    this->SetDACValueClock(1, this->ClockParams.vclock_lo, this->ClockParams.vclock_hi); //Channel 1: V2
+    this->SetDACValueClock(2, this->ClockParams.vclock_lo, this->ClockParams.vclock_hi); //Channel 2: V3
+
+    this->SetDACValueClock(6, this->ClockParams.tg_lo,this->ClockParams.tg_hi); //Channel 6: TG
+
+    this->SetDACValueClock(12, this->ClockParams.l_hclock_lo, this->ClockParams.l_hclock_hi); //Channel 12: H1L
+    this->SetDACValueClock(13, this->ClockParams.l_hclock_lo, this->ClockParams.l_hclock_hi); //Channel 13: H2L
+    this->SetDACValueClock(14, this->ClockParams.l_hclock_lo, this->ClockParams.l_hclock_hi); //Channel 14: H3L
+    this->SetDACValueClock(15, this->ClockParams.u_hclock_lo, this->ClockParams.u_hclock_hi); //Channel 15: H1U
+    this->SetDACValueClock(16, this->ClockParams.u_hclock_lo, this->ClockParams.u_hclock_hi); //Channel 16: H2U
+    this->SetDACValueClock(17, this->ClockParams.u_hclock_lo, this->ClockParams.u_hclock_hi); //Channel 17: H3U
+
+    this->SetDACValueClock(18, this->ClockParams.sw_lo, this->ClockParams.sw_hi); //Channel 18: SWL
+    this->SetDACValueClock(23, this->ClockParams.sw_lo, this->ClockParams.sw_hi); //Channel 23: SWU
+
+    //Reset gate needs to be checked against the current timing file and be flipped if necessary
+    if (this->CCDParams.InvRG)
+    {
+        this->SetDACValueClock(20, this->ClockParams.rg_hi, this->ClockParams.rg_lo); //Channel 20: RGL
+        this->SetDACValueClock(21, this->ClockParams.rg_hi, this->ClockParams.rg_lo); //Channel 21: RGU
+    }
+    else
+    {
+        this->SetDACValueClock(20, this->ClockParams.rg_lo, this->ClockParams.rg_hi); //Channel 20: RGL
+        this->SetDACValueClock(21, this->ClockParams.rg_lo, this->ClockParams.rg_hi); //Channel 21: RGU
+    }
+
+}
+
+
+void LeachController::ApplyAllBiasVoltages(void )
 {
 
     /*Set Biases*/
     //Vdd
-    this->SetDACValueBias(0,BiasVoltToADC(_BiasSettings.vdd,0));
-    this->SetDACValueBias(1,BiasVoltToADC(_BiasSettings.vdd,1));
+    this->SetDACValueBias(0,BiasVoltToADC(this->BiasParams.vdd,0));
+    this->SetDACValueBias(1,BiasVoltToADC(this->BiasParams.vdd,1));
     this->SetDACValueBias(2,0);
     this->SetDACValueBias(3,0);
 
 
     //VR(1-4)
-    if (_CCDSettings.CCDType=="DES")
+    if (this->CCDParams.CCDType=="DES")
     {
-        this->SetDACValueBias(4,BiasVoltToADC(_BiasSettings.vref,4));
-        this->SetDACValueBias(5,BiasVoltToADC(_BiasSettings.vref,5));
+        this->SetDACValueBias(4,BiasVoltToADC(this->BiasParams.vref,4));
+        this->SetDACValueBias(5,BiasVoltToADC(this->BiasParams.vref,5));
     }
     else
     {
-        this->SetDACValueBias(4,BiasVoltToADC(_BiasSettings.vrefsk,4));
-        this->SetDACValueBias(5,BiasVoltToADC(_BiasSettings.vrefsk,5));
+        this->SetDACValueBias(4,BiasVoltToADC(this->BiasParams.vrefsk,4));
+        this->SetDACValueBias(5,BiasVoltToADC(this->BiasParams.vrefsk,5));
     }
     //DrainL and DrainU
-    if(_CCDSettings.CCDType=="SK")
+    if(this->CCDParams.CCDType=="SK")
     {
-        this->SetDACValueBias(6,BiasVoltToADC(_BiasSettings.drain,6));
-        this->SetDACValueBias(7,BiasVoltToADC(_BiasSettings.drain,7));
+        this->SetDACValueBias(6,BiasVoltToADC(this->BiasParams.drain,6));
+        this->SetDACValueBias(7,BiasVoltToADC(this->BiasParams.drain,7));
     }
 
     //OG(1-4)
-    if (_CCDSettings.CCDType=="DES")
+    if (this->CCDParams.CCDType=="DES")
     {
-        this->SetDACValueBias(8,BiasVoltToADC(_BiasSettings.opg,8));
-        this->SetDACValueBias(9,BiasVoltToADC(_BiasSettings.opg,9));
+        this->SetDACValueBias(8,BiasVoltToADC(this->BiasParams.opg,8));
+        this->SetDACValueBias(9,BiasVoltToADC(this->BiasParams.opg,9));
     }
 
     this->SetDACValueBias(10,0);
     //Controls Relay for battery box
-    this->SetDACValueBias(11,BiasVoltToADC(_BiasSettings.battrelay,11));
+    this->SetDACValueBias(11,BiasVoltToADC(this->BiasParams.battrelay,11));
 
     //VSUB
     //this->SetDACValueBias(pArcDev, 12,0);

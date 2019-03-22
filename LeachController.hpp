@@ -19,6 +19,10 @@
 
 
 #define SSR 0x00535352
+#define SAT 0x00534154
+#define VDR 0x00564452
+#define HDR 0x00484452
+#define CIT 0x00434954
 
 
 
@@ -57,6 +61,10 @@ private:
 
     /*LeachControllerMiscHardwareProcedures - private part*/
     int SetSSR(void );
+    int SetCCDType(void );
+    int SetVDR(void);
+    int SetHDR(void);
+    int SelectAmplifierAndHClocks(void);
     /*LeachControllerExpose - private part*/
     int ExposeCCD(int );
 
@@ -72,9 +80,11 @@ public:
     ClockVariables ClockParams;
     BiasVariables BiasParams;
 
+    /*Routines - Universal and defined in LeachController.cpp*/
+    void ApplyAllCCDBasic(void );
     /*Routines - UW specific and defined in LeachController.cpp*/
-    void ApplyAllCCDClocks(CCDVariables &, ClockVariables & );
-    void ApplyAllBiasVoltages(CCDVariables &, BiasVariables & );
+    void ApplyAllCCDClocks(void );
+    void ApplyAllBiasVoltages(void );
 
 
     /*Routines - Generic and organized by filename*/
@@ -98,12 +108,13 @@ public:
     void RestoreVClockVoltages (void);
     void IdleClockToggle(void );
     void ApplyNewSequencer(std::string );
+    int ApplyNewIntegralTime(double );
+
 
     /*FitsOps*/
     void SaveFits(std::string );
 
-    /*Not written yet*/
-    void ApplyNewCCDSettings(void);
+
 
 
 };

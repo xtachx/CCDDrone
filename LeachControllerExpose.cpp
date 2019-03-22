@@ -26,7 +26,7 @@
 int LeachController::ExposeCCD(int ExposeTime) {
 
     int ImageMemorySize = this->CCDParams.dCols * this->CCDParams.dRows * this->CCDParams.nSkipperR * sizeof(unsigned short);
-    
+
     //pArcDev->UnMapCommonBuffer();
     pArcDev->SetImageSize( this->CCDParams.dRows, this->CCDParams.dCols*this->CCDParams.nSkipperR );
     pArcDev->ReMapCommonBuffer(ImageMemorySize);
@@ -41,27 +41,18 @@ int LeachController::ExposeCCD(int ExposeTime) {
     }
 
     //Select amplifiers and de-interlacing
-    int dDeintAlg, SOS_response;
+    int dDeintAlg;
+
     if (this->CCDParams.AmplifierDirection == "UL") {
         dDeintAlg = arc::deinterlace::CArcDeinterlace::DEINTERLACE_SERIAL;
-        SOS_response = pArcDev->Command(TIM_ID, SOS, AMP_LR);
-
     } else if (this->CCDParams.AmplifierDirection == "U") {
         dDeintAlg = arc::deinterlace::CArcDeinterlace::DEINTERLACE_NONE;
-        SOS_response = pArcDev->Command(TIM_ID, SOS, AMP_L);
-
     } else if (this->CCDParams.AmplifierDirection == "L") {
         dDeintAlg = arc::deinterlace::CArcDeinterlace::DEINTERLACE_NONE;
-        SOS_response = pArcDev->Command(TIM_ID, SOS, AMP_R);
-
     } else {
-        std::cout << "The amplifier selected does not exist. Stop and verify!\n";
+        std::cout << "The amplifier selected does not exist. Interlacing is not set. Stop and verify!\n";
     }
 
-    if (SOS_response != DON)
-        std::cout << "Amplifier settings could not be applied. \n";
-    else
-        std::cout << "Amplifier selected. \n";
 
     std::cout << "Starting exposure\n";
     pArcDev->Expose(ExposeTime, this->CCDParams.dRows, this->CCDParams.dCols * this->CCDParams.nSkipperR, false,

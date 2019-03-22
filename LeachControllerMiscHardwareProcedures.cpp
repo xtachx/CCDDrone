@@ -53,10 +53,8 @@ void LeachController::StartupController(void )
     //RESET
     pArcDev->ResetController();
     //Test Data Link
-    for (int i=0; i<123; i++)
-    {
-        if ( pArcDev->Command( TIM_ID, TDL, 0x123456 ) != 0x123456 )
-        {
+    for (int i=0; i<123; i++) {
+        if ( pArcDev->Command( TIM_ID, TDL, 0x123456 ) != 0x123456 ) {
             std::cout<<"TIM TDL failed.\n";
             throw 10;
         }
@@ -69,7 +67,8 @@ void LeachController::StartupController(void )
 
 }
 
-void LeachController::PerformEraseProcedure(void){
+void LeachController::PerformEraseProcedure(void)
+{
 
     std::cout<<"Setting pixel array to (9V,9V)\n";
     this->ApplyAllPositiveVPixelArray();
@@ -87,21 +86,186 @@ void LeachController::PerformEraseProcedure(void){
 }
 
 
-int LeachController::SetSSR(void ){
+int LeachController::SetSSR(void )
+{
 
-        int dReply = 0;
-        dReply = pArcDev->Command( TIM_ID, SSR, this->CCDParams.nSkipperR);
-        if ( dReply == 0x00444F4E ) {
-            return 0;
-        } else {
-            printf("Error setting skipper sequences: %X\n", dReply);
-            return -1;
-        }
+    int dReply = 0;
+    dReply = pArcDev->Command( TIM_ID, SSR, this->CCDParams.nSkipperR);
+    if ( dReply == 0x00444F4E ) {
+        return 0;
+    } else {
+        printf("Error setting skipper sequences: %X\n", dReply);
+        return -1;
+    }
 
 
 }
 
 
-void LeachController::ApplyNewSequencer(std::string seqFile) {
-    pArcDev->LoadDeviceFile(seqFile.c_str());
+void LeachController::ApplyNewSequencer(std::string seqFile)
+{
+    pArcDev->LoadControllerFile(seqFile.c_str());
+}
+
+int LeachController::SetCCDType(void )
+{
+
+    int _iCCDType;
+    if (this->CCDParams.CCDType=="DES")
+        _iCCDType=1;
+    else if (this->CCDParams.CCDType=="SK")
+        _iCCDType=0;
+    else {
+        std::cout<<"CCD Type is unknown. Could not set the sequencer's CCD type.";
+        return -2;
+    }
+    int dReply = 0;
+
+    dReply = pArcDev->Command( TIM_ID,SAT,_iCCDType);
+    if ( dReply == 0x00444F4E ) {
+        std::cout<<"CCD Type has been set in the sequencer.\n";
+        return 0;
+    } else {
+        printf("Error setting sequencer CCD type: %X\n", dReply);
+        return -1;
+    }
+
+
+}
+
+int LeachController::SetVDR(void )
+{
+
+    int dReply = 0;
+    int _snd_VDRxn = 0;
+
+    if (this->CCDParams.VClkDirection=="1")
+        _snd_VDRxn = 0;
+    else if(this->CCDParams.VClkDirection=="2")
+        _snd_VDRxn = 1;
+    else {
+        std::cout<<"V-Clock direction is invalid. Setting the normal clock to move charges towards side 1.\n";
+        _snd_VDRxn = 0;
+    }
+
+    dReply = pArcDev->Command( TIM_ID, VDR, _snd_VDRxn);
+    if ( dReply == DON ) {
+        return 0;
+    } else {
+        printf("Error setting v-clock sequences: %X\n", dReply);
+        return -1;
+    }
+
+}
+
+/*SetHDR must run AFTER SBN. This is to keep backwards compatibility
+ *with OWL*/
+int LeachController::SetHDR(void )
+{
+
+    int dReply = 0;
+    int HDR_response;
+
+    if (this->CCDParams.HClkDirection == "UL") {
+        HDR_response = pArcDev->Command(TIM_ID, HDR, AMP_LR);
+    } else if (this->CCDParams.HClkDirection == "U") {
+        HDR_response = pArcDev->Command(TIM_ID, HDR, AMP_L);
+    } else if (this->CCDParams.HClkDirection == "L") {
+        HDR_response = pArcDev->Command(TIM_ID, HDR, AMP_R);
+
+    } else {
+        std::cout << "The Serial Register / H-clock direction selected does not exist. Stop and verify!\n";
+        return -1;
+    }
+
+    if (HDR_response != DON)
+        std::cout << "Serial Register / H-clock settings could not be applied. \n";
+    else
+        std::cout << "Serial Register / H-clock direction selected. \n";
+
+    return 0;
+}
+
+int LeachController::SelectAmplifierAndHClocks(void )
+{
+
+    int SOS_response;
+    if (this->CCDParams.AmplifierDirection == "UL") {
+        SOS_response = pArcDev->Command(TIM_ID, SOS, AMP_LR);
+
+    } else if (this->CCDParams.AmplifierDirection == "U") {
+        SOS_response = pArcDev->Command(TIM_ID, SOS, AMP_L);
+
+    } else if (this->CCDParams.AmplifierDirection == "L") {
+        SOS_response = pArcDev->Command(TIM_ID, SOS, AMP_R);
+
+    } else {
+        std::cout << "The amplifier selected does not exist. Stop and verify!\n";
+        return -1;
+    }
+
+    if (SOS_response != DON) {
+        std::cout << "Amplifier settings could not be applied. \n";
+        return -2;
+    } else {
+        std::cout << "Amplifier selected. \n";
+        return 0;
+    }
+
+
+}
+
+
+
+int LeachController::ApplyNewIntegralTime(double integralTime)
+{
+
+    //First, convert number to ns. The ($var+0.5)/1 converts float to an int
+
+    if (integralTime>163){
+        std::cout<<"The range for integration time is 40ns to 163 usec.\n"<<
+                    "The value entered is out of bounds, so restricting the time to 163 usec.\n";
+
+        integralTime = 163;
+    }
+
+    double fiTime_ns = integralTime*1000;
+    int iTime_ns = (int) fiTime_ns;
+
+    int timing_bigmult, bigreminder, littlereminder,timing_littlemult;
+    int timing_dsp;
+
+    if (iTime_ns > 4000) {
+        timing_bigmult = ( iTime_ns/640 ) | 0x80;
+        timing_dsp = timing_bigmult;
+    } else {
+        //if between 640ns and 40ns, 640 is a closer match, then use that
+        bigreminder=iTime_ns % 640 > 320 ? 640-iTime_ns % 640 : iTime_ns % 640;
+        littlereminder= iTime_ns % 40 > 20 ? 40-iTime_ns % 40 : iTime_ns % 40 ;
+
+        if (bigreminder <= littlereminder ) {
+
+            timing_bigmult= (iTime_ns/640) | 0x80 ;
+            timing_dsp = timing_bigmult;
+
+        } else {
+
+            timing_littlemult= iTime_ns/40 ;
+            timing_dsp = timing_littlemult;
+
+        }
+
+    }
+
+    timing_dsp = timing_dsp<<16;
+
+    int dReply = 0;
+    dReply = pArcDev->Command( TIM_ID, CIT, timing_dsp);
+    if ( dReply == 0x00444F4E ) {
+        return 0;
+    } else {
+        printf("Error setting the integration time: %X\n", dReply);
+        return -1;
+    }
+
 }

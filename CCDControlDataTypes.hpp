@@ -21,6 +21,9 @@ struct CCDVariables{
     std::string HClkDirection;
     std::string VClkDirection;
 
+    bool super_sequencer;
+    double IntegralTime;
+
 };
 
 struct ClockVariables{

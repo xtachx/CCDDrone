@@ -44,9 +44,11 @@ void LeachController::SaveFits(std::string outFileName){
     fits_write_key(fptr, TSHORT, "NDCMs", &this->CCDParams.nSkipperR, "Number of charge measurements", &status);
     fits_write_key(fptr, TSTRING, "AMPL", (char*) this->CCDParams.AmplifierDirection.c_str(), "Amplifier(s) used", &status);
     fits_write_comment(fptr, SequencerUsed.c_str(), &status);
+    fits_write_key(fptr, TBYTE, "SUPERSE", &this->CCDParams.super_sequencer, "Super sequencer (SSeq) used?", &status);
     fits_write_key(fptr, TBYTE, "InvRG", &this->CCDParams.InvRG, "Is RG inverted", &status);
-    fits_write_key(fptr, TSTRING, "HCKDirn", (char*) this->CCDParams.HClkDirection.c_str(), "Serial register h-clock direction", &status);
-    fits_write_key(fptr, TSTRING, "VCKDirn", (char*) this->CCDParams.VClkDirection.c_str(), "Vertical clock direction", &status);
+    fits_write_key(fptr, TSTRING, "HCKDirn", (char*) this->CCDParams.HClkDirection.c_str(), "Serial register h-clock direction (SSEq only)", &status);
+    fits_write_key(fptr, TSTRING, "VCKDirn", (char*) this->CCDParams.VClkDirection.c_str(), "Vertical clock direction (SSeq only)", &status);
+    fits_write_key(fptr, TDOUBLE, "ITGTIME", &this->CCDParams.IntegralTime, "Integration time (SSeq only)", &status);
 
     /*Write the Meta keywords - Clocks*/
     fits_write_key(fptr, TDOUBLE, "VCKHi", &this->ClockParams.vclock_hi, "V clock Hi", &status);
@@ -76,7 +78,7 @@ void LeachController::SaveFits(std::string outFileName){
         fits_write_key(fptr, TDOUBLE, "OGHi", &_DESPlaceHolder, "OG Hi (SK only)", &status);
         fits_write_key(fptr, TDOUBLE, "OGLo", &_DESPlaceHolder, "OG Lo (SK only)", &status);
     }
-    
+
     /*Write the Meta keywords - Biases*/
     fits_write_key(fptr, TDOUBLE, "BATTR", &this->BiasParams.battrelay, "Battery box relay TTL Line", &status);
     fits_write_key(fptr, TDOUBLE, "VDD", &this->BiasParams.vdd, "Vdd", &status);
