@@ -23,6 +23,7 @@
 
 /*Click driver jumper setting*/
 #define CLOCK_JUMPER 2
+#define VIDEO_JUMPER 0
 
 /* Clock driver max volts +10 and min volts -10*/
 #define MAX_CLOCK 13.0
@@ -83,6 +84,32 @@ void LeachController::SetDACValueBias(int dac_chan, int val)
 
     if (resp != 0x00444F4E )
         printf ("Error setting CVIon channel: %d | code: %X\n", dac_chan, resp);
+
+
+}
+
+
+// SBN 0 2,3 VID 0-4095
+void LeachController::SetDACValueVideoOffset(int dac_chan, int val)
+{
+
+    /*Validate inputs*/
+    if (dac_chan != 2 && dac_chan != 3){
+        printf ("Incorrect video channel. Please check the video output channel.\n");
+        return;
+    }
+
+    if (val < 0 || val > 4095 ){
+        printf("Video offset value must be between 0 - 4095.\n");
+        return;
+    }
+
+    int resp;
+
+    resp = this->pArcDev->Command( TIM_ID, SBN, VIDEO_JUMPER, dac_chan, VID, val ); //MAX
+
+    if (resp != 0x00444F4E )
+        printf ("Error setting video offset on channel: %d | code: %X\n", dac_chan, resp);
 
 
 }

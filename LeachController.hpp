@@ -58,6 +58,7 @@ private:
     int BiasVoltToADC(double, int);
     void SetDACValueClock(int , double , double );
     void SetDACValueBias(int , int );
+    void SetDACValueVideoOffset(int, int );
 
     /*LeachControllerMiscHardwareProcedures - private part*/
     int SetSSR(void );

@@ -158,5 +158,9 @@ void LeachController::ApplyAllBiasVoltages(void )
     //this->SetDACValueBias(pArcDev, 12,0);
     //this->SetDACValueBias(pArcDev, 13,0);
 
+    //Video Offsets, channels 2 and 3 on the video board
+    this->SetDACValueVideoOffset(2, this->BiasParams.video_offsets);
+    this->SetDACValueVideoOffset(3, this->BiasParams.video_offsets);
+
 }
 
