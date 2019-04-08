@@ -82,7 +82,9 @@ void LeachController::SaveFits(std::string outFileName){
     /*Write the Meta keywords - Biases*/
     fits_write_key(fptr, TDOUBLE, "BATTR", &this->BiasParams.battrelay, "Battery box relay TTL Line", &status);
     fits_write_key(fptr, TDOUBLE, "VDD", &this->BiasParams.vdd, "Vdd", &status);
-    fits_write_key(fptr, TSHORT, "VidOffS", &this->BiasParams.video_offsets, "Video Offset", &status);
+    fits_write_key(fptr, TSHORT, "VidOffL", &this->BiasParams.video_offsets_L, "Video pedestal offset L", &status);
+    fits_write_key(fptr, TSHORT, "VidOffU", &this->BiasParams.video_offsets_U, "Video pedestal offset U", &status);
+
 
     if(this->CCDParams.CCDType == "SK"){
         double _SKPlaceHolder = -998.0;
