@@ -100,13 +100,13 @@ void LeachController::SetDACValueVideoOffset(int dac_chan, int val)
     }
 
     if (val < 0 || val > 4095 ){
-        printf("Video offset value must be between 0 - 4095.\n");
-        return;
+        printf("Video offset value must be between 0 - 16383.\n");
+        //return;
     }
 
     int resp;
 
-    resp = this->pArcDev->Command( TIM_ID, SBN, VIDEO_JUMPER, dac_chan, VID, val ); //MAX
+    resp = this->pArcDev->Command( TIM_ID, SBN, VIDEO_JUMPER, dac_chan, VID, val );
 
     if (resp != 0x00444F4E )
         printf ("Error setting video offset on channel: %d | code: %X\n", dac_chan, resp);

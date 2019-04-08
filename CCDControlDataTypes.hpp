@@ -60,7 +60,8 @@ struct BiasVariables{
     double drain;
     double opg;
     double battrelay;
-    int video_offsets;
+    int video_offsets_U;
+    int video_offsets_L;
 
 };
 

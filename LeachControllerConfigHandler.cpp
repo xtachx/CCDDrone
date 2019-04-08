@@ -76,7 +76,8 @@ void LeachController::ParseCCDSettings(CCDVariables &_CCDSettings, ClockVariable
     _biasSettings.drain = _LeachConfig.GetReal("bias", "drain", -15.26);
     _biasSettings.opg = _LeachConfig.GetReal("bias", "opg", -2.21);
     _biasSettings.battrelay = _LeachConfig.GetReal("bias", "battrelay", -4.88);
-    _biasSettings.video_offsets = _LeachConfig.GetInteger("bias", "video_offsets", 0);
+    _biasSettings.video_offsets_U = _LeachConfig.GetInteger("bias", "video_offsets_U", 0);
+    _biasSettings.video_offsets_L = _LeachConfig.GetInteger("bias", "video_offsets_L", 0);
 
 }
 
