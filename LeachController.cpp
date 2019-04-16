@@ -1,6 +1,11 @@
-//
-// Created by Pitam Mitra on 2019-02-13.
-//
+/* *********************************************************************
+ * This file contains functions that set the basic parameters,
+ * clocks and bias lines of the CCD. Vdd toggling functions are also
+ * implemented here.
+ *
+ * Created by Pitam Mitra on 2019-02-13.
+ * *********************************************************************
+ */
 
 #include <string>
 #include <iostream>
@@ -18,15 +23,6 @@
 #include "CCDControlDataTypes.hpp"
 
 
-/*Click driver jumper setting*/
-#define CLOCK_JUMPER 2
-
-/* Clock driver max volts +10 and min volts -10*/
-#define MAX_CLOCK 13.0
-#define MIN_CLOCK -13.0
-
-
-
 
 LeachController::LeachController(std::string INIFileLoc)
 {
@@ -40,6 +36,11 @@ LeachController::LeachController(std::string INIFileLoc)
 
     this->INIFileLoc = INIFileLoc;
 
+    /*Check if a controller is connected*/
+    if ( !pArcDev->IsControllerConnected() )
+        std::cout<<"Warning: A controller is not connected. Check if the unit is connected and powered on.\n";
+
+
 
 }
 
@@ -50,6 +51,7 @@ LeachController::~LeachController()
 
 }
 
+/* Function to apply all the basic CCD params.*/
 
 void LeachController::ApplyAllCCDBasic(void ){
 
@@ -76,8 +78,10 @@ void LeachController::ApplyAllCCDBasic(void ){
 
 
 /*
- *The lines are UW specific, so keeping this function here makes sense since people might edit
- *these values if they change the second stage board
+ * Function to set all the clock voltages of the CCD.
+ * The lines are UW specific (or rather specific to the US second stage board)
+ * so keeping this function here makes sense since people might edit
+ * these values if they change the second stage board.
  */
 
 void LeachController::ApplyAllCCDClocks(void )
@@ -114,6 +118,11 @@ void LeachController::ApplyAllCCDClocks(void )
 }
 
 
+
+/*
+ * Function to apply the bias voltages.
+ * Again, this is specific to the UW second stage board.
+ */
 void LeachController::ApplyAllBiasVoltages(void )
 {
 
@@ -164,3 +173,25 @@ void LeachController::ApplyAllBiasVoltages(void )
 
 }
 
+
+/*
+ * The Vdd toggling function
+ */
+
+void LeachController::ToggleVDD(bool VDDState){
+
+    if (VDDState == 1){
+        this->SetDACValueBias(0,BiasVoltToADC(this->BiasParams.vdd,0));
+        this->SetDACValueBias(1,BiasVoltToADC(this->BiasParams.vdd,1));
+        _expose_isVDDOn = true;
+    } else if (VDDState == 0){
+        this->SetDACValueBias(0,0);
+        this->SetDACValueBias(1,0);
+        _expose_isVDDOn = false;
+    } else {
+        printf("Could not toggle the VDD since condition was not understood.\n");
+    }
+
+
+
+}

@@ -20,19 +20,27 @@
 /* *********************************************************************
  * This is the CCD exposure routine. This is common to both Skipper
  * and DES. In case of DES, it counts on nSkipperR being = 1.
+ *
+ * Input: Exposure time
+ * Output: Status of the exposure.
  * *********************************************************************
  */
 
 int LeachController::ExposeCCD(int ExposeTime) {
 
+    /*Needed for callbacks during exposure*/
+    CExposeListener cExposeListener(*this);
+
     int ImageMemorySize = this->CCDParams.dCols * this->CCDParams.dRows * this->CCDParams.nSkipperR * sizeof(unsigned short);
 
     //pArcDev->UnMapCommonBuffer();
-    pArcDev->SetImageSize( this->CCDParams.dRows, this->CCDParams.dCols*this->CCDParams.nSkipperR );
-    pArcDev->ReMapCommonBuffer(ImageMemorySize);
 
+    /*This sets the NSR and NPR in the leach assembly. Somehow this doesnt work?*/
+    pArcDev->SetImageSize( this->CCDParams.dRows, this->CCDParams.dCols );
+    pArcDev->ReMapCommonBuffer(ImageMemorySize);
     printf("Rows %d, Cols %d \n",pArcDev->GetImageRows(), pArcDev->GetImageCols());
 
+    /*This will happen if the memory required is > kernel buffer size*/
     if ( pArcDev->CommonBufferSize() < ImageMemorySize )
     {
         std::cout<<"Common buffer size: "<<pArcDev->CommonBufferSize()<<"  | Image memory requirement: "<<ImageMemorySize<<"\n";
@@ -40,7 +48,7 @@ int LeachController::ExposeCCD(int ExposeTime) {
         return 1;
     }
 
-    //Select amplifiers and de-interlacing
+    /*De-Interlacing part*/
     int dDeintAlg;
 
     if (this->CCDParams.AmplifierDirection == "UL") {
@@ -54,11 +62,19 @@ int LeachController::ExposeCCD(int ExposeTime) {
     }
 
 
+    /*To eliminate the possibility of the amplifiers behaving as a source of light,
+     * we turn off the Vdd to them before the exposure starts.
+     * We then turn them back on 3 seconds before the exposure ends
+     */
+
+    std::cout<<"Turning VDD OFF before exposure.\n";
+    this->ToggleVDD(0);
     std::cout << "Starting exposure\n";
     pArcDev->Expose(ExposeTime, this->CCDParams.dRows, this->CCDParams.dCols * this->CCDParams.nSkipperR, false,
-                    &this->cExposeListener);
+                    &cExposeListener);
     std::cout << "\nExposure complete.\n";
 
+    /*If two amplifiers were used, we need to de-interlace*/
     if (this->CCDParams.AmplifierDirection == "UL" || this->CCDParams.AmplifierDirection == "LU") {
         unsigned short *pU16Buf = (unsigned short *) pArcDev->CommonBufferVA();
         std::cout << "Since amplifier selected was UL / LU, the image will now be de-interlaced.\n";
@@ -113,4 +129,8 @@ void LeachController::PrepareAndExposeCCD(int ExposureTime, unsigned short *Imag
 
 
 }
+
+
+
+
 

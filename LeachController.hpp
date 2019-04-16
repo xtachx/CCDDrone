@@ -1,6 +1,13 @@
-//
-// Created by Pitam Mitra on 2019-02-13.
-//
+/* *********************************************************************
+ * This file is the header that contains all the forward declarations
+ * of the routines in the CCDDrone library that can be used by programs
+ * to perform operations on the leach controller.
+ * The file also contains several definitions of messages to drive the
+ * super-sequencer in its different configurations.
+ *
+ * Created by Pitam Mitra on 2019-02-13.
+ * *********************************************************************
+ */
 
 #ifndef CCDDRONE_LEACHCONTROLLER_HPP
 #define CCDDRONE_LEACHCONTROLLER_HPP
@@ -18,6 +25,7 @@
 #include "CCDControlDataTypes.hpp"
 
 
+/*Extra messages implemented in the super-sequencer*/
 #define SSR 0x00535352
 #define SAT 0x00534154
 #define VDR 0x00564452
@@ -26,38 +34,48 @@
 
 
 
-// ------------------------------------------------------
-//  Exposure Callback Class - this crazy construction is needed
-//  for the Arcapi to work. ?!
-// ------------------------------------------------------
-class CExposeListener : public arc::device::CExpIFace
+
+class LeachController
 {
-    void ExposeCallback( float fElapsedTime )
-    {
-        printf("\rElapsed Time: %.3f",fElapsedTime);
-    }
-    void ReadCallback( int dPixelCount )
-    {
-        printf("\rNumber of pixels transferred: %d",dPixelCount);
-    }
-};
-
-
-
-
-class LeachController {
 
 private:
 
     arc::device::CArcDevice *pArcDev;
-    /*Start the listener object for callback interactions*/
-    CExposeListener cExposeListener;
+
+    // ------------------------------------------------------
+    //  Exposure Callback Class - this crazy construction is needed
+    //  for the Arcapi to work. ?!
+    // ------------------------------------------------------
+    class CExposeListener : public arc::device::CExpIFace
+    {
+    public:
+        LeachController &L;
+        CExposeListener(LeachController &LO): L(LO) {};
+
+        void ExposeCallback( float fElapsedTime )
+        {
+            printf("\rExposure time remaining: %.3f",fElapsedTime);
+            /*If the exposure is about to end, and VDD is off, then turn VDD back on*/
+            if (L._expose_isVDDOn == false && fElapsedTime < 3.0 ) {
+                printf("\nTurning VDD ON\n");
+                L.ToggleVDD(1);
+            }
+        }
+
+        void ReadCallback( int dPixelCount )
+        {
+            printf("\rNumber of pixels transferred: %d",dPixelCount);
+        }
+    };
+
+    CExposeListener *cExposeListener;
+    //CExposeListener cExposeListener;
 
     /*LeachControllerClkBiasMethods*/
     int ClockVoltToADC( double );
     int BiasVoltToADC(double, int);
-    void SetDACValueClock(int , double , double );
-    void SetDACValueBias(int , int );
+    void SetDACValueClock(int, double, double );
+    void SetDACValueBias(int, int );
     void SetDACValueVideoOffset(int, int );
 
     /*LeachControllerMiscHardwareProcedures - private part*/
@@ -66,8 +84,10 @@ private:
     int SetVDR(void);
     int SetHDR(void);
     int SelectAmplifierAndHClocks(void);
+
     /*LeachControllerExpose - private part*/
     int ExposeCCD(int );
+
 
 
 public:
@@ -86,6 +106,7 @@ public:
     /*Routines - UW specific and defined in LeachController.cpp*/
     void ApplyAllCCDClocks(void );
     void ApplyAllBiasVoltages(void );
+    void ToggleVDD(bool);
 
 
     /*Routines - Generic and organized by filename*/
@@ -99,6 +120,7 @@ public:
 
     /*LeachControllerExpose - public part*/
     void PrepareAndExposeCCD(int, unsigned short*);
+    int _expose_isVDDOn = true;
 
 
     /*LeachControllerMiscHardwareProcedures - public part*/

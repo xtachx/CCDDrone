@@ -1,6 +1,11 @@
-//
-// Created by Pitam Mitra on 2019-02-13.
-//
+/* *********************************************************************
+ * This file contains miscellaneous procedures that are required for
+ * operation of a CCD. These processes include things like the Charge Erase,
+ * CCD Purge, set the clock directions and ccd startup.
+ *
+ * Created by Pitam Mitra on 2019-02-13.
+ * *********************************************************************
+ */
 
 #include <string>
 #include <iostream>
@@ -20,13 +25,11 @@
 #include "CCDControlDataTypes.hpp"
 
 
-/*Click driver jumper setting*/
-#define CLOCK_JUMPER 2
-
-/* Clock driver max volts +10 and min volts -10*/
-#define MAX_CLOCK 13.0
-#define MIN_CLOCK -13.0
-
+/*
+ * Apply +9V to all H-clocks in effect making the
+ * pixel array have a uniform electric potential at the top.
+ * Used for: Charge erase procedure.
+ */
 
 void LeachController::ApplyAllPositiveVPixelArray()
 {
@@ -36,6 +39,11 @@ void LeachController::ApplyAllPositiveVPixelArray()
     this->SetDACValueClock(2, 9.0, 9.0); //Channel 2: Min 9V Max 9V
 
 }
+
+
+/*
+ * Restore the clock voltages after the charge erase procedure.
+ */
 
 void LeachController::RestoreVClockVoltages(void )
 {
@@ -47,6 +55,11 @@ void LeachController::RestoreVClockVoltages(void )
 }
 
 
+
+/*
+ * Procedure to startup the leach controller and set image size.
+ * Prepare for IDLE clocking.
+ */
 void LeachController::StartupController(void )
 {
 
@@ -67,6 +80,11 @@ void LeachController::StartupController(void )
 
 }
 
+
+/*
+ * Charge erase procedure sequence. Please refer to the berkeley manual
+ * for an explanation of how this works.
+ */
 void LeachController::PerformEraseProcedure(void)
 {
 
@@ -86,6 +104,9 @@ void LeachController::PerformEraseProcedure(void)
 }
 
 
+/*
+ * Super sequencer only
+ */
 int LeachController::SetSSR(void )
 {
 
