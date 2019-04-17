@@ -86,7 +86,8 @@ private:
     int SelectAmplifierAndHClocks(void);
 
     /*LeachControllerExpose - private part*/
-    int ExposeCCD(int );
+    void ExposeCCD( float fExpTime, const bool& bAbort = false,
+                    CExposeListener::CExpIFace* pExpIFace = NULL, bool bOpenShutter = true );
 
 
 
