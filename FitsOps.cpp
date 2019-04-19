@@ -5,9 +5,19 @@
 #include "LeachController.hpp"
 #include "CCDControlDataTypes.hpp"
 
+/*Function needed to convert time points to string*/
+static std::string timePointAsString(const std::chrono::system_clock::time_point& tp)
+{
+    std::time_t t = std::chrono::system_clock::to_time_t(tp);
+    std::string ts = std::ctime(&t);
+    ts.resize(ts.size()-1);
+    return ts;
+}
+
 
 /*Function to write an SK Merged image as a FITS file.*/
-void LeachController::SaveFits(std::string outFileName){
+void LeachController::SaveFits(std::string outFileName)
+{
 
     /*These are the temporary FITS variables we need to open the file
      * fptr -> fits file pointer
@@ -32,8 +42,8 @@ void LeachController::SaveFits(std::string outFileName){
 
     /*Write processed comment*/
     std::string sKFixedCmt = "This image was taken by a DAMIC UW CCD. "
-            "The various settings used are stored as keys in the FITS file."
-            "Processed by CCDDrone - Pitam Mitra @ UW. If you have questions, please send them to pitamm@uw.edu";
+                             "The various settings used are stored as keys in the FITS file."
+                             "Processed by CCDDrone - Pitam Mitra @ UW. If you have questions, please send them to pitamm@uw.edu";
     fits_write_comment(fptr, sKFixedCmt.c_str(), &status);
 
     /* Write the Meta keywords - CCD*/
@@ -66,7 +76,7 @@ void LeachController::SaveFits(std::string outFileName){
     fits_write_key(fptr, TDOUBLE, "SWHi", &this->ClockParams.sw_hi, "Summing Well Hi", &status);
     fits_write_key(fptr, TDOUBLE, "SWLo", &this->ClockParams.sw_lo, "Summing Well Lo", &status);
 
-    if(this->CCDParams.CCDType == "SK"){
+    if(this->CCDParams.CCDType == "SK") {
         fits_write_key(fptr, TDOUBLE, "DGHi", &this->ClockParams.dg_hi, "DG Hi (SK only)", &status);
         fits_write_key(fptr, TDOUBLE, "DGLo", &this->ClockParams.dg_lo, "DG Lo (SK only)", &status);
         fits_write_key(fptr, TDOUBLE, "OGHi", &this->ClockParams.og_hi, "OG Hi (SK only)", &status);
@@ -86,7 +96,7 @@ void LeachController::SaveFits(std::string outFileName){
     fits_write_key(fptr, TSHORT, "VidOffU", &this->BiasParams.video_offsets_U, "Video pedestal offset U", &status);
 
 
-    if(this->CCDParams.CCDType == "SK"){
+    if(this->CCDParams.CCDType == "SK") {
         double _SKPlaceHolder = -998.0;
         fits_write_key(fptr, TDOUBLE, "Drain", &this->BiasParams.drain, "Drain (SK Only)", &status);
         fits_write_key(fptr, TDOUBLE, "VRef", &this->BiasParams.vrefsk, "VRef", &status);
@@ -98,9 +108,24 @@ void LeachController::SaveFits(std::string outFileName){
         fits_write_key(fptr, TDOUBLE, "OpG", &this->BiasParams.opg, "OpG (DES only)", &status);
     }
 
+    /*Write the Meta keywords for time*/
+    std::string ProgStart = timePointAsString(this->ClockTimers.ProgramStart);
+    std::string ExpStart = timePointAsString(this->ClockTimers.ExpStart);
+    std::string ReadOutStart = timePointAsString(this->ClockTimers.Readoutstart);
+    std::string ReadOutEnd = timePointAsString(this->ClockTimers.ReadoutEnd);
+
+    fits_write_key(fptr, TSTRING, "ProgStrt", (char*) ProgStart.c_str(), "Program start time", &status);
+    fits_write_key(fptr, TSTRING, "ExpStart", (char*) ExpStart.c_str(), "Exposure start time", &status);
+    fits_write_key(fptr, TSTRING, "RdStrt", (char*) ReadOutStart.c_str(), "Readout start time", &status);
+    fits_write_key(fptr, TSTRING, "RdEnd", (char*) ReadOutEnd.c_str(), "Readout end time", &status);
+
+    fits_write_key(fptr, TDOUBLE, "MExp", &this->ClockTimers.MeasuredExp, "Measured exposure time", &status);
+    fits_write_key(fptr, TDOUBLE, "MRead", &this->ClockTimers.MeasuredReadout, "Measured readout time", &status);
+
     /*Write image*/
     unsigned short *pData = (unsigned short *)pArcDev->CommonBufferVA();
-    if (pData==NULL) printf ("Why is the data a null pointer?\n");
+    if (pData==NULL)
+        printf ("Why is the data a null pointer?\n");
     fits_write_img(fptr, TUSHORT, dfpixel, nPixelsToWrite, pData, &status);
     /*Done*/
     fits_close_file(fptr, &status);

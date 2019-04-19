@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <string>
 #include <unistd.h>
+#include <chrono>
 
 #include "LeachController.hpp"
 
@@ -17,6 +18,7 @@
 int main( int argc, char **argv )
 {
 
+    /*Now get the args*/
 	if (argc<2) {
 		std::cout << "Please specify an exposure value!\n";
 		USAGE(argv[0]);
@@ -45,7 +47,10 @@ int main( int argc, char **argv )
 
 	LeachController _ThisRunControllerInstance("config/Config.ini");
 
-	/*First, check if the settings file has changed in any way*/
+	/*At the start of the program, log the time*/
+    _ThisRunControllerInstance.ClockTimers.ProgramStart = std::chrono::system_clock::now();
+
+	/*Check if the settings file has changed in any way*/
 	bool config, sequencer;
 	int _CCDSettingsStatus = _ThisRunControllerInstance.LoadAndCheckForSettingsChange(config, sequencer);
 
@@ -53,6 +58,12 @@ int main( int argc, char **argv )
 
         _ThisRunControllerInstance.CCDParams.fExpTime = ExposeSeconds;
         if (_ThisRunControllerInstance.CCDParams.CCDType=="DES")	_ThisRunControllerInstance.CCDParams.nSkipperR=1;
+
+
+        /*Reset clock timers in case this is a multi exposure*/
+        _ThisRunControllerInstance.ClockTimers.isReadout = false;
+        _ThisRunControllerInstance.ClockTimers.isExp = false;
+        _ThisRunControllerInstance.ClockTimers.rClockCounter = 0;
 
 
         /*Expose*/

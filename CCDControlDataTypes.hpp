@@ -4,7 +4,7 @@
 
 #ifndef CCDCONTROL_DTYPES
 #define CCDCONTROL_DTYPES
-
+#include <chrono>
 
 
 struct CCDVariables{
@@ -66,5 +66,20 @@ struct BiasVariables{
 };
 
 
+struct TimeVariables{
+
+    std::chrono::system_clock::time_point ProgramStart;
+    std::chrono::system_clock::time_point ExpStart;
+    std::chrono::system_clock::time_point Readoutstart;
+    std::chrono::system_clock::time_point ReadoutEnd;
+
+    double MeasuredReadout;
+    double MeasuredExp;
+
+    bool isExp = false;
+    bool isReadout = false;
+    bool rClockCounter = 0;
+
+};
 
 #endif //CCDCONTROL_DTYPES

@@ -101,6 +101,7 @@ public:
     CCDVariables CCDParams;
     ClockVariables ClockParams;
     BiasVariables BiasParams;
+    TimeVariables ClockTimers;
 
     /*Routines - Universal and defined in LeachController.cpp*/
     void ApplyAllCCDBasic(void );

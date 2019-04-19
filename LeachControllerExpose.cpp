@@ -8,6 +8,7 @@
 
 #include <string>
 #include <iostream>
+#include <chrono>
 
 #include "CArcDevice.h"
 #include "CArcPCIe.h"
@@ -87,6 +88,7 @@ void LeachController::PrepareAndExposeCCD(int ExposureTime, unsigned short *Imag
         this->ToggleVDD(0);
         std::cout << "Starting exposure\n";
         this->ExposeCCD(ExposureTime, false, &cExposeListener);
+        this->ClockTimers.ReadoutEnd = std::chrono::system_clock::now();
         std::cout << "\nExposure complete.\n";
 
 
@@ -101,6 +103,12 @@ void LeachController::PrepareAndExposeCCD(int ExposureTime, unsigned short *Imag
 
         /*Set the imageBuffer before finishing*/
         ImageBuffer = (unsigned short *) this->pArcDev->CommonBufferVA();
+
+        /*Calculate and store the clock durations*/
+        auto ExpDuration = std::chrono::duration<double, std::milli> (this->ClockTimers.Readoutstart - this->ClockTimers.ExpStart);
+        auto RdoutDuration = std::chrono::duration<double, std::milli> (this->ClockTimers.ReadoutEnd - this->ClockTimers.Readoutstart);
+        this->ClockTimers.MeasuredExp = ExpDuration.count();
+        this->ClockTimers.MeasuredReadout = RdoutDuration.count();
 
     /* In case we run into a runtime error */
     } catch (std::runtime_error &e) {
@@ -176,6 +184,8 @@ void LeachController::ExposeCCD( float fExpTime, const bool& bAbort, CExposeList
 
 
     /* Start the exposure */
+    this->ClockTimers.ExpStart = std::chrono::system_clock::now();
+    this->ClockTimers.isExp = true;
     dRetVal = pArcDev->Command( TIM_ID, SEX );
     if ( dRetVal != DON ) {
         printf("Start exposure command failed. Reply: 0x%X\n",dRetVal );
@@ -186,6 +196,14 @@ void LeachController::ExposeCCD( float fExpTime, const bool& bAbort, CExposeList
     while ( dPixelCount < ( this->CCDParams.dRows * this->CCDParams.dCols * this->CCDParams.nSkipperR ) ) {
         if ( pArcDev->IsReadout() ) {
             bInReadout = true;
+
+            /*Set the clock timers to readout mode*/
+            if (this->ClockTimers.rClockCounter == 0){
+                this->ClockTimers.Readoutstart = std::chrono::system_clock::now();
+                this->ClockTimers.isReadout = true;
+                this->ClockTimers.isExp = false;
+                this->ClockTimers.rClockCounter = 1;
+            }
             //printf("Is in readout: %d\n",pArcDev->IsReadout());
         }
 
