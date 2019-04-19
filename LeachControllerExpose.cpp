@@ -48,11 +48,14 @@ void LeachController::PrepareAndExposeCCD(int ExposureTime, unsigned short *Imag
         CExposeListener cExposeListener(*this);
 
         int ImageMemorySize = this->CCDParams.dCols * this->CCDParams.dRows * this->CCDParams.nSkipperR * sizeof(unsigned short);
+        int TotalCol = this->CCDParams.dCols * this->CCDParams.nSkipperR;
 
         //pArcDev->UnMapCommonBuffer();
 
         /*This sets the NSR and NPR in the leach assembly. Somehow this doesnt work?*/
         pArcDev->SetImageSize( this->CCDParams.dRows, this->CCDParams.dCols );
+        pArcDev->Command( TIM_ID, STC, TotalCol);
+
         pArcDev->ReMapCommonBuffer(ImageMemorySize);
         printf("Rows %d, Cols %d \n",pArcDev->GetImageRows(), pArcDev->GetImageCols());
 
@@ -73,6 +76,18 @@ void LeachController::PrepareAndExposeCCD(int ExposureTime, unsigned short *Imag
         }
 
 
+
+
+        /*Checks for NSR, NPR and PIT_SKREPEAT here*/
+        int _DSP_NS_READ = pArcDev->Command( TIM_ID, RDM, 0x40000A|0xA );
+        int _DSP_NPR = pArcDev->Command( TIM_ID, RDM, 0x400000|0x2 );
+        int _DSP_PIT_SKREPEAT = pArcDev->Command( TIM_ID, RDM, 0x400000|0x1E );
+        int _DSP_TOTALCOL = pArcDev->Command( TIM_ID, RDM, 0x400000|0x20 );
+        printf("NS_READ: %d | NPR: %d | PIT_SKREPEAT %d | TOTALCOL %d \n",_DSP_NS_READ,_DSP_NPR,_DSP_PIT_SKREPEAT,_DSP_TOTALCOL);
+
+
+
+
         /*To eliminate the possibility of the amplifiers behaving as a source of light,
          * we turn off the Vdd to them before the exposure starts.
          * We then turn them back on 3 seconds before the exposure ends
@@ -83,6 +98,7 @@ void LeachController::PrepareAndExposeCCD(int ExposureTime, unsigned short *Imag
         std::cout << "Starting exposure\n";
         this->ExposeCCD(ExposureTime, false, &cExposeListener);
         std::cout << "\nExposure complete.\n";
+
 
         /*If two amplifiers were used, we need to de-interlace*/
         if (this->CCDParams.AmplifierDirection == "UL" || this->CCDParams.AmplifierDirection == "LU") {
@@ -180,6 +196,7 @@ void LeachController::ExposeCCD( float fExpTime, const bool& bAbort, CExposeList
     while ( dPixelCount < ( this->CCDParams.dRows * this->CCDParams.dCols * this->CCDParams.nSkipperR ) ) {
         if ( pArcDev->IsReadout() ) {
             bInReadout = true;
+            //printf("Is in readout: %d\n",pArcDev->IsReadout());
         }
 
         // ----------------------------
@@ -191,7 +208,7 @@ void LeachController::ExposeCCD( float fExpTime, const bool& bAbort, CExposeList
         if ( !bInReadout && fRemainingTime > 1.1f && dExposeCounter >= 5 && fExpTime > 1.0f ) {
             // Ignore all RET timeouts
             try {
-                // Read the elapsed exposure time.
+                                // Read the elapsed exposure time.
                 dRetVal = pArcDev->Command( TIM_ID, RET );
 
                 if ( dRetVal != ROUT ) {

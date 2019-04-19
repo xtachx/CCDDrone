@@ -9,7 +9,6 @@ Makefile
 .DS_Store
 
 CCDDrone/CCDDrone
-ArcAPI/
 do_not_touch/LastHashes.txt
 do_not_touch/LastSettings.ini
 

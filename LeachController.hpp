@@ -31,7 +31,7 @@
 #define VDR 0x00564452
 #define HDR 0x00484452
 #define CIT 0x00434954
-
+#define STC 0x00535443
 
 
 
@@ -40,7 +40,7 @@ class LeachController
 
 private:
 
-    arc::device::CArcDevice *pArcDev;
+    arc::device::CArcPCIe *pArcDev;
 
     // ------------------------------------------------------
     //  Exposure Callback Class - this crazy construction is needed
