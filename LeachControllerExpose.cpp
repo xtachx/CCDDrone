@@ -57,7 +57,7 @@ void LeachController::PrepareAndExposeCCD(int ExposureTime, unsigned short *Imag
         pArcDev->Command( TIM_ID, STC, TotalCol);
 
         pArcDev->ReMapCommonBuffer(ImageMemorySize);
-        printf("Rows %d, Cols %d \n",pArcDev->GetImageRows(), pArcDev->GetImageCols());
+        printf("Rows %d, Cols %d | NDCMS: %d , Total number of columns: %d\n",pArcDev->GetImageRows(), pArcDev->GetImageCols(), this->CCDParams.nSkipperR, TotalCol);
 
         /*This will happen if the memory required is > kernel buffer size*/
         if ( pArcDev->CommonBufferSize() < ImageMemorySize ) {
@@ -74,16 +74,6 @@ void LeachController::PrepareAndExposeCCD(int ExposureTime, unsigned short *Imag
         } else {
             std::cout << "The amplifier selected does not exist. Interlacing is not set. Stop and verify!\n";
         }
-
-
-
-
-        /*Checks for NSR, NPR and PIT_SKREPEAT here*/
-        int _DSP_NS_READ = pArcDev->Command( TIM_ID, RDM, 0x40000A|0xA );
-        int _DSP_NPR = pArcDev->Command( TIM_ID, RDM, 0x400000|0x2 );
-        int _DSP_PIT_SKREPEAT = pArcDev->Command( TIM_ID, RDM, 0x400000|0x1E );
-        int _DSP_TOTALCOL = pArcDev->Command( TIM_ID, RDM, 0x400000|0x20 );
-        printf("NS_READ: %d | NPR: %d | PIT_SKREPEAT %d | TOTALCOL %d \n",_DSP_NS_READ,_DSP_NPR,_DSP_PIT_SKREPEAT,_DSP_TOTALCOL);
 
 
 
