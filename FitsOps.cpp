@@ -119,8 +119,8 @@ void LeachController::SaveFits(std::string outFileName)
     fits_write_key(fptr, TSTRING, "RdStrt", (char*) ReadOutStart.c_str(), "Readout start time", &status);
     fits_write_key(fptr, TSTRING, "RdEnd", (char*) ReadOutEnd.c_str(), "Readout end time", &status);
 
-    fits_write_key(fptr, TDOUBLE, "MExp", &this->ClockTimers.MeasuredExp, "Measured exposure time", &status);
-    fits_write_key(fptr, TDOUBLE, "MRead", &this->ClockTimers.MeasuredReadout, "Measured readout time", &status);
+    fits_write_key(fptr, TDOUBLE, "MExp", &this->ClockTimers.MeasuredExp, "Measured exposure time (ms)", &status);
+    fits_write_key(fptr, TDOUBLE, "MRead", &this->ClockTimers.MeasuredReadout, "Measured readout time (ms)", &status);
 
     /*Write image*/
     unsigned short *pData = (unsigned short *)pArcDev->CommonBufferVA();
