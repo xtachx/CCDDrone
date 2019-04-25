@@ -236,21 +236,18 @@ int LeachController::SelectAmplifierAndHClocks(void )
 
 }
 
-
-
-int LeachController::ApplyNewIntegralTime(double integralTime)
-{
+int LeachController::CalculateTiming(double time_in_us) {
 
     //First, convert number to ns. The ($var+0.5)/1 converts float to an int
 
-    if (integralTime>163){
+    if (time_in_us>163){
         std::cout<<"The range for integration time is 40ns to 163 usec.\n"<<
-                    "The value entered is out of bounds, so restricting the time to 163 usec.\n";
+                 "The value entered is out of bounds, so restricting the time to 163 usec.\n";
 
-        integralTime = 163;
+        time_in_us = 163;
     }
 
-    double fiTime_ns = integralTime*1000;
+    double fiTime_ns = time_in_us*1000;
     int iTime_ns = (int) fiTime_ns;
 
     int timing_bigmult, bigreminder, littlereminder,timing_littlemult;
@@ -280,12 +277,51 @@ int LeachController::ApplyNewIntegralTime(double integralTime)
 
     timing_dsp = timing_dsp<<16;
 
+    return timing_dsp;
+
+}
+
+int LeachController::ApplyNewIntegralTime(double integralTime)
+{
+
+    int timing_dsp = this->CalculateTiming(integralTime);
+
     int dReply = 0;
     dReply = pArcDev->Command( TIM_ID, CIT, timing_dsp);
     if ( dReply == 0x00444F4E ) {
         return 0;
     } else {
         printf("Error setting the integration time: %X\n", dReply);
+        return -1;
+    }
+
+}
+
+int LeachController::ApplyNewPedestalIntegralWait(double pedestalWaitTime){
+
+    int timing_dsp = this->CalculateTiming(pedestalWaitTime);
+
+    int dReply = 0;
+    dReply = pArcDev->Command( TIM_ID, CPR, timing_dsp);
+    if ( dReply == DON ) {
+        return 0;
+    } else {
+        printf("Error setting the pedestal wait time: %X\n", dReply);
+        return -1;
+    }
+
+}
+
+int LeachController::ApplyNewSignalIntegralWait(double signalWaitTime){
+
+    int timing_dsp = this->CalculateTiming(signalWaitTime);
+
+    int dReply = 0;
+    dReply = pArcDev->Command( TIM_ID, CPO, timing_dsp);
+    if ( dReply == DON ) {
+        return 0;
+    } else {
+        printf("Error setting the pedestal wait time: %X\n", dReply);
         return -1;
     }
 

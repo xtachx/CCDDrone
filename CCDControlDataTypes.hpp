@@ -23,6 +23,8 @@ struct CCDVariables{
 
     bool super_sequencer;
     double IntegralTime;
+    double PedestalIntgWait;
+    double SignalIntgWait;
 
 };
 

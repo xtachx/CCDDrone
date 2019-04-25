@@ -32,6 +32,8 @@
 #define HDR 0x00484452
 #define CIT 0x00434954
 #define STC 0x00535443
+#define CPR 0x00435052
+#define CPO 0x0043504F
 
 
 
@@ -84,6 +86,7 @@ private:
     int SetVDR(void);
     int SetHDR(void);
     int SelectAmplifierAndHClocks(void);
+    int CalculateTiming(double );
 
     /*LeachControllerExpose - private part*/
     void ExposeCCD( float fExpTime, const bool& bAbort = false,
@@ -134,6 +137,9 @@ public:
     void IdleClockToggle(void );
     void ApplyNewSequencer(std::string );
     int ApplyNewIntegralTime(double );
+    int ApplyNewPedestalIntegralWait(double );
+    int ApplyNewSignalIntegralWait(double);
+
 
 
     /*FitsOps*/

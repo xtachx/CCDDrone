@@ -67,6 +67,8 @@ void LeachController::ParseCCDSettings(CCDVariables &_CCDSettings, ClockVariable
 
     _CCDSettings.super_sequencer = _LeachConfig.GetBoolean("ccd","super_sequencer", false);
     _CCDSettings.IntegralTime = _LeachConfig.GetReal("ccd","IntegralTime",30.0);
+    _CCDSettings.PedestalIntgWait =  _LeachConfig.GetReal("ccd","PedestalIntgWait",2.0);
+    _CCDSettings.SignalIntgWait =  _LeachConfig.GetReal("ccd","SignalIntgWait",0.5);
 
 
     /*Bias Voltages*/
