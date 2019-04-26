@@ -59,6 +59,9 @@ void LeachController::SaveFits(std::string outFileName)
     fits_write_key(fptr, TSTRING, "HCKDirn", (char*) this->CCDParams.HClkDirection.c_str(), "Serial register h-clock direction (SSEq only)", &status);
     fits_write_key(fptr, TSTRING, "VCKDirn", (char*) this->CCDParams.VClkDirection.c_str(), "Vertical clock direction (SSeq only)", &status);
     fits_write_key(fptr, TDOUBLE, "ITGTIME", &this->CCDParams.IntegralTime, "Integration time (SSeq only)", &status);
+    fits_write_key(fptr, TDOUBLE, "PRETIME", &this->CCDParams.PedestalIntgWait, "Pedestal settling + video ADC refresh time", &status);
+    fits_write_key(fptr, TDOUBLE, "POSTIME", &this->CCDParams.SignalIntgWait, "Signal settling time", &status);
+    
 
     /*Write the Meta keywords - Clocks*/
     fits_write_key(fptr, TDOUBLE, "VCKHi", &this->ClockParams.vclock_hi, "V clock Hi", &status);
