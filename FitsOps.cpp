@@ -61,6 +61,8 @@ void LeachController::SaveFits(std::string outFileName)
     fits_write_key(fptr, TDOUBLE, "ITGTIME", &this->CCDParams.IntegralTime, "Integration time (SSeq only)", &status);
     fits_write_key(fptr, TDOUBLE, "PRETIME", &this->CCDParams.PedestalIntgWait, "Pedestal settling + video ADC refresh time", &status);
     fits_write_key(fptr, TDOUBLE, "POSTIME", &this->CCDParams.SignalIntgWait, "Signal settling time", &status);
+    fits_write_key(fptr, TINT, "NPBIN", &this->CCDParams.ParallelBin, "Binning in the V-direction (parallel clocks)", &status);
+    fits_write_key(fptr, TINT, "NSBIN", &this->CCDParams.SerialBin, "Binning in the H-direction (serial clocks)", &status);
     
 
     /*Write the Meta keywords - Clocks*/

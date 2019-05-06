@@ -26,6 +26,9 @@ struct CCDVariables{
     double PedestalIntgWait;
     double SignalIntgWait;
 
+    int ParallelBin;
+    int SerialBin;
+
 };
 
 struct ClockVariables{

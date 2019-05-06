@@ -70,6 +70,9 @@ void LeachController::ApplyAllCCDBasic(void ){
         /*Next, we need to set the Pedestal and Signal wait times before an integration begins*/
         this->ApplyNewPedestalIntegralWait(this->CCDParams.PedestalIntgWait);
         this->ApplyNewSignalIntegralWait(this->CCDParams.SignalIntgWait);
+        /*Binning*/
+        this->ApplyPBIN(this->CCDParams.ParallelBin);
+        this->ApplySBIN(this->CCDParams.SerialBin);
     }
 
     if (this->CCDParams.CCDType == "SK"){

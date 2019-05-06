@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project( CCDDrone )
+project( CCDDrone)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/CMakeModules")
 find_package( CFITSIO )
@@ -40,19 +40,22 @@ LINK_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/ArcAPI/Release/apple_x64)
 SET(CMAKE_EXE_LINKER_FLAGS "-framework IOKit")
 endif(APPLE)
 
+add_library(LeachController SHARED ${SOURCE} ${HEADERS})
+set_target_properties(LeachController PROPERTIES
+        PUBLIC_HEADER LeachController.hpp)
 
+#add_executable( CCDDExpose CCDDExpose.cpp ${SOURCE} ${HEADERS} )
+add_executable( CCDDExpose CCDDExpose.cpp )
+target_link_libraries( CCDDExpose -lCArcDeinterlace -lCArcDevice ${CFITSIO_LIBRARIES} LeachController)
 
-add_executable( CCDDExpose CCDDExpose.cpp ${SOURCE} ${HEADERS} )
-target_link_libraries( CCDDExpose -lCArcDeinterlace -lCArcDevice ${CFITSIO_LIBRARIES})
+add_executable( CCDDStartupAndErase CCDDStartupAndErase.cpp)
+target_link_libraries( CCDDStartupAndErase -lCArcDeinterlace -lCArcDevice ${CFITSIO_LIBRARIES} LeachController)
 
-add_executable( CCDDStartupAndErase CCDDStartupAndErase.cpp ${SOURCE} ${HEADERS})
-target_link_libraries( CCDDStartupAndErase -lCArcDeinterlace -lCArcDevice ${CFITSIO_LIBRARIES})
+add_executable( CCDDPerformEraseProcedure CCDDPerformEraseProcedure.cpp)
+target_link_libraries( CCDDPerformEraseProcedure -lCArcDeinterlace -lCArcDevice ${CFITSIO_LIBRARIES} LeachController)
 
-add_executable( CCDDPerformEraseProcedure CCDDPerformEraseProcedure.cpp ${SOURCE} ${HEADERS})
-target_link_libraries( CCDDPerformEraseProcedure -lCArcDeinterlace -lCArcDevice ${CFITSIO_LIBRARIES})
-
-add_executable( CCDDApplyNewSettings CCDDApplyNewSettings.cpp ${SOURCE} ${HEADERS})
-target_link_libraries( CCDDApplyNewSettings -lCArcDeinterlace -lCArcDevice ${CFITSIO_LIBRARIES})
+add_executable( CCDDApplyNewSettings CCDDApplyNewSettings.cpp)
+target_link_libraries( CCDDApplyNewSettings -lCArcDeinterlace -lCArcDevice ${CFITSIO_LIBRARIES} LeachController)
 
 #add_executable( CCDDUnitTests CCDDUnitTests.cpp ${SOURCE} ${HEADERS})
 #target_link_libraries( CCDDUnitTests -lCArcDeinterlace -lCArcDevice ${CFITSIO_LIBRARIES})

@@ -326,3 +326,30 @@ int LeachController::ApplyNewSignalIntegralWait(double signalWaitTime){
     }
 
 }
+
+
+int LeachController::ApplyPBIN(int NPBIN){
+
+    int dReply = 0;
+    dReply = pArcDev->Command( TIM_ID, NPB, NPBIN);
+    if ( dReply == DON ) {
+        return 0;
+    } else {
+        printf("Error setting the parallel binning: %X\n", dReply);
+        return -1;
+    }
+
+}
+
+int LeachController::ApplySBIN(int NSBIN){
+
+    int dReply = 0;
+    dReply = pArcDev->Command( TIM_ID, NSB, NSBIN);
+    if ( dReply == DON ) {
+        return 0;
+    } else {
+        printf("Error setting the serial binning: %X\n", dReply);
+        return -1;
+    }
+
+}

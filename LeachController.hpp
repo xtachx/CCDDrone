@@ -34,6 +34,8 @@
 #define STC 0x00535443
 #define CPR 0x00435052
 #define CPO 0x0043504F
+#define NSB 0x004E5342
+#define NPB 0x004E5042
 
 
 
@@ -139,6 +141,8 @@ public:
     int ApplyNewIntegralTime(double );
     int ApplyNewPedestalIntegralWait(double );
     int ApplyNewSignalIntegralWait(double);
+    int ApplyPBIN(int);
+    int ApplySBIN(int);
 
 
 
