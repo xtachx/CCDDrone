@@ -1,3 +1,5 @@
+//Edited:Pitam Mitra May 8, 2019 to fix the bug related to size_t
+
 #ifndef _CARC_DEVICE_H_
 #define _CARC_DEVICE_H_
 
@@ -59,14 +61,14 @@ namespace arc
 				// +-------------------------------------------------+
 				virtual bool IsOpen();
 				virtual void Open( int dDeviceNumber = 0 ) = 0;
-				virtual void Open( int dDeviceNumber, int dBytes ) = 0;
+				virtual void Open( int dDeviceNumber, size_t dBytes ) = 0;
 				virtual void Open( int dDeviceNumber, int dRows, int dCols ) = 0;
 				virtual void Close() = 0;
 				virtual void Reset() = 0;
 
-				virtual void  MapCommonBuffer( int dBytes = 0 ) = 0;
+				virtual void  MapCommonBuffer( size_t dBytes = 0 ) = 0;
 				virtual void  UnMapCommonBuffer() = 0;
-				virtual void  ReMapCommonBuffer( int dBytes = 0 );
+				virtual void  ReMapCommonBuffer( size_t dBytes = 0 );
 				virtual void  FillCommonBuffer( unsigned short u16Value = 0 );
 				virtual void* CommonBufferVA();
 				virtual ulong CommonBufferPA();
@@ -150,17 +152,17 @@ namespace arc
 				virtual void   SaveTemperatureCtrlData( const std::string sFilename );
 
 
-				//  Maximum number of command parameters the controller will accept 
+				//  Maximum number of command parameters the controller will accept
 				// +------------------------------------------------------------------+
 				static const int CTLR_CMD_MAX		= 6;
 
 
-				//  Timeout loop count for image readout                             
+				//  Timeout loop count for image readout
 				// +------------------------------------------------------------------+
 				static const int READ_TIMEOUT		= 200;
 
 
-				//  Invalid parameter value                           
+				//  Invalid parameter value
 				// +------------------------------------------------------------------+
 				static const int NOPARAM			= -1;
 

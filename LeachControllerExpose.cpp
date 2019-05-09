@@ -48,7 +48,7 @@ void LeachController::PrepareAndExposeCCD(int ExposureTime, unsigned short *Imag
         /*Needed for callbacks during exposure*/
         CExposeListener cExposeListener(*this);
 
-        int ImageMemorySize = this->CCDParams.dCols * this->CCDParams.dRows * this->CCDParams.nSkipperR * sizeof(unsigned short);
+        size_t ImageMemorySize = this->CCDParams.dCols * this->CCDParams.dRows * this->CCDParams.nSkipperR * sizeof(unsigned short);
         int TotalCol = this->CCDParams.dCols * this->CCDParams.nSkipperR;
 
         //pArcDev->UnMapCommonBuffer();
@@ -158,7 +158,7 @@ void LeachController::ExposeCCD( float fExpTime, const bool& bAbort, CExposeList
 
 
     /* Check for adequate buffer size */
-    int ImageMemorySize = this->CCDParams.dCols * this->CCDParams.dRows * this->CCDParams.nSkipperR * sizeof(unsigned short);
+    size_t ImageMemorySize = this->CCDParams.dCols * this->CCDParams.dRows * this->CCDParams.nSkipperR * sizeof(unsigned short);
 
     if ( ImageMemorySize  > pArcDev->CommonBufferSize() ) {
             printf("Image dimensions [ %d x %d x %d ] exceed buffer size: %d. %s.",

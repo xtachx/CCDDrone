@@ -50,13 +50,13 @@ namespace arc
 
 				bool IsOpen();
 				void Open( int dDeviceNumber = 0 );
-				void Open( int dDeviceNumber, int dBytes );
+				void Open( int dDeviceNumber, size_t dBytes );
 				void Open( int dDeviceNumber, int dRows, int dCols );
 				void Close();
 				void Reset();
 
 				bool GetCommonBufferProperties();
-				void MapCommonBuffer( int dBytes = 0 );
+				void MapCommonBuffer( size_t dBytes = 0 );
 				void UnMapCommonBuffer();
 
 				int  GetId();

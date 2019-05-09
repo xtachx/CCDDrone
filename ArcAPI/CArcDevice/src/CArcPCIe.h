@@ -53,13 +53,13 @@ namespace arc
 
 				bool IsOpen();
 				void Open( int dDeviceNumber = 0 );
-				void Open( int dDeviceNumber, int dBytes );
+				void Open( int dDeviceNumber, size_t dBytes );
 				void Open( int dDeviceNumber, int dRows, int dCols );
 				void Close();
 				void Reset();
 
 				bool GetCommonBufferProperties();
-				void MapCommonBuffer( int dBytes = 0 );
+				void MapCommonBuffer( size_t dBytes = 0 );
 				void UnMapCommonBuffer();
 
 				int  GetId();
@@ -145,7 +145,7 @@ namespace arc
 				// +-------------------------------------------------+
 				static const int ID			= 0x41524336;	// 'ARC6'
 
-				//  Driver ioctl commands                                                      
+				//  Driver ioctl commands
 				// +-----------------------------------------------------------------------------+
 				static const int ARC_READ_BAR		=	0x01;	// Read PCI/e base address register
 				static const int ARC_WRITE_BAR		=	0x02;	// Write PCI/e base address register
