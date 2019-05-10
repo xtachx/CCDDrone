@@ -44,18 +44,18 @@ add_library(LeachController SHARED ${SOURCE} ${HEADERS})
 set_target_properties(LeachController PROPERTIES
         PUBLIC_HEADER LeachController.hpp)
 
-#add_executable( CCDDExpose CCDDExpose.cpp ${SOURCE} ${HEADERS} )
+#-lcurl seems to be required by fitsio!
 add_executable( CCDDExpose CCDDExpose.cpp )
-target_link_libraries( CCDDExpose -lCArcDeinterlace -lCArcDevice ${CFITSIO_LIBRARIES} LeachController)
+target_link_libraries( CCDDExpose -lCArcDeinterlace -lCArcDevice LeachController -lcurl ${CFITSIO_LIBRARIES})
 
 add_executable( CCDDStartupAndErase CCDDStartupAndErase.cpp)
-target_link_libraries( CCDDStartupAndErase -lCArcDeinterlace -lCArcDevice ${CFITSIO_LIBRARIES} LeachController)
+target_link_libraries( CCDDStartupAndErase -lCArcDeinterlace -lCArcDevice LeachController -lcurl ${CFITSIO_LIBRARIES})
 
 add_executable( CCDDPerformEraseProcedure CCDDPerformEraseProcedure.cpp)
-target_link_libraries( CCDDPerformEraseProcedure -lCArcDeinterlace -lCArcDevice ${CFITSIO_LIBRARIES} LeachController)
+target_link_libraries( CCDDPerformEraseProcedure -lCArcDeinterlace -lCArcDevice LeachController -lcurl ${CFITSIO_LIBRARIES})
 
 add_executable( CCDDApplyNewSettings CCDDApplyNewSettings.cpp)
-target_link_libraries( CCDDApplyNewSettings -lCArcDeinterlace -lCArcDevice ${CFITSIO_LIBRARIES} LeachController)
+target_link_libraries( CCDDApplyNewSettings -lCArcDeinterlace -lCArcDevice LeachController -lcurl ${CFITSIO_LIBRARIES} )
 
 #add_executable( CCDDUnitTests CCDDUnitTests.cpp ${SOURCE} ${HEADERS})
 #target_link_libraries( CCDDUnitTests -lCArcDeinterlace -lCArcDevice ${CFITSIO_LIBRARIES})
