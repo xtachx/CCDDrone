@@ -26,7 +26,7 @@ int main( int argc, char **argv )
 
 		configFileName = "config/Config.ini";
 	} else {
-		configFileName = argv[2];
+		configFileName = std::string(argv[1]);
 	}
 
 
