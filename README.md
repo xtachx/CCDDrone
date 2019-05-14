@@ -7,7 +7,7 @@ There are two parts to CCDDrone: The CMake file will first compile Leachcontroll
 
 The descriptions of the other targets are as follows:
 
-1. CCDDStartupAndErase: This is the first program that you will run after you turn on the Leach system. It will start up the electronics, upload the firmware and perform an erase procedure. It will also set the idle clocks.
+1. CCDDStartupAndErase: This is the first program that you will run after you turn on the Leach system. It will start up the electronics, upload the firmware and perform an erase procedure. It will also set the idle clocks. New: You can now specify the config file you want to use with ./CCDDApplyNewSettings <config file> . The default is config/Config.ini
 
 2. CCDDPerformEraseProcedure: This will perform an erase procedure without a reset.
 

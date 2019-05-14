@@ -17,8 +17,20 @@ int main( int argc, char **argv )
 
     std::cout << "This code apply new settings on the the clock and bias voltages.\n";
 
+	std::string configFileName;
 
-	LeachController _ThisRunControllerInstance("config/Config.ini");
+	/*Now get the args*/
+	if (argc<2) {
+		std::cout << "Default usage: ./CCDDApplyNewSettings <config file>. ";
+		std::cout << "No config file was specified. Using config/Config.ini\n";
+
+		configFileName = "config/Config.ini";
+	} else {
+		configFileName = argv[2];
+	}
+
+
+	LeachController _ThisRunControllerInstance(configFileName);
 
 	std::cout<<"Checking for new settings and loading them.\n";
 	//_ThisRunControllerInstance.LoadCCDSettingsFresh();
@@ -39,6 +51,8 @@ int main( int argc, char **argv )
 
 
 	_ThisRunControllerInstance.CopyOldAndStoreFileHashes();
+
+
 
 	std::cout<<"Set IDLE clocks to ON.\n";
     _ThisRunControllerInstance.IdleClockToggle();

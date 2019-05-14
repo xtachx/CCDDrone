@@ -162,6 +162,10 @@ void LeachController::CopyOldAndStoreFileHashes(void)
     f3 << f1s << "\n" << f2s;
     f3.close();
 
+    std::ofstream f4("do_not_touch/LastConfigLocation.txt", std::fstream::trunc | std::fstream::out);
+    f4 << this->INIFileLoc << "\n";
+    f4.close();
+
 }
 
 

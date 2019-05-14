@@ -44,8 +44,14 @@ int main( int argc, char **argv )
 	}
 
 
+	/* Read the last config file location - this is needed to compare with the file uploaded
+	 * and check that it has not changed since the upload. */
+    std::ifstream LastCfgLoc("do_not_touch/LastConfigLocation.txt", std::fstream::in);
+    std::string LastCfgFile;
+    std::getline(LastCfgLoc, LastCfgFile);
+    LastCfgLoc.close();
 
-	LeachController _ThisRunControllerInstance("config/Config.ini");
+	LeachController _ThisRunControllerInstance(LastCfgFile);
 
 	/*At the start of the program, log the time*/
     _ThisRunControllerInstance.ClockTimers.ProgramStart = std::chrono::system_clock::now();
