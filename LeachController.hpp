@@ -36,6 +36,9 @@
 #define CPO 0x0043504F
 #define NSB 0x004E5342
 #define NPB 0x004E5042
+#define VDXN_1 0x5F5F41
+#define VDXN_2 0x5F5F42
+#define VDXN_12 0x5F5F43
 
 
 

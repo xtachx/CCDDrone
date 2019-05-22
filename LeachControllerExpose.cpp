@@ -161,7 +161,7 @@ void LeachController::ExposeCCD( float fExpTime, const bool& bAbort, CExposeList
     size_t ImageMemorySize = this->CCDParams.dCols * this->CCDParams.dRows * this->CCDParams.nSkipperR * sizeof(unsigned short);
 
     if ( ImageMemorySize  > pArcDev->CommonBufferSize() ) {
-            printf("Image dimensions [ %d x %d x %d ] exceed buffer size: %d. %s.",
+            printf("Image dimensions [ %d x %d x %d ] exceed buffer size: %d.",
             this->CCDParams.dCols,
             this->CCDParams.dRows,
             this->CCDParams.nSkipperR,

@@ -161,9 +161,9 @@ int LeachController::SetVDR(void )
     int _snd_VDRxn = 0;
 
     if (this->CCDParams.VClkDirection=="1")
-        _snd_VDRxn = 0;
+        _snd_VDRxn = VDXN_1;
     else if(this->CCDParams.VClkDirection=="2")
-        _snd_VDRxn = 1;
+        _snd_VDRxn = VDXN_2;
     else {
         std::cout<<"V-Clock direction is invalid. Setting the normal clock to move charges towards side 1.\n";
         _snd_VDRxn = 0;
