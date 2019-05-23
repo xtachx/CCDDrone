@@ -38,6 +38,12 @@ void LeachController::ApplyAllPositiveVPixelArray()
     this->SetDACValueClock(1, 9.0, 9.0); //Channel 1: Min 9V Max 9V
     this->SetDACValueClock(2, 9.0, 9.0); //Channel 2: Min 9V Max 9V
 
+    if (this->CCDParams.SecondStageVersion=="UW2"){
+        this->SetDACValueClock(3, 9.0, 9.0); //Channel 0: Min 9V Max 9V
+        this->SetDACValueClock(4, 9.0, 9.0); //Channel 1: Min 9V Max 9V
+        this->SetDACValueClock(5, 9.0, 9.0); //Channel 2: Min 9V Max 9V
+    }
+
 }
 
 
@@ -48,9 +54,15 @@ void LeachController::ApplyAllPositiveVPixelArray()
 void LeachController::RestoreVClockVoltages(void )
 {
 
-    this->SetDACValueClock(0, this->ClockParams.vclock_lo, this->ClockParams.vclock_hi); //Channel 0: V1
-    this->SetDACValueClock(1, this->ClockParams.vclock_lo, this->ClockParams.vclock_hi); //Channel 1: V2
-    this->SetDACValueClock(2, this->ClockParams.vclock_lo, this->ClockParams.vclock_hi); //Channel 2: V3
+    this->SetDACValueClock(0, this->ClockParams.one_vclock_lo, this->ClockParams.one_vclock_hi); //Channel 0: V1
+    this->SetDACValueClock(1, this->ClockParams.one_vclock_lo, this->ClockParams.one_vclock_hi); //Channel 1: V2
+    this->SetDACValueClock(2, this->ClockParams.one_vclock_lo, this->ClockParams.one_vclock_hi); //Channel 2: V3
+
+    if (this->CCDParams.SecondStageVersion=="UW2"){
+        this->SetDACValueClock(3, this->ClockParams.two_vclock_lo, this->ClockParams.two_vclock_hi); //Channel 3: 2V1
+        this->SetDACValueClock(4, this->ClockParams.two_vclock_lo, this->ClockParams.two_vclock_hi); //Channel 4: 2V2
+        this->SetDACValueClock(5, this->ClockParams.two_vclock_lo, this->ClockParams.two_vclock_hi); //Channel 5: 2V3
+    }
 
 }
 

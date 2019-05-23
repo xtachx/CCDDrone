@@ -63,11 +63,21 @@ void LeachController::SaveFits(std::string outFileName)
     fits_write_key(fptr, TDOUBLE, "POSTIME", &this->CCDParams.SignalIntgWait, "Signal settling time", &status);
     fits_write_key(fptr, TINT, "NPBIN", &this->CCDParams.ParallelBin, "Binning in the V-direction (parallel clocks)", &status);
     fits_write_key(fptr, TINT, "NSBIN", &this->CCDParams.SerialBin, "Binning in the H-direction (serial clocks)", &status);
-    
+    fits_write_key(fptr, TSTRING, "SecStg", (char*) this->CCDParams.SecondStageVersion.c_str(), "Second stage board revision (SSeq only)", &status);
+
 
     /*Write the Meta keywords - Clocks*/
-    fits_write_key(fptr, TDOUBLE, "VCKHi", &this->ClockParams.vclock_hi, "V clock Hi", &status);
-    fits_write_key(fptr, TDOUBLE, "VCKLO", &this->ClockParams.vclock_lo, "V clock Lo", &status);
+    fits_write_key(fptr, TDOUBLE, "OneVCKHi", &this->ClockParams.one_vclock_hi, "V1 clock Hi", &status);
+    fits_write_key(fptr, TDOUBLE, "OneVCKLo", &this->ClockParams.one_vclock_lo, "V1 clock Lo", &status);
+
+    if (this->CCDParams.SecondStageVersion == "UW2") {
+        fits_write_key(fptr, TDOUBLE, "TwoVCKHi", &this->ClockParams.two_vclock_hi, "V2 clock Hi", &status);
+        fits_write_key(fptr, TDOUBLE, "TwoVCKLo", &this->ClockParams.two_vclock_lo, "V2 clock Lo", &status);
+    } else {
+        double _TwoVCKPlaceholder = -996.0;
+        fits_write_key(fptr, TDOUBLE, "TwoVCKHi", &_TwoVCKPlaceholder, "V2 clock Hi", &status);
+        fits_write_key(fptr, TDOUBLE, "TwoVCKLo", &_TwoVCKPlaceholder, "V2 clock Lo", &status);
+    }
     fits_write_key(fptr, TDOUBLE, "TGHi", &this->ClockParams.tg_hi, "Transfer Gate Hi", &status);
     fits_write_key(fptr, TDOUBLE, "TGLo", &this->ClockParams.tg_lo, "Transfer Gate Lo", &status);
 

@@ -93,11 +93,12 @@ void LeachController::ApplyAllCCDBasic(void ){
 void LeachController::ApplyAllCCDClocks(void )
 {
     /*Set Clocks*/
-    this->SetDACValueClock(0, this->ClockParams.vclock_lo, this->ClockParams.vclock_hi); //Channel 0: V1
-    this->SetDACValueClock(1, this->ClockParams.vclock_lo, this->ClockParams.vclock_hi); //Channel 1: V2
-    this->SetDACValueClock(2, this->ClockParams.vclock_lo, this->ClockParams.vclock_hi); //Channel 2: V3
 
-    this->SetDACValueClock(6, this->ClockParams.tg_lo,this->ClockParams.tg_hi); //Channel 6: TG
+    /*These sets of clocks are common and did not change between Second stage generations.*/
+
+    this->SetDACValueClock(0, this->ClockParams.one_vclock_lo, this->ClockParams.one_vclock_hi); //Channel 0: V1
+    this->SetDACValueClock(1, this->ClockParams.one_vclock_lo, this->ClockParams.one_vclock_hi); //Channel 1: V2
+    this->SetDACValueClock(2, this->ClockParams.one_vclock_lo, this->ClockParams.one_vclock_hi); //Channel 2: V3
 
     this->SetDACValueClock(12, this->ClockParams.l_hclock_lo, this->ClockParams.l_hclock_hi); //Channel 12: H1L
     this->SetDACValueClock(13, this->ClockParams.l_hclock_lo, this->ClockParams.l_hclock_hi); //Channel 13: H2L
@@ -106,19 +107,66 @@ void LeachController::ApplyAllCCDClocks(void )
     this->SetDACValueClock(16, this->ClockParams.u_hclock_lo, this->ClockParams.u_hclock_hi); //Channel 16: H2U
     this->SetDACValueClock(17, this->ClockParams.u_hclock_lo, this->ClockParams.u_hclock_hi); //Channel 17: H3U
 
-    this->SetDACValueClock(18, this->ClockParams.sw_lo, this->ClockParams.sw_hi); //Channel 18: SWL
-    this->SetDACValueClock(23, this->ClockParams.sw_lo, this->ClockParams.sw_hi); //Channel 23: SWU
+    /*These parameters do change between boards */
+    if (this->CCDParams.SecondStageVersion == "UW1") {
 
-    //Reset gate needs to be checked against the current timing file and be flipped if necessary
-    if (this->CCDParams.InvRG)
-    {
-        this->SetDACValueClock(20, this->ClockParams.rg_hi, this->ClockParams.rg_lo); //Channel 20: RGL
-        this->SetDACValueClock(21, this->ClockParams.rg_hi, this->ClockParams.rg_lo); //Channel 21: RGU
-    }
-    else
-    {
-        this->SetDACValueClock(20, this->ClockParams.rg_lo, this->ClockParams.rg_hi); //Channel 20: RGL
-        this->SetDACValueClock(21, this->ClockParams.rg_lo, this->ClockParams.rg_hi); //Channel 21: RGU
+
+        this->SetDACValueClock(6, this->ClockParams.tg_lo, this->ClockParams.tg_hi); //Channel 6: TG
+
+        this->SetDACValueClock(18, this->ClockParams.sw_lo, this->ClockParams.sw_hi); //Channel 18: SWL
+        this->SetDACValueClock(23, this->ClockParams.sw_lo, this->ClockParams.sw_hi); //Channel 23: SWU
+
+        //Reset gate needs to be checked against the current timing file and be flipped if necessary
+        if (this->CCDParams.InvRG) {
+            this->SetDACValueClock(20, this->ClockParams.rg_hi, this->ClockParams.rg_lo); //Channel 20: RGL
+            this->SetDACValueClock(21, this->ClockParams.rg_hi, this->ClockParams.rg_lo); //Channel 21: RGU
+        } else {
+            this->SetDACValueClock(20, this->ClockParams.rg_lo, this->ClockParams.rg_hi); //Channel 20: RGL
+            this->SetDACValueClock(21, this->ClockParams.rg_lo, this->ClockParams.rg_hi); //Channel 21: RGU
+        }
+
+        this->SetDACValueClock(7, this->ClockParams.og_lo, this->ClockParams.og_hi); //Channel 7: OG
+        this->SetDACValueClock(9, this->ClockParams.og_lo, this->ClockParams.og_hi); //Channel 9: OG
+
+        this->SetDACValueClock(8, this->ClockParams.dg_lo, this->ClockParams.dg_hi); //Channel 8: DG
+        this->SetDACValueClock(10, this->ClockParams.dg_lo, this->ClockParams.dg_hi); //Channel 10: DG
+
+
+
+    } else if (this->CCDParams.SecondStageVersion=="UW2"){
+
+
+        this->SetDACValueClock(3, this->ClockParams.two_vclock_lo, this->ClockParams.two_vclock_hi); //Channel 3: 2V1
+        this->SetDACValueClock(4, this->ClockParams.two_vclock_lo, this->ClockParams.two_vclock_hi); //Channel 4: 2V2
+        this->SetDACValueClock(5, this->ClockParams.two_vclock_lo, this->ClockParams.two_vclock_hi); //Channel 5: 2V3
+
+        this->SetDACValueClock(6, this->ClockParams.tg_lo, this->ClockParams.tg_hi); //Channel 6: TG1
+        this->SetDACValueClock(8, this->ClockParams.tg_lo, this->ClockParams.tg_hi); //Channel 8: TG2
+
+        this->SetDACValueClock(7, this->ClockParams.og_lo, this->ClockParams.og_hi); //Channel 7: OG1
+        this->SetDACValueClock(9, this->ClockParams.og_lo, this->ClockParams.og_hi); //Channel 9: OG2
+
+        this->SetDACValueClock(18, this->ClockParams.sw_lo, this->ClockParams.sw_hi); //Channel 18: SWL
+        this->SetDACValueClock(23, this->ClockParams.sw_lo, this->ClockParams.sw_hi); //Channel 23: SWU
+
+
+        //Reset gate needs to be checked against the current timing file and be flipped if necessary
+        if (this->CCDParams.InvRG) {
+            this->SetDACValueClock(20, this->ClockParams.rg_hi, this->ClockParams.rg_lo); //Channel 20: RG1
+            this->SetDACValueClock(22, this->ClockParams.rg_hi, this->ClockParams.rg_lo); //Channel 21: RG2
+        } else {
+            this->SetDACValueClock(20, this->ClockParams.rg_lo, this->ClockParams.rg_hi); //Channel 20: RG1
+            this->SetDACValueClock(22, this->ClockParams.rg_lo, this->ClockParams.rg_hi); //Channel 21: RG2
+        }
+
+
+        this->SetDACValueClock(19, this->ClockParams.dg_lo, this->ClockParams.dg_hi); //Channel 18: DG1
+        this->SetDACValueClock(21, this->ClockParams.dg_lo, this->ClockParams.dg_hi); //Channel 23: DG2
+
+    } else {
+
+        std::cout<<"The second stage is neither UW1 or UW2, which means pre-set clock voltages could not be applied. "
+                 <<"Stop and check.\n";
     }
 
 }

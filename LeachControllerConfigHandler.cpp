@@ -27,8 +27,10 @@ void LeachController::ParseCCDSettings(CCDVariables &_CCDSettings, ClockVariable
     }
 
 
-    _clockSettings.vclock_hi = _LeachConfig.GetReal("clocks", "vclock_hi", 6);
-    _clockSettings.vclock_lo = _LeachConfig.GetReal("clocks", "vclock_lo", 0);
+    _clockSettings.one_vclock_hi = _LeachConfig.GetReal("clocks", "one_vclock_hi", 6);
+    _clockSettings.one_vclock_lo = _LeachConfig.GetReal("clocks", "one_vclock_lo", 0);
+    _clockSettings.two_vclock_hi = _LeachConfig.GetReal("clocks", "two_vclock_hi", 6);
+    _clockSettings.two_vclock_lo = _LeachConfig.GetReal("clocks", "two_vclock_lo", 0);
 
     _clockSettings.u_hclock_hi = _LeachConfig.GetReal("clocks", "u_hclock_hi", 5);
     _clockSettings.u_hclock_lo = _LeachConfig.GetReal("clocks", "u_hclock_lo", 0);
@@ -54,6 +56,7 @@ void LeachController::ParseCCDSettings(CCDVariables &_CCDSettings, ClockVariable
     _CCDSettings.dRows = _LeachConfig.GetInteger("ccd", "rows", 4000);
     _CCDSettings.nSkipperR = _LeachConfig.GetInteger("ccd", "NDCM", 1);
     _CCDSettings.sTimFile = _LeachConfig.Get("ccd", "sequencer_loc", "tim_current.lod");
+    _CCDSettings.SecondStageVersion = _LeachConfig.Get("ccd", "second_stage", "UW1");
     _CCDSettings.InvRG = _LeachConfig.GetBoolean("ccd", "RG_inv", true);
 
     _CCDSettings.AmplifierDirection = _LeachConfig.Get("ccd", "AmplifierDirection", "LR");

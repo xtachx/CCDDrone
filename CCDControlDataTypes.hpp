@@ -11,6 +11,9 @@ struct CCDVariables{
     /*Variables that will need to be set before exposure*/
     std::string sTimFile;
     std::string CCDType;
+    std::string SecondStageVersion;
+
+
     float fExpTime;
     int nSkipperR;
     int dRows;
@@ -33,8 +36,10 @@ struct CCDVariables{
 
 struct ClockVariables{
     /*Clock settings*/
-    double vclock_hi;
-    double vclock_lo;
+    double one_vclock_hi;
+    double one_vclock_lo;
+    double two_vclock_hi;
+    double two_vclock_lo;
 
     double tg_hi;
     double tg_lo;
