@@ -133,16 +133,30 @@ void LeachController::ApplyAllCCDClocks(void )
 
 
 
-    } else if (this->CCDParams.SecondStageVersion=="UW2"){
+    } else if (this->CCDParams.SecondStageVersion=="UW2") {
 
 
         this->SetDACValueClock(3, this->ClockParams.two_vclock_lo, this->ClockParams.two_vclock_hi); //Channel 3: 2V1
         this->SetDACValueClock(4, this->ClockParams.two_vclock_lo, this->ClockParams.two_vclock_hi); //Channel 4: 2V2
         this->SetDACValueClock(5, this->ClockParams.two_vclock_lo, this->ClockParams.two_vclock_hi); //Channel 5: 2V3
 
-        this->SetDACValueClock(6, this->ClockParams.tg_lo, this->ClockParams.tg_hi); //Channel 6: TG1
-        this->SetDACValueClock(8, this->ClockParams.tg_lo, this->ClockParams.tg_hi); //Channel 8: TG2
+        /*You should only be able open the TG corresponding to the direction of charge movement*/
+        if (this->CCDParams.VClkDirection == "1") {
+            this->SetDACValueClock(6, this->ClockParams.tg_lo, this->ClockParams.tg_hi); //Channel 6: TG1
+            this->SetDACValueClock(8, this->ClockParams.tg_hi, this->ClockParams.tg_hi); //Channel 8: TG2
+        } else if (this->CCDParams.VClkDirection == "2"){
+            this->SetDACValueClock(6, this->ClockParams.tg_hi, this->ClockParams.tg_hi); //Channel 6: TG1
+            this->SetDACValueClock(8, this->ClockParams.tg_lo, this->ClockParams.tg_hi); //Channel 8: TG2
+        } else {
+            this->SetDACValueClock(6, this->ClockParams.tg_lo, this->ClockParams.tg_hi); //Channel 6: TG1
+            this->SetDACValueClock(8, this->ClockParams.tg_lo, this->ClockParams.tg_hi); //Channel 8: TG2
 
+            if (this->CCDParams.VClkDirection != "12")
+                std::cout<<"V-Clock direction is ambiguous, so both TG are set to enabled. "
+                           "However, you should still stop and verify the V-clock directions.";
+        }
+
+        
         this->SetDACValueClock(7, this->ClockParams.og_lo, this->ClockParams.og_hi); //Channel 7: OG1
         this->SetDACValueClock(9, this->ClockParams.og_lo, this->ClockParams.og_hi); //Channel 9: OG2
 
