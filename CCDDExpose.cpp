@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <chrono>
 #include <fstream>
+#include <sys/stat.h>
+
 
 #include "LeachController.hpp"
 
@@ -20,46 +22,52 @@ int main( int argc, char **argv )
 {
 
     /*Now get the args*/
-	if (argc<2) {
-		std::cout << "Please specify an exposure value!\n";
-		USAGE(argv[0]);
-		exit( EXIT_FAILURE );
-	}
+    if (argc<2) {
+        std::cout << "Please specify an exposure value!\n";
+        USAGE(argv[0]);
+        exit( EXIT_FAILURE );
+    }
 
-	int ExposeSeconds;
-	try {
-		ExposeSeconds = atoi(argv[1]);
-	} catch (...)
-	{
-		ExposeSeconds = 5;
-		std::cout << "Exposure was not set correctly. Using a default value of 5 seconds.";
-	}
+    int ExposeSeconds;
+    try {
+        ExposeSeconds = atoi(argv[1]);
+    } catch (...)
+    {
+        ExposeSeconds = 5;
+        std::cout << "Exposure was not set correctly. Using a default value of 5 seconds.";
+    }
 
-	std::string OutFileName;
-	try {
-		OutFileName = argv[2];
-	} catch (...)
-	{
-		OutFileName = "Image.fits";
-		std::cout << "Output file name is set to Image.fits since no name was provided.";
-	}
+    std::string OutFileName;
+    try {
+        OutFileName = argv[2];
+    } catch (...)
+    {
+        OutFileName = "Image.fits";
+        std::cout << "Output file name is set to Image.fits since no name was provided.";
+    }
 
+    /*Check if the output filename exists. If so, we end the program immediately.*/
+    struct stat buffer;
+    if (stat (OutFileName.c_str(), &buffer) == 0){
+        std::cout << "The specified output file already exist. Please specify a different name for the output.\n";
+        return -1;
+    }
 
-	/* Read the last config file location - this is needed to compare with the file uploaded
-	 * and check that it has not changed since the upload. */
+    /* Read the last config file location - this is needed to compare with the file uploaded
+     * and check that it has not changed since the upload. */
     std::ifstream LastCfgLoc("do_not_touch/LastConfigLocation.txt", std::fstream::in);
     std::string LastCfgFile;
     std::getline(LastCfgLoc, LastCfgFile);
     LastCfgLoc.close();
 
-	LeachController _ThisRunControllerInstance(LastCfgFile);
+    LeachController _ThisRunControllerInstance(LastCfgFile);
 
-	/*At the start of the program, log the time*/
+    /*At the start of the program, log the time*/
     _ThisRunControllerInstance.ClockTimers.ProgramStart = std::chrono::system_clock::now();
 
-	/*Check if the settings file has changed in any way*/
-	bool config, sequencer;
-	int _CCDSettingsStatus = _ThisRunControllerInstance.LoadAndCheckForSettingsChange(config, sequencer);
+    /*Check if the settings file has changed in any way*/
+    bool config, sequencer;
+    int _CCDSettingsStatus = _ThisRunControllerInstance.LoadAndCheckForSettingsChange(config, sequencer);
 
     if (_CCDSettingsStatus == 0){
 
