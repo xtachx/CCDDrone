@@ -300,13 +300,12 @@ int LeachController::ApplyNewIntegralTimeAndGain(double integralTime, int gain)
 
     int timing_dsp = this->CalculateTiming(integralTime);
 
-    /*Set gain and speed*/
-    int speed;
-    /*SPEED = 0 for slow, 1 for fast*/
-    if ( integralTime < 9.0 ) speed = 1;
-    else speed = 0;
+    /*Set gain and speed
+     *SPEED = 0 for slow, 1 for fast*/
+    if ( integralTime < 9.0 ) this->CCDParams.ItgSpeed = 1;
+    else this->CCDParams.ItgSpeed = 0;
 
-    this->ApplyGainAndSpeed(gain, speed);
+    this->ApplyGainAndSpeed(gain, this->CCDParams.ItgSpeed);
 
     /*Set integral time*/
     int dReply = 0;

@@ -33,6 +33,7 @@ struct CCDVariables{
     int SerialBin;
 
     int Gain;
+    int ItgSpeed;
 
 };
 
