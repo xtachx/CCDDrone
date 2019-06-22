@@ -15,7 +15,7 @@ int main( int argc, char **argv )
 {
 
 
-    std::cout << "This code apply new settings on the the clock and bias voltages.\n";
+    std::cout << "This code applies new settings according to the selected config file.\n";
 
 	std::string configFileName;
 

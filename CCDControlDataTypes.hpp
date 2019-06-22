@@ -32,6 +32,8 @@ struct CCDVariables{
     int ParallelBin;
     int SerialBin;
 
+    int Gain;
+
 };
 
 struct ClockVariables{

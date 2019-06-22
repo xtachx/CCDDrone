@@ -295,11 +295,20 @@ int LeachController::CalculateTiming(double time_in_us) {
 
 }
 
-int LeachController::ApplyNewIntegralTime(double integralTime)
+int LeachController::ApplyNewIntegralTimeAndGain(double integralTime, int gain)
 {
 
     int timing_dsp = this->CalculateTiming(integralTime);
 
+    /*Set gain and speed*/
+    int speed;
+    /*SPEED = 0 for slow, 1 for fast*/
+    if ( integralTime < 9.0 ) speed = 1;
+    else speed = 0;
+
+    this->ApplyGainAndSpeed(gain, speed);
+
+    /*Set integral time*/
     int dReply = 0;
     dReply = pArcDev->Command( TIM_ID, CIT, timing_dsp);
     if ( dReply == 0x00444F4E ) {
@@ -309,6 +318,23 @@ int LeachController::ApplyNewIntegralTime(double integralTime)
         return -1;
     }
 
+
+
+}
+
+int LeachController::ApplyGainAndSpeed( int gain, int speed) {
+
+    /*Command syntax is  SGN  #GAIN  #SPEED, #GAIN = 1, 2, 5 or 10
+     * #SPEED = 0 for slow, 1 for fast */
+
+    int dReply = 0;
+    dReply = pArcDev->Command( TIM_ID, SGN, speed, gain);
+    if ( dReply == 0x00444F4E ) {
+        return 0;
+    } else {
+        printf("Error setting the speed and gain: %X\n", dReply);
+        return -1;
+    }
 }
 
 int LeachController::ApplyNewPedestalIntegralWait(double pedestalWaitTime){

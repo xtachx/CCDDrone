@@ -141,11 +141,12 @@ public:
     void RestoreVClockVoltages (void);
     void IdleClockToggle(void );
     void ApplyNewSequencer(std::string );
-    int ApplyNewIntegralTime(double );
+    int ApplyNewIntegralTimeAndGain(double, int );
     int ApplyNewPedestalIntegralWait(double );
     int ApplyNewSignalIntegralWait(double);
     int ApplyPBIN(int);
     int ApplySBIN(int);
+    int ApplyGainAndSpeed( int, int );
 
 
 

@@ -66,7 +66,7 @@ void LeachController::ApplyAllCCDBasic(void ){
         /*Set V-Clock direction*/
         this->SetVDR();
         /*Next, set the integral time*/
-        this->ApplyNewIntegralTime(this->CCDParams.IntegralTime);
+        this->ApplyNewIntegralTimeAndGain(this->CCDParams.IntegralTime, this->CCDParams.Gain);
         /*Next, we need to set the Pedestal and Signal wait times before an integration begins*/
         this->ApplyNewPedestalIntegralWait(this->CCDParams.PedestalIntgWait);
         this->ApplyNewSignalIntegralWait(this->CCDParams.SignalIntgWait);

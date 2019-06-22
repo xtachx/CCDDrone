@@ -59,11 +59,11 @@ void LeachController::ParseCCDSettings(CCDVariables &_CCDSettings, ClockVariable
     _CCDSettings.SecondStageVersion = _LeachConfig.Get("ccd", "second_stage", "UW1");
     _CCDSettings.InvRG = _LeachConfig.GetBoolean("ccd", "RG_inv", true);
 
-    _CCDSettings.AmplifierDirection = _LeachConfig.Get("ccd", "AmplifierDirection", "LR");
-    if(_CCDSettings.AmplifierDirection == "RL") _CCDSettings.AmplifierDirection = "LR";
+    _CCDSettings.AmplifierDirection = _LeachConfig.Get("ccd", "AmplifierDirection", "UL");
+    if(_CCDSettings.AmplifierDirection == "LU") _CCDSettings.AmplifierDirection = "UL";
 
-    _CCDSettings.HClkDirection = _LeachConfig.Get("ccd", "HClkDirection", "LR");
-    if(_CCDSettings.HClkDirection == "RL") _CCDSettings.HClkDirection = "LR";
+    _CCDSettings.HClkDirection = _LeachConfig.Get("ccd", "HClkDirection", "UL");
+    if(_CCDSettings.HClkDirection == "LU") _CCDSettings.HClkDirection = "UL";
 
     _CCDSettings.VClkDirection = _LeachConfig.Get("ccd", "VClkDirection", "1");
     if(_CCDSettings.VClkDirection == "21") _CCDSettings.VClkDirection = "12";
@@ -75,6 +75,15 @@ void LeachController::ParseCCDSettings(CCDVariables &_CCDSettings, ClockVariable
 
     _CCDSettings.ParallelBin =  _LeachConfig.GetInteger("ccd","ParallelBin",1);
     _CCDSettings.SerialBin =  _LeachConfig.GetInteger("ccd","SerialBin",1);
+
+    int ccd_gain = _LeachConfig.GetInteger("ccd","Gain",1);
+    if (ccd_gain == 1 || ccd_gain == 2 || ccd_gain == 5 || ccd_gain == 10){
+        _CCDSettings.Gain = ccd_gain;
+    } else {
+        std::cout<<"Warning: The gain must be 1,2,5 or 10. Setting the gain to 1.\n";
+        _CCDSettings.Gain = 1;
+    }
+
 
 
     /*Bias Voltages*/
