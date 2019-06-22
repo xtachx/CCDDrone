@@ -324,11 +324,12 @@ int LeachController::ApplyNewIntegralTimeAndGain(double integralTime, int gain)
 
 int LeachController::ApplyGainAndSpeed( int gain, int speed) {
 
-    /*Command syntax is  SGN  #GAIN  #SPEED, #GAIN = 1, 2, 5 or 10
+    /*Command syntax is  SGN  #GAIN  #SPEED.
+     * Note: Gain can be one of = 1, 2, 5 or 10
      * #SPEED = 0 for slow, 1 for fast */
 
     int dReply = 0;
-    dReply = pArcDev->Command( TIM_ID, SGN, speed, gain);
+    dReply = pArcDev->Command( TIM_ID, SGN, gain, speed);
     if ( dReply == 0x00444F4E ) {
         return 0;
     } else {
