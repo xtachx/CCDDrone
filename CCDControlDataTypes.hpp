@@ -28,6 +28,10 @@ struct CCDVariables{
     double IntegralTime;
     double PedestalIntgWait;
     double SignalIntgWait;
+    double DGWidth;
+    double OGWidth;
+    double SKRSTWidth;
+    double SWWidth;
 
     int ParallelBin;
     int SerialBin;

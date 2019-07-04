@@ -69,9 +69,7 @@ void LeachController::ParseCCDSettings(CCDVariables &_CCDSettings, ClockVariable
     if(_CCDSettings.VClkDirection == "21") _CCDSettings.VClkDirection = "12";
 
     _CCDSettings.super_sequencer = _LeachConfig.GetBoolean("ccd","super_sequencer", false);
-    _CCDSettings.IntegralTime = _LeachConfig.GetReal("ccd","IntegralTime",30.0);
-    _CCDSettings.PedestalIntgWait =  _LeachConfig.GetReal("ccd","PedestalIntgWait",2.0);
-    _CCDSettings.SignalIntgWait =  _LeachConfig.GetReal("ccd","SignalIntgWait",0.5);
+
 
     _CCDSettings.ParallelBin =  _LeachConfig.GetInteger("ccd","ParallelBin",1);
     _CCDSettings.SerialBin =  _LeachConfig.GetInteger("ccd","SerialBin",1);
@@ -83,6 +81,16 @@ void LeachController::ParseCCDSettings(CCDVariables &_CCDSettings, ClockVariable
         std::cout<<"Warning: The gain must be 1,2,5 or 10. Setting the gain to 1.\n";
         _CCDSettings.Gain = 1;
     }
+
+
+    /*Timing Settings*/
+    _CCDSettings.IntegralTime = _LeachConfig.GetReal("timing","IntegralTime",30.0);
+    _CCDSettings.PedestalIntgWait =  _LeachConfig.GetReal("timing","PedestalIntgWait",2.0);
+    _CCDSettings.SignalIntgWait =  _LeachConfig.GetReal("timing","SignalIntgWait",0.5);
+    _CCDSettings.DGWidth =  _LeachConfig.GetReal("timing","DGWidth",0.6);
+    _CCDSettings.OGWidth =  _LeachConfig.GetReal("timing","OGWidth",0.6);
+    _CCDSettings.SKRSTWidth =  _LeachConfig.GetReal("timing","SkippingRGWidth",0.6);
+    _CCDSettings.SWWidth =  _LeachConfig.GetReal("timing","SWPulseWidth",0.6);
 
 
 

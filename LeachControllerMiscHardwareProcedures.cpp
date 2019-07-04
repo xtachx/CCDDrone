@@ -393,3 +393,66 @@ int LeachController::ApplySBIN(int NSBIN){
     }
 
 }
+
+
+int LeachController::ApplyDGWidth(double newDGWidth) {
+
+    int timing_dsp = this->CalculateTiming(newDGWidth);
+
+    int dReply = 0;
+    dReply = pArcDev->Command( TIM_ID, DGW, timing_dsp);
+    if ( dReply == DON ) {
+        return 0;
+    } else {
+        printf("Error setting the DG width / time: %X\n", dReply);
+        return -1;
+    }
+
+}
+
+
+int LeachController::ApplyOGWidth(double newOGWidth) {
+
+    int timing_dsp = this->CalculateTiming(newOGWidth);
+
+    int dReply = 0;
+    dReply = pArcDev->Command( TIM_ID, OGW, timing_dsp);
+    if ( dReply == DON ) {
+        return 0;
+    } else {
+        printf("Error setting the OG width / time: %X\n", dReply);
+        return -1;
+    }
+
+}
+
+
+int LeachController::ApplySkippingRGWidth(double newRGWidth) {
+
+    int timing_dsp = this->CalculateTiming(newRGWidth);
+
+    int dReply = 0;
+    dReply = pArcDev->Command( TIM_ID, RSW, timing_dsp);
+    if ( dReply == DON ) {
+        return 0;
+    } else {
+        printf("Error setting the RG width / time: %X\n", dReply);
+        return -1;
+    }
+
+}
+
+int LeachController::ApplySummingWellWidth(double newSWWidth) {
+
+    int timing_dsp = this->CalculateTiming(newSWWidth);
+
+    int dReply = 0;
+    dReply = pArcDev->Command( TIM_ID, SWW, timing_dsp);
+    if ( dReply == DON ) {
+        return 0;
+    } else {
+        printf("Error setting the SW width / time: %X\n", dReply);
+        return -1;
+    }
+
+}

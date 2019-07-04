@@ -39,6 +39,10 @@
 #define VDXN_1 0x5F5F41
 #define VDXN_2 0x5F5F42
 #define VDXN_12 0x5F5F43
+#define DGW 0x00444757
+#define RSW 0x00525357
+#define OGW 0x004F4757
+#define SWW 0x00535757
 
 
 
@@ -147,6 +151,10 @@ public:
     int ApplyPBIN(int);
     int ApplySBIN(int);
     int ApplyGainAndSpeed( int, int );
+    int ApplyDGWidth(double);
+    int ApplyOGWidth(double);
+    int ApplySkippingRGWidth(double);
+    int ApplySummingWellWidth(double);
 
 
 

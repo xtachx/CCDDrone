@@ -73,6 +73,12 @@ void LeachController::ApplyAllCCDBasic(void ){
         /*Binning*/
         this->ApplyPBIN(this->CCDParams.ParallelBin);
         this->ApplySBIN(this->CCDParams.SerialBin);
+        /*Timing of DG, OG and Reset*/
+        this->ApplyDGWidth(this->CCDParams.DGWidth);
+        this->ApplyOGWidth(this->CCDParams.OGWidth);
+        this->ApplySkippingRGWidth(this->CCDParams.SKRSTWidth);
+        this->ApplySummingWellWidth(this->CCDParams.SWWidth);
+
     }
 
     if (this->CCDParams.CCDType == "SK"){

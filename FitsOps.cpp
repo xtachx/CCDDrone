@@ -63,6 +63,12 @@ void LeachController::SaveFits(std::string outFileName)
     fits_write_key(fptr, TINT, "ITGSpd", &this->CCDParams.ItgSpeed, "Integrator speed (0=slow, 1=fast)", &status);
     fits_write_key(fptr, TDOUBLE, "PRETIME", &this->CCDParams.PedestalIntgWait, "Pedestal settling + video ADC refresh time", &status);
     fits_write_key(fptr, TDOUBLE, "POSTIME", &this->CCDParams.SignalIntgWait, "Signal settling time", &status);
+    fits_write_key(fptr, TDOUBLE, "DGWIDTH", &this->CCDParams.DGWidth, "DG Width (SK only)", &status);
+    fits_write_key(fptr, TDOUBLE, "RGWIDTH", &this->CCDParams.SKRSTWidth, "Skipping reset width (SK only)", &status);
+    fits_write_key(fptr, TDOUBLE, "OGWIDTH", &this->CCDParams.OGWidth, "OG Width (SK only)", &status);
+    fits_write_key(fptr, TDOUBLE, "SWWIDTH", &this->CCDParams.SWWidth, "SW Pulse Width (SK only)", &status);
+
+
     fits_write_key(fptr, TINT, "NPBIN", &this->CCDParams.ParallelBin, "Binning in the V-direction (parallel clocks)", &status);
     fits_write_key(fptr, TINT, "NSBIN", &this->CCDParams.SerialBin, "Binning in the H-direction (serial clocks)", &status);
     fits_write_key(fptr, TSTRING, "SecStg", (char*) this->CCDParams.SecondStageVersion.c_str(), "Second stage board revision (SSeq only)", &status);
