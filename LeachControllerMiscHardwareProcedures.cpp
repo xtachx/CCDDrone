@@ -202,11 +202,11 @@ int LeachController::SetHDR(void )
     int HDR_response;
 
     if (this->CCDParams.HClkDirection == "UL") {
-        HDR_response = pArcDev->Command(TIM_ID, HDR, AMP_LR);
+        HDR_response = pArcDev->Command(TIM_ID, HDR, DRXN_LU);
     } else if (this->CCDParams.HClkDirection == "U") {
-        HDR_response = pArcDev->Command(TIM_ID, HDR, AMP_L);
+        HDR_response = pArcDev->Command(TIM_ID, HDR, DRXN_U);
     } else if (this->CCDParams.HClkDirection == "L") {
-        HDR_response = pArcDev->Command(TIM_ID, HDR, AMP_R);
+        HDR_response = pArcDev->Command(TIM_ID, HDR, DRXN_L);
 
     } else {
         std::cout << "The Serial Register / H-clock direction selected does not exist. Stop and verify!\n";
@@ -226,13 +226,13 @@ int LeachController::SelectAmplifierAndHClocks(void )
 
     int SOS_response;
     if (this->CCDParams.AmplifierDirection == "UL") {
-        SOS_response = pArcDev->Command(TIM_ID, SOS, AMP_LR);
+        SOS_response = pArcDev->Command(TIM_ID, SOS, DRXN_LU);
 
     } else if (this->CCDParams.AmplifierDirection == "U") {
-        SOS_response = pArcDev->Command(TIM_ID, SOS, AMP_L);
+        SOS_response = pArcDev->Command(TIM_ID, SOS, DRXN_U);
 
     } else if (this->CCDParams.AmplifierDirection == "L") {
-        SOS_response = pArcDev->Command(TIM_ID, SOS, AMP_R);
+        SOS_response = pArcDev->Command(TIM_ID, SOS, DRXN_L);
 
     } else {
         std::cout << "The amplifier selected does not exist. Stop and verify!\n";
@@ -268,16 +268,16 @@ int LeachController::CalculateTiming(double time_in_us) {
     int timing_dsp;
 
     if (iTime_ns > 4000) {
-        timing_bigmult = ( iTime_ns/640 ) | 0x80;
+        timing_bigmult = ( iTime_ns/320 ) | 0x80;
         timing_dsp = timing_bigmult;
     } else {
         //if between 640ns and 40ns, 640 is a closer match, then use that
-        bigreminder=iTime_ns % 640 > 320 ? 640-iTime_ns % 640 : iTime_ns % 640;
+        bigreminder=iTime_ns % 320 > 160 ? 320-iTime_ns % 320 : iTime_ns % 320;
         littlereminder= iTime_ns % 40 > 20 ? 40-iTime_ns % 40 : iTime_ns % 40 ;
 
         if (bigreminder <= littlereminder ) {
 
-            timing_bigmult= (iTime_ns/640) | 0x80 ;
+            timing_bigmult= (iTime_ns/320) | 0x80 ;
             timing_dsp = timing_bigmult;
 
         } else {

@@ -43,6 +43,9 @@
 #define RSW 0x00525357
 #define OGW 0x004F4757
 #define SWW 0x00535757
+#define DRXN_L 0x5F5F4C
+#define DRXN_U 0x5F5F55
+#define DRXN_LU 0x5F4C55
 
 
 
