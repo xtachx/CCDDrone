@@ -15,15 +15,15 @@ set(SOURCE
    ${CMAKE_CURRENT_SOURCE_DIR}/LeachControllerExpose.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/LeachControllerClkBiasMethods.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/LeachControllerMiscHardwareProcedures.cpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/LeachControllerConfigHandler.cpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/FitsOps.cpp
-   )
+   ${CMAKE_CURRENT_SOURCE_DIR}/LeachControllerMiscHardwareProcedures.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/LeachControllerTimingProcedures.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/FitsOps.cpp)
 set(HEADERS
    ${CMAKE_CURRENT_SOURCE_DIR}/picosha2.h
    ${CMAKE_CURRENT_SOURCE_DIR}/LeachController.hpp
    ${CMAKE_CURRENT_SOURCE_DIR}/CCDControlDataTypes.hpp
    ${CMAKE_CURRENT_SOURCE_DIR}/INIReader.h
-   )
+   ${CMAKE_CURRENT_SOURCE_DIR}/UtilityFunctions.hpp)
 
 INCLUDE_DIRECTORIES(
     ${CMAKE_CURRENT_SOURCE_DIR}/ArcAPI/CArcDevice/src

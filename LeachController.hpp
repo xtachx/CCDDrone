@@ -23,6 +23,8 @@
 #include "ArcDefs.h"
 
 #include "CCDControlDataTypes.hpp"
+#include "UtilityFunctions.hpp"
+
 
 
 /*Extra messages implemented in the super-sequencer*/
@@ -55,6 +57,7 @@ class LeachController
 private:
 
     arc::device::CArcPCIe *pArcDev;
+    ProgressBar ReadoutProgress;
 
     // ------------------------------------------------------
     //  Exposure Callback Class - this crazy construction is needed
@@ -79,13 +82,16 @@ private:
         void ReadCallback( int dPixelCount )
         {
 
-            auto _elapsedDurationMillis = std::chrono::duration<double, std::milli> (std::chrono::system_clock::now() - L.ClockTimers.Readoutstart);
-            int _elpasedMilli = _elapsedDurationMillis.count();
-            float fractionDone = (float)dPixelCount / (float)L.TotalPixelsToRead;
-            float fractionRemain = 1.0-fractionDone;
-            float _estimatedTimeRemain = fractionRemain * (float)_elpasedMilli/(1000*fractionDone);
+            L.ReadoutProgress.updProgress(dPixelCount);
+            L.ReadoutProgress.display();
 
-            printf("\rNumber of pixels transferred: %d / %d (%0.2f \%). Est: %.02f sec",dPixelCount, L.TotalPixelsToRead, fractionDone*100, _estimatedTimeRemain);
+            //auto _elapsedDurationMillis = std::chrono::duration<double, std::milli> (std::chrono::system_clock::now() - L.ClockTimers.Readoutstart);
+            //int _elpasedMilli = _elapsedDurationMillis.count();
+            //float fractionDone = (float)dPixelCount / (float)L.TotalPixelsToRead;
+            //float fractionRemain = 1.0-fractionDone;
+            //float _estimatedTimeRemain = fractionRemain * (float)_elpasedMilli/(1000*fractionDone);
+
+            //printf("\rPixel transfer progress: %d / %d (%0.2f \%). Est: %.02f sec",dPixelCount, L.TotalPixelsToRead, fractionDone*100, _estimatedTimeRemain);
         }
     };
 

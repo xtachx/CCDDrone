@@ -5,6 +5,7 @@
  */
 
 #include "LeachController.hpp"
+#include "UtilityFunctions.hpp"
 
 #include <string>
 #include <iostream>
@@ -89,6 +90,7 @@ void LeachController::PrepareAndExposeCCD(int ExposureTime, unsigned short *Imag
         std::cout << "Starting exposure\n";
         this->ExposeCCD(ExposureTime, false, &cExposeListener);
         this->ClockTimers.ReadoutEnd = std::chrono::system_clock::now();
+        this->ReadoutProgress.done();
         std::cout << "\nExposure complete.\n";
 
 
@@ -206,6 +208,7 @@ void LeachController::ExposeCCD( float fExpTime, const bool& bAbort, CExposeList
                 this->ClockTimers.isReadout = true;
                 this->ClockTimers.isExp = false;
                 this->ClockTimers.rClockCounter = 1;
+                this->ReadoutProgress.SetEssentials(this->TotalPixelsToRead,this->ClockTimers.Readoutstart);
             }
             //printf("Is in readout: %d\n",pArcDev->IsReadout());
         }
