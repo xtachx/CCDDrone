@@ -209,6 +209,7 @@ void LeachController::ExposeCCD( float fExpTime, const bool& bAbort, CExposeList
                 this->ClockTimers.isExp = false;
                 this->ClockTimers.rClockCounter = 1;
                 this->ReadoutProgress.SetEssentials(this->TotalPixelsToRead,this->ClockTimers.Readoutstart);
+                std::cout<<std::endl<<"Total pixels to read: "<<this->TotalPixelsToRead<<std::endl;
             }
             //printf("Is in readout: %d\n",pArcDev->IsReadout());
         }

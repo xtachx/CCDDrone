@@ -14,7 +14,7 @@ set(SOURCE
    ${CMAKE_CURRENT_SOURCE_DIR}/LeachController.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/LeachControllerExpose.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/LeachControllerClkBiasMethods.cpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/LeachControllerMiscHardwareProcedures.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/LeachControllerConfigHandler.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/LeachControllerMiscHardwareProcedures.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/LeachControllerTimingProcedures.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/FitsOps.cpp)

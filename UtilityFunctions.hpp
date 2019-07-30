@@ -8,6 +8,8 @@
 
 #include <chrono>
 #include <iostream>
+#include <iomanip>
+#include <cmath>
 
 class ProgressBar {
 private:
@@ -35,9 +37,9 @@ public:
 
         auto _elapsedDurationMillis = std::chrono::duration<double, std::milli> (std::chrono::system_clock::now() - start_time);
         int _elpasedMilli = _elapsedDurationMillis.count();
-
         float fractionRemain = 1.0-progress;
         float _estimatedTimeRemain = fractionRemain * (float)_elpasedMilli/(1000.0*progress);
+
 
         std::cout << "[";
 
@@ -46,8 +48,12 @@ public:
             else if (i == pos) std::cout << ">";
             else std::cout << incomplete_char;
         }
-        std::cout << "] " << int(progress * 100.0) << "% "
-                  << "Est: " << _estimatedTimeRemain << " sec\r";
+        std::cout << "] ";
+        std::cout << std::fixed;
+        std::cout << std::setprecision(0);
+        std::cout << progress * 100.0 << "% ";
+        if (!std::isnan(_estimatedTimeRemain) ) std::cout<< " | Est. time remaining: " << _estimatedTimeRemain << " sec";
+        std::cout<< "\r";
         std::cout.flush();
     }
 
