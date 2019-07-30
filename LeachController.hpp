@@ -78,7 +78,14 @@ private:
 
         void ReadCallback( int dPixelCount )
         {
-            printf("\rNumber of pixels transferred: %d",dPixelCount);
+
+            auto _elapsedDurationMillis = std::chrono::duration<double, std::milli> (std::chrono::system_clock::now() - L.ClockTimers.Readoutstart);
+            int _elpasedMilli = _elapsedDurationMillis.count();
+            float fractionDone = (float)dPixelCount / (float)L.TotalPixelsToRead;
+            float fractionRemain = 1.0-fractionDone;
+            float _estimatedTimeRemain = fractionRemain * (float)_elpasedMilli/(1000*fractionDone);
+
+            printf("\rNumber of pixels transferred: %d / %d (%0.2f \%). Est: %.02f sec",dPixelCount, L.TotalPixelsToRead, fractionDone*100, _estimatedTimeRemain);
         }
     };
 
@@ -138,6 +145,7 @@ public:
     /*LeachControllerExpose - public part*/
     void PrepareAndExposeCCD(int, unsigned short*);
     int _expose_isVDDOn = true;
+    int TotalPixelsToRead;
 
 
     /*LeachControllerMiscHardwareProcedures - public part*/

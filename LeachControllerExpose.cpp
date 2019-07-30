@@ -156,6 +156,9 @@ void LeachController::ExposeCCD( float fExpTime, const bool& bAbort, CExposeList
     int   dPixelCount		= 0;
     int   dExposeCounter	= 0;
 
+    /*Number of pixels to read*/
+    this->TotalPixelsToRead = this->CCDParams.dCols * this->CCDParams.dRows * this->CCDParams.nSkipperR;
+
 
     /* Check for adequate buffer size */
     size_t ImageMemorySize = this->CCDParams.dCols * this->CCDParams.dRows * this->CCDParams.nSkipperR * sizeof(unsigned short);
@@ -277,7 +280,7 @@ void LeachController::ExposeCCD( float fExpTime, const bool& bAbort, CExposeList
             throw std::runtime_error( "Read timeout!" );
         }
 
-        Arc_Sleep( 25 );
+        Arc_Sleep( 50 );
     }
 }
 

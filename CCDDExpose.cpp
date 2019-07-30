@@ -93,6 +93,6 @@ int main( int argc, char **argv )
         std::cout<<"CCD was not exposed and an image was not taken. Please resolve the conflicts in the config section first.\n";
     }
 
-
+    printf("CCDDrone done. Thank you.\n");
 }
 
