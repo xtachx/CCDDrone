@@ -15,13 +15,26 @@ int main( int argc, char **argv )
 {
 
 
+    std::string configFileName;
+
+    /*Now get the args*/
+    if (argc<2) {
+       std::cout << "Default usage: ./CCDDPerformEraseProcedure <config file>. ";
+       std::cout << "No config file was specified. Using config/Config.ini\n";
+
+       configFileName = "config/Config.ini";
+    } else {
+       configFileName = std::string(argv[1]);
+    }
+
+    
     std::cout << "This code will perform an erase procedure.\n"
               << "The process starts in 10 seconds.\n";
 
     std::this_thread::sleep_for(std::chrono::seconds(10));
 
 
-	LeachController _ThisRunControllerInstance("config/Config.ini");
+	LeachController _ThisRunControllerInstance(configFileName);
 
 	/*First, check if the settings file has changed in any way*/
 	bool config,sequencer;
