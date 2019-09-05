@@ -138,6 +138,8 @@ int LeachController::SetSSR(void )
 void LeachController::ApplyNewSequencer(std::string seqFile)
 {
     pArcDev->LoadControllerFile(seqFile.c_str());
+    /*Set image size for idle*/
+    pArcDev->SetImageSize(this->CCDParams.dRows,this->CCDParams.dCols);
 }
 
 int LeachController::SetCCDType(void )

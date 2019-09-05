@@ -52,7 +52,7 @@ public:
         std::cout << std::fixed;
         std::cout << std::setprecision(0);
         std::cout << progress * 100.0 << "% ";
-        if (!std::isnan(_estimatedTimeRemain) ) std::cout<< " | Est. time remaining: " << _estimatedTimeRemain << " sec";
+        if (!std::isnan(_estimatedTimeRemain) ) std::cout<< " | Est. time remaining: " << _estimatedTimeRemain << " sec   ";
         std::cout<< "\r";
         std::cout.flush();
     }

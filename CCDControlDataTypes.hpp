@@ -71,10 +71,13 @@ struct ClockVariables{
 
 struct BiasVariables{
 
-    double vdd;
-    double vrefsk;
+    double vdd_1;
+    double vdd_2;
+    double vrefsk_1;
+    double vrefsk_2;
     double vref;
-    double drain;
+    double drain_1;
+    double drain_2;
     double opg;
     double battrelay;
     int video_offsets_U;

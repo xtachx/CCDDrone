@@ -52,9 +52,7 @@ void LeachController::PrepareAndExposeCCD(int ExposureTime, unsigned short *Imag
         size_t ImageMemorySize = this->CCDParams.dCols * this->CCDParams.dRows * this->CCDParams.nSkipperR * sizeof(unsigned short);
         int TotalCol = this->CCDParams.dCols * this->CCDParams.nSkipperR;
 
-        //pArcDev->UnMapCommonBuffer();
-
-        /*This sets the NSR and NPR in the leach assembly. Somehow this doesnt work?*/
+        /*This sets the NSR and NPR in the leach assembly.*/
         pArcDev->SetImageSize( this->CCDParams.dRows, this->CCDParams.dCols );
         pArcDev->Command( TIM_ID, STC, TotalCol);
 
@@ -85,8 +83,12 @@ void LeachController::PrepareAndExposeCCD(int ExposureTime, unsigned short *Imag
          * We then turn them back on 3 seconds before the exposure ends
          */
 
-        std::cout<<"Turning VDD OFF before exposure.\n";
-        this->ToggleVDD(0);
+        if (ExposureTime > 3) {
+            std::cout << "Turning VDD OFF before exposure.\n";
+            this->ToggleVDD(0);
+        } else {
+            std::cout << "Exposure time is too short to turn VDD off.\n";
+        }
         std::cout << "Starting exposure\n";
         this->ExposeCCD(ExposureTime, false, &cExposeListener);
         this->ClockTimers.ReadoutEnd = std::chrono::system_clock::now();

@@ -202,8 +202,8 @@ void LeachController::ApplyAllBiasVoltages(void )
 
     /*Set Biases*/
     //Vdd
-    this->SetDACValueBias(0,BiasVoltToADC(this->BiasParams.vdd,0));
-    this->SetDACValueBias(1,BiasVoltToADC(this->BiasParams.vdd,1));
+    this->SetDACValueBias(0,BiasVoltToADC(this->BiasParams.vdd_1,0));
+    this->SetDACValueBias(1,BiasVoltToADC(this->BiasParams.vdd_2,1));
     this->SetDACValueBias(2,0);
     this->SetDACValueBias(3,0);
 
@@ -216,14 +216,14 @@ void LeachController::ApplyAllBiasVoltages(void )
     }
     else
     {
-        this->SetDACValueBias(4,BiasVoltToADC(this->BiasParams.vrefsk,4));
-        this->SetDACValueBias(5,BiasVoltToADC(this->BiasParams.vrefsk,5));
+        this->SetDACValueBias(4,BiasVoltToADC(this->BiasParams.vrefsk_1,4));
+        this->SetDACValueBias(5,BiasVoltToADC(this->BiasParams.vrefsk_2,5));
     }
     //DrainL and DrainU
     if(this->CCDParams.CCDType=="SK")
     {
-        this->SetDACValueBias(6,BiasVoltToADC(this->BiasParams.drain,6));
-        this->SetDACValueBias(7,BiasVoltToADC(this->BiasParams.drain,7));
+        this->SetDACValueBias(6,BiasVoltToADC(this->BiasParams.drain_1,6));
+        this->SetDACValueBias(7,BiasVoltToADC(this->BiasParams.drain_2,7));
     }
 
     //OG(1-4)
@@ -254,14 +254,16 @@ void LeachController::ApplyAllBiasVoltages(void )
 
 void LeachController::ToggleVDD(bool VDDState){
 
-    if (VDDState == 1){
-        this->SetDACValueBias(0,BiasVoltToADC(this->BiasParams.vdd,0));
-        this->SetDACValueBias(1,BiasVoltToADC(this->BiasParams.vdd,1));
+    if (VDDState == 1 && !_expose_isVDDOn ){
+        this->SetDACValueBias(0,BiasVoltToADC(this->BiasParams.vdd_1,0));
+        this->SetDACValueBias(1,BiasVoltToADC(this->BiasParams.vdd_2,1));
         _expose_isVDDOn = true;
-    } else if (VDDState == 0){
+    } else if (VDDState == 0 && _expose_isVDDOn){
         this->SetDACValueBias(0,0);
         this->SetDACValueBias(1,0);
         _expose_isVDDOn = false;
+    } else if ( (VDDState == 1 && _expose_isVDDOn) || (VDDState == 0 && !_expose_isVDDOn)) {
+        printf("VDD state not changed since it is not required.\n");
     } else {
         printf("Could not toggle the VDD since condition was not understood.\n");
     }

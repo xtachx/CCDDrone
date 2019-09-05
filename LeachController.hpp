@@ -150,7 +150,7 @@ public:
 
     /*LeachControllerExpose - public part*/
     void PrepareAndExposeCCD(int, unsigned short*);
-    int _expose_isVDDOn = true;
+    char _expose_isVDDOn = 0;
     int TotalPixelsToRead;
 
 

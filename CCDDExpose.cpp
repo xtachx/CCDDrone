@@ -22,7 +22,7 @@ int main( int argc, char **argv )
 {
 
     /*Now get the args*/
-    if (argc<2) {
+    if (argc<3) {
         std::cout << "Please specify an exposure value!\n";
         USAGE(argv[0]);
         exit( EXIT_FAILURE );

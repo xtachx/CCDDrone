@@ -114,15 +114,18 @@ void LeachController::SaveFits(std::string outFileName)
 
     /*Write the Meta keywords - Biases*/
     fits_write_key(fptr, TDOUBLE, "BATTR", &this->BiasParams.battrelay, "Battery box relay TTL Line", &status);
-    fits_write_key(fptr, TDOUBLE, "VDD", &this->BiasParams.vdd, "Vdd", &status);
+    fits_write_key(fptr, TDOUBLE, "VDD1", &this->BiasParams.vdd_1, "Vdd", &status);
+    fits_write_key(fptr, TDOUBLE, "VDD2", &this->BiasParams.vdd_2, "Vdd", &status);
     fits_write_key(fptr, TSHORT, "VidOffL", &this->BiasParams.video_offsets_L, "Video pedestal offset L", &status);
     fits_write_key(fptr, TSHORT, "VidOffU", &this->BiasParams.video_offsets_U, "Video pedestal offset U", &status);
 
 
     if(this->CCDParams.CCDType == "SK") {
         double _SKPlaceHolder = -998.0;
-        fits_write_key(fptr, TDOUBLE, "Drain", &this->BiasParams.drain, "Drain (SK Only)", &status);
-        fits_write_key(fptr, TDOUBLE, "VRef", &this->BiasParams.vrefsk, "VRef", &status);
+        fits_write_key(fptr, TDOUBLE, "Drain1", &this->BiasParams.drain_1, "Drain (SK Only)", &status);
+        fits_write_key(fptr, TDOUBLE, "Drain2", &this->BiasParams.drain_2, "Drain (SK Only)", &status);
+        fits_write_key(fptr, TDOUBLE, "VRef1", &this->BiasParams.vrefsk_1, "VRef", &status);
+        fits_write_key(fptr, TDOUBLE, "VRef2", &this->BiasParams.vrefsk_2, "VRef", &status);
         fits_write_key(fptr, TDOUBLE, "OpG", &_SKPlaceHolder, "OpG (DES Only)", &status);
     } else {
         double _DPlaceHolder = -997.0;
