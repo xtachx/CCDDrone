@@ -34,14 +34,14 @@
 void LeachController::ApplyAllPositiveVPixelArray()
 {
 
-    this->SetDACValueClock(0, 9.0, 9.0); //Channel 0: Min 9V Max 9V
-    this->SetDACValueClock(1, 9.0, 9.0); //Channel 1: Min 9V Max 9V
-    this->SetDACValueClock(2, 9.0, 9.0); //Channel 2: Min 9V Max 9V
+    this->SetDACValueClock(0, 12.0, 12.0); //Channel 0: Min 12V Max 12V
+    this->SetDACValueClock(1, 12.0, 12.0); //Channel 1: Min 12V Max 12V
+    this->SetDACValueClock(2, 12.0, 12.0); //Channel 2: Min 12V Max 12V
 
     if (this->CCDParams.SecondStageVersion=="UW2"){
-        this->SetDACValueClock(3, 9.0, 9.0); //Channel 0: Min 9V Max 9V
-        this->SetDACValueClock(4, 9.0, 9.0); //Channel 1: Min 9V Max 9V
-        this->SetDACValueClock(5, 9.0, 9.0); //Channel 2: Min 9V Max 9V
+        this->SetDACValueClock(3, 12.0, 12.0); //Channel 0: Min 12V Max 12V
+        this->SetDACValueClock(4, 12.0, 12.0); //Channel 1: Min 12V Max 12V
+        this->SetDACValueClock(5, 12.0, 12.0); //Channel 2: Min 12V Max 12V
     }
 
 }
