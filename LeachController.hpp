@@ -152,6 +152,7 @@ public:
     void PrepareAndExposeCCD(int, unsigned short*);
     char _expose_isVDDOn = 0;
     int TotalPixelsToRead;
+    int DecideExposeStrategy(void);
 
 
     /*LeachControllerMiscHardwareProcedures - public part*/

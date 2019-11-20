@@ -208,30 +208,19 @@ void LeachController::ApplyAllBiasVoltages(void )
     this->SetDACValueBias(3,0);
 
 
-    //VR(1-4)
-    if (this->CCDParams.CCDType=="DES")
-    {
-        this->SetDACValueBias(4,BiasVoltToADC(this->BiasParams.vref,4));
-        this->SetDACValueBias(5,BiasVoltToADC(this->BiasParams.vref,5));
-    }
-    else
-    {
-        this->SetDACValueBias(4,BiasVoltToADC(this->BiasParams.vrefsk_1,4));
-        this->SetDACValueBias(5,BiasVoltToADC(this->BiasParams.vrefsk_2,5));
-    }
-    //DrainL and DrainU
-    if(this->CCDParams.CCDType=="SK")
-    {
-        this->SetDACValueBias(6,BiasVoltToADC(this->BiasParams.drain_1,6));
-        this->SetDACValueBias(7,BiasVoltToADC(this->BiasParams.drain_2,7));
-    }
+    //VRef is now set for both SK and DES - there is no need to distinguish them
+    this->SetDACValueBias(4,BiasVoltToADC(this->BiasParams.vref_1,4));
+    this->SetDACValueBias(5,BiasVoltToADC(this->BiasParams.vref_2,5));
 
-    //OG(1-4)
-    if (this->CCDParams.CCDType=="DES")
-    {
-        this->SetDACValueBias(8,BiasVoltToADC(this->BiasParams.opg,8));
-        this->SetDACValueBias(9,BiasVoltToADC(this->BiasParams.opg,9));
-    }
+    //Drain1 and Drain2 should always be set. The value to CCD is controlled by the jumper
+    this->SetDACValueBias(6,BiasVoltToADC(this->BiasParams.drain_1,6));
+    this->SetDACValueBias(7,BiasVoltToADC(this->BiasParams.drain_2,7));
+
+
+    //OpG for DES CCDs. These could always be set, since the pins are distinct from drain.
+    this->SetDACValueBias(8,BiasVoltToADC(this->BiasParams.opg_1,8));
+    this->SetDACValueBias(9,BiasVoltToADC(this->BiasParams.opg_2,9));
+
 
     this->SetDACValueBias(10,0);
     //Controls Relay for battery box

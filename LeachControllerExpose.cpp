@@ -28,6 +28,17 @@
                             throw std::runtime_error( "Expose Aborted!" ); \
                             }
 
+
+int LeachController::DecideExposeStrategy(void){
+
+
+
+    return 0;
+}
+
+
+
+
 /* *********************************************************************
 * This is the CCD exposure preparation routine. This routine should be
 * launched by programs wishing to do an exposure. This will ensure that

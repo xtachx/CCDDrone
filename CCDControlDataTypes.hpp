@@ -73,12 +73,12 @@ struct BiasVariables{
 
     double vdd_1;
     double vdd_2;
-    double vrefsk_1;
-    double vrefsk_2;
-    double vref;
+    double vref_1;
+    double vref_2;
     double drain_1;
     double drain_2;
-    double opg;
+    double opg_1;
+    double opg_2;
     double battrelay;
     int video_offsets_U;
     int video_offsets_L;
