@@ -120,19 +120,15 @@ void LeachController::SaveFits(std::string outFileName)
     fits_write_key(fptr, TSHORT, "VidOffU", &this->BiasParams.video_offsets_U, "Video pedestal offset U", &status);
 
 
-    if(this->CCDParams.CCDType == "SK") {
-        double _SKPlaceHolder = -998.0;
-        fits_write_key(fptr, TDOUBLE, "Drain1", &this->BiasParams.drain_1, "Drain (SK Only)", &status);
-        fits_write_key(fptr, TDOUBLE, "Drain2", &this->BiasParams.drain_2, "Drain (SK Only)", &status);
-        fits_write_key(fptr, TDOUBLE, "VRef1", &this->BiasParams.vrefsk_1, "VRef", &status);
-        fits_write_key(fptr, TDOUBLE, "VRef2", &this->BiasParams.vrefsk_2, "VRef", &status);
-        fits_write_key(fptr, TDOUBLE, "OpG", &_SKPlaceHolder, "OpG (DES Only)", &status);
-    } else {
-        double _DPlaceHolder = -997.0;
-        fits_write_key(fptr, TDOUBLE, "Drain", &_DPlaceHolder, "Drain (SK Only)", &status);
-        fits_write_key(fptr, TDOUBLE, "VRef", &this->BiasParams.vref, "VRef", &status);
-        fits_write_key(fptr, TDOUBLE, "OpG", &this->BiasParams.opg, "OpG (DES only)", &status);
-    }
+
+    fits_write_key(fptr, TDOUBLE, "Drain1", &this->BiasParams.drain_1, "Drain1 (Relevant to SK)", &status);
+    fits_write_key(fptr, TDOUBLE, "Drain2", &this->BiasParams.drain_2, "Drain2 (Relevant to SK)", &status);
+    fits_write_key(fptr, TDOUBLE, "VRef1", &this->BiasParams.vref_1, "VRef", &status);
+    fits_write_key(fptr, TDOUBLE, "VRef2", &this->BiasParams.vref_2, "VRef", &status);
+    fits_write_key(fptr, TDOUBLE, "OpG1", &this->BiasParams.opg_1, "OpG1 (Relevant to DES)", &status);
+    fits_write_key(fptr, TDOUBLE, "OpG2", &this->BiasParams.opg_2, "OpG2 (Relevant to DES)", &status);
+
+
 
     /*Write the Meta keywords for time*/
     std::string ProgStart = timePointAsString(this->ClockTimers.ProgramStart);
