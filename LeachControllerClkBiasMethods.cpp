@@ -151,8 +151,6 @@ void LeachController::CCDBiasToggle (bool state)
 /*Idle clock the CCD or hold off clocking*/
 void LeachController::IdleClockToggle (void )
 {
-
     this->pArcDev->Command(TIM_ID, IDL);
-
 }
 

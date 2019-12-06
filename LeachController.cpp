@@ -47,7 +47,7 @@ LeachController::LeachController(std::string INIFileLoc)
 LeachController::~LeachController()
 {
 
-    pArcDev->Close();
+    //pArcDev->Close();
 
 }
 

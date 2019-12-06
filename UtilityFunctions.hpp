@@ -11,6 +11,12 @@
 #include <iomanip>
 #include <cmath>
 
+
+
+std::string ColouredFmtText(std::string text, std::string colour, std::string fmt="std");
+std::string ColouredFmtText(int text, std::string colour, std::string fmt="std");
+
+
 class ProgressBar {
 private:
     unsigned int items = 0;

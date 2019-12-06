@@ -48,6 +48,7 @@
 #define DRXN_L 0x5F5F4C
 #define DRXN_U 0x5F5F55
 #define DRXN_LU 0x5F4C55
+#define HLD 0x00484C44
 
 
 
@@ -58,6 +59,7 @@ private:
 
     arc::device::CArcPCIe *pArcDev;
     ProgressBar ReadoutProgress;
+
 
     // ------------------------------------------------------
     //  Exposure Callback Class - this crazy construction is needed
@@ -82,7 +84,7 @@ private:
         void ReadCallback( int dPixelCount )
         {
 
-            L.ReadoutProgress.updProgress(dPixelCount);
+            L.ReadoutProgress.updProgress(dPixelCount+L.TotalPixelsCounted);
             L.ReadoutProgress.display();
 
             //auto _elapsedDurationMillis = std::chrono::duration<double, std::milli> (std::chrono::system_clock::now() - L.ClockTimers.Readoutstart);
@@ -152,7 +154,12 @@ public:
     void PrepareAndExposeCCD(int, unsigned short*);
     char _expose_isVDDOn = 0;
     int TotalPixelsToRead;
-    int DecideExposeStrategy(void);
+    int TotalPixelsCounted;
+    int DecideStrategyAndExpose(int, std::string);
+    void PrepareAndExposeCCDForLargeImages(int ExposureTime, int dRows,
+            unsigned short *ImageBuffer, bool FirstInSequence=false, bool LastInSequence=false);
+    void ExposeCCDChunk( float fExpTime, const bool& bAbort, CExposeListener::CExpIFace* pExpIFace );
+
 
 
     /*LeachControllerMiscHardwareProcedures - public part*/
@@ -177,7 +184,8 @@ public:
 
 
     /*FitsOps*/
-    void SaveFits(std::string );
+    //void SaveFitsHeader(std::string );
+
 
 
 

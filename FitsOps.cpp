@@ -1,7 +1,5 @@
-#ifndef FITSOPS_HPP
-#define FITSOPS_HPP
-
 #include "fitsio.h"
+#include "FitsOps.hpp"
 #include "LeachController.hpp"
 #include "CCDControlDataTypes.hpp"
 
@@ -15,23 +13,23 @@ static std::string timePointAsString(const std::chrono::system_clock::time_point
 }
 
 
-/*Function to write an SK Merged image as a FITS file.*/
-void LeachController::SaveFits(std::string outFileName)
-{
+FitsOps::FitsOps(std::string outFileName, CCDVariables &_CCDParams, BiasVariables &_BiasParams, ClockVariables &_ClockParams,
+                 TimeVariables &_ClockTimers){
 
-    /*These are the temporary FITS variables we need to open the file
-     * fptr -> fits file pointer
-     * status, imgtype and nAxis are self explanatory
-     * imageSizeXY stores the size of the image
-     * fpixelallread is something weird about FITS that I didnt care to read too much except
-     *        it needs to be {1,1} to read the entire file
-     */
-    fitsfile *fptr;       /* pointer to the FITS file; defined in fitsio.h */
-    int status, nAxis=2;
-    long fpixel[2] = {1,1};
-    int dfpixel = 1;
-    long nPixelsToWrite;
-    long imageSizeXY[2] = { this->CCDParams.dCols*this->CCDParams.nSkipperR, this->CCDParams.dRows};
+    this->CCDParams = _CCDParams;
+    this->BiasParams = _BiasParams;
+    this->ClockParams = _ClockParams;
+    this->ClockTimers = _ClockTimers;
+
+    nAxis=2;
+
+    fpixel[0] = 1;
+    fpixel[1] = 1;
+
+    dfpixel = 1;
+    imageSizeXY[0] = this->CCDParams.dCols*this->CCDParams.nSkipperR;
+    imageSizeXY[1] = this->CCDParams.dRows;
+
     nPixelsToWrite = imageSizeXY[0] * imageSizeXY[1];
 
 
@@ -40,6 +38,17 @@ void LeachController::SaveFits(std::string outFileName)
     fits_create_img(fptr, USHORT_IMG, nAxis, &imageSizeXY[0], &status);
     int nullValue=0;
 
+
+}
+
+FitsOps::~FitsOps(){
+    fits_close_file(fptr, &status);
+    fits_report_error(stderr, status);
+}
+
+/*Function to write an SK Merged image as a FITS file.*/
+int FitsOps::WriteHeader(void ) {
+
     /*Write processed comment*/
     std::string sKFixedCmt = "This image was taken by a DAMIC UW CCD. "
                              "The various settings used are stored as keys in the FITS file."
@@ -47,21 +56,25 @@ void LeachController::SaveFits(std::string outFileName)
     fits_write_comment(fptr, sKFixedCmt.c_str(), &status);
 
     /* Write the Meta keywords - CCD*/
-    std::string SequencerUsed = "ASMFILE: Sequencer file used "+this->CCDParams.sTimFile;
+    std::string SequencerUsed = "ASMFILE: Sequencer file used " + this->CCDParams.sTimFile;
 
-    fits_write_key(fptr, TSTRING, "CCDType", (char*) this->CCDParams.CCDType.c_str(), "CCD Type (DES or SK)", &status);
+    fits_write_key(fptr, TSTRING, "CCDType", (char *) this->CCDParams.CCDType.c_str(), "CCD Type (DES or SK)", &status);
     fits_write_key(fptr, TFLOAT, "Exp", &this->CCDParams.fExpTime, "Exposure time (s)", &status);
     fits_write_key(fptr, TSHORT, "NDCMs", &this->CCDParams.nSkipperR, "Number of charge measurements", &status);
-    fits_write_key(fptr, TSTRING, "AMPL", (char*) this->CCDParams.AmplifierDirection.c_str(), "Amplifier(s) used", &status);
+    fits_write_key(fptr, TSTRING, "AMPL", (char *) this->CCDParams.AmplifierDirection.c_str(), "Amplifier(s) used",
+                   &status);
     fits_write_comment(fptr, SequencerUsed.c_str(), &status);
     fits_write_key(fptr, TBYTE, "SUPERSE", &this->CCDParams.super_sequencer, "Super sequencer (SSeq) used?", &status);
     fits_write_key(fptr, TBYTE, "InvRG", &this->CCDParams.InvRG, "Is RG inverted", &status);
-    fits_write_key(fptr, TSTRING, "HCKDirn", (char*) this->CCDParams.HClkDirection.c_str(), "Serial register h-clock direction (SSEq only)", &status);
-    fits_write_key(fptr, TSTRING, "VCKDirn", (char*) this->CCDParams.VClkDirection.c_str(), "Vertical clock direction (SSeq only)", &status);
+    fits_write_key(fptr, TSTRING, "HCKDirn", (char *) this->CCDParams.HClkDirection.c_str(),
+                   "Serial register h-clock direction (SSEq only)", &status);
+    fits_write_key(fptr, TSTRING, "VCKDirn", (char *) this->CCDParams.VClkDirection.c_str(),
+                   "Vertical clock direction (SSeq only)", &status);
     fits_write_key(fptr, TDOUBLE, "ITGTIME", &this->CCDParams.IntegralTime, "Integration time (SSeq only)", &status);
     fits_write_key(fptr, TINT, "VidGain", &this->CCDParams.Gain, "Video gain", &status);
     fits_write_key(fptr, TINT, "ITGSpd", &this->CCDParams.ItgSpeed, "Integrator speed (0=slow, 1=fast)", &status);
-    fits_write_key(fptr, TDOUBLE, "PRETIME", &this->CCDParams.PedestalIntgWait, "Pedestal settling + video ADC refresh time", &status);
+    fits_write_key(fptr, TDOUBLE, "PRETIME", &this->CCDParams.PedestalIntgWait,
+                   "Pedestal settling + video ADC refresh time", &status);
     fits_write_key(fptr, TDOUBLE, "POSTIME", &this->CCDParams.SignalIntgWait, "Signal settling time", &status);
     fits_write_key(fptr, TDOUBLE, "DGWIDTH", &this->CCDParams.DGWidth, "DG Width (SK only)", &status);
     fits_write_key(fptr, TDOUBLE, "RGWIDTH", &this->CCDParams.SKRSTWidth, "Skipping reset width (SK only)", &status);
@@ -69,9 +82,12 @@ void LeachController::SaveFits(std::string outFileName)
     fits_write_key(fptr, TDOUBLE, "SWWIDTH", &this->CCDParams.SWWidth, "SW Pulse Width (SK only)", &status);
 
 
-    fits_write_key(fptr, TINT, "NPBIN", &this->CCDParams.ParallelBin, "Binning in the V-direction (parallel clocks)", &status);
-    fits_write_key(fptr, TINT, "NSBIN", &this->CCDParams.SerialBin, "Binning in the H-direction (serial clocks)", &status);
-    fits_write_key(fptr, TSTRING, "SecStg", (char*) this->CCDParams.SecondStageVersion.c_str(), "Second stage board revision (SSeq only)", &status);
+    fits_write_key(fptr, TINT, "NPBIN", &this->CCDParams.ParallelBin, "Binning in the V-direction (parallel clocks)",
+                   &status);
+    fits_write_key(fptr, TINT, "NSBIN", &this->CCDParams.SerialBin, "Binning in the H-direction (serial clocks)",
+                   &status);
+    fits_write_key(fptr, TSTRING, "SecStg", (char *) this->CCDParams.SecondStageVersion.c_str(),
+                   "Second stage board revision (SSeq only)", &status);
 
 
     /*Write the Meta keywords - Clocks*/
@@ -99,7 +115,7 @@ void LeachController::SaveFits(std::string outFileName)
     fits_write_key(fptr, TDOUBLE, "SWHi", &this->ClockParams.sw_hi, "Summing Well Hi", &status);
     fits_write_key(fptr, TDOUBLE, "SWLo", &this->ClockParams.sw_lo, "Summing Well Lo", &status);
 
-    if(this->CCDParams.CCDType == "SK") {
+    if (this->CCDParams.CCDType == "SK") {
         fits_write_key(fptr, TDOUBLE, "DGHi", &this->ClockParams.dg_hi, "DG Hi (SK only)", &status);
         fits_write_key(fptr, TDOUBLE, "DGLo", &this->ClockParams.dg_lo, "DG Lo (SK only)", &status);
         fits_write_key(fptr, TDOUBLE, "OGHi", &this->ClockParams.og_hi, "OG Hi (SK only)", &status);
@@ -120,7 +136,6 @@ void LeachController::SaveFits(std::string outFileName)
     fits_write_key(fptr, TSHORT, "VidOffU", &this->BiasParams.video_offsets_U, "Video pedestal offset U", &status);
 
 
-
     fits_write_key(fptr, TDOUBLE, "Drain1", &this->BiasParams.drain_1, "Drain1 (Relevant to SK)", &status);
     fits_write_key(fptr, TDOUBLE, "Drain2", &this->BiasParams.drain_2, "Drain2 (Relevant to SK)", &status);
     fits_write_key(fptr, TDOUBLE, "VRef1", &this->BiasParams.vref_1, "VRef", &status);
@@ -128,7 +143,11 @@ void LeachController::SaveFits(std::string outFileName)
     fits_write_key(fptr, TDOUBLE, "OpG1", &this->BiasParams.opg_1, "OpG1 (Relevant to DES)", &status);
     fits_write_key(fptr, TDOUBLE, "OpG2", &this->BiasParams.opg_2, "OpG2 (Relevant to DES)", &status);
 
+    return status;
 
+}
+
+int FitsOps::WritePostExposureInfo() {
 
     /*Write the Meta keywords for time*/
     std::string ProgStart = timePointAsString(this->ClockTimers.ProgramStart);
@@ -144,14 +163,27 @@ void LeachController::SaveFits(std::string outFileName)
     fits_write_key(fptr, TDOUBLE, "MExp", &this->ClockTimers.MeasuredExp, "Measured exposure time (ms)", &status);
     fits_write_key(fptr, TDOUBLE, "MRead", &this->ClockTimers.MeasuredReadout, "Measured readout time (ms)", &status);
 
-    /*Write image*/
-    unsigned short *pData = (unsigned short *)pArcDev->CommonBufferVA();
-    if (pData==NULL)
-        printf ("Why is the data a null pointer?\n");
-    fits_write_img(fptr, TUSHORT, dfpixel, nPixelsToWrite, pData, &status);
-    /*Done*/
-    fits_close_file(fptr, &status);
-    fits_report_error(stderr, status);
+    return status;
 }
 
-#endif
+int FitsOps::WriteData(int _StartRow, int _StartColumn, int _NumBlockRows, int _NumBlockColumns, unsigned short *ImageBufferVLoc) {
+    /*Assign the correct pixels to start the data*/
+    fpixel[0] = _StartColumn; //column
+    fpixel[1] = _StartRow; //row
+
+    /*Write image*/
+    //unsigned short *pData = (unsigned short *)pArcDev->CommonBufferVA();
+    if (ImageBufferVLoc==NULL)
+        printf ("Why is the data a null pointer?\n");
+
+    //fits_write_img(fptr, TUSHORT, dfpixel, nPixelsToWrite, pData, &status);
+
+    for (int x=0; x<_NumBlockColumns; x++){
+        for (int y=0; y<_NumBlockRows; y++){
+            fits_write_pix(fptr, TUSHORT, fpixel, 1, &ImageBufferVLoc[y*_NumBlockRows+x], &status);
+        }
+    }
+
+    /*Done*/
+    return status;
+}

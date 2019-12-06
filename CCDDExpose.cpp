@@ -71,6 +71,8 @@ int main( int argc, char **argv )
 
     if (_CCDSettingsStatus == 0){
 
+        printf ("Expose trigger\n");
+
         _ThisRunControllerInstance.CCDParams.fExpTime = ExposeSeconds;
         if (_ThisRunControllerInstance.CCDParams.CCDType=="DES")	_ThisRunControllerInstance.CCDParams.nSkipperR=1;
 
@@ -82,11 +84,12 @@ int main( int argc, char **argv )
 
 
         /*Expose*/
-        unsigned short *ImageBufferV;
-        _ThisRunControllerInstance.PrepareAndExposeCCD(ExposeSeconds, ImageBufferV);
+        // unsigned short *ImageBufferV;
+        //_ThisRunControllerInstance.PrepareAndExposeCCD(ExposeSeconds, ImageBufferV);
+        _ThisRunControllerInstance.DecideStrategyAndExpose(ExposeSeconds, OutFileName);
 
         /*Save FITS*/
-        _ThisRunControllerInstance.SaveFits(OutFileName);
+        //_ThisRunControllerInstance.SaveFits(OutFileName);
     } else {
         if (config) std::cout<<"Error: The config file has changed but the new settings were not uploaded.\n";
         if (sequencer) std::cout<<"Error: The sequencer has changed but it was not uploaded.\n";
