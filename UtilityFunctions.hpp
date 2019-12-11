@@ -19,24 +19,24 @@ std::string ColouredFmtText(int text, std::string colour, std::string fmt="std")
 
 class ProgressBar {
 private:
-    unsigned int items = 0;
+    unsigned long items = 0;
     const unsigned int bar_width=50;
     const char complete_char = '=';
     const char incomplete_char = ' ';
     std::chrono::system_clock::time_point start_time;
-    int total_items;
+    unsigned long total_items;
 
     int CurrentChunk, TotalChunks;
 
 public:
     ProgressBar (){};
 
-    void SetEssentials(int total_items, std::chrono::system_clock::time_point sttime) {
+    void SetEssentials(unsigned long total_items, std::chrono::system_clock::time_point sttime) {
         this->total_items=total_items;
         this->start_time=sttime;
     }
 
-    void updProgress(int new_items) { items = new_items; }
+    void updProgress(unsigned long new_items) { items = new_items; }
 
     void updProgressPart(int Current_Chunk, int Total_Chunks) { CurrentChunk=Current_Chunk; TotalChunks= Total_Chunks; }
 

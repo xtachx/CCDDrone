@@ -145,8 +145,8 @@ public:
     /*LeachControllerExpose - public part*/
     void PrepareAndExposeCCD(int, unsigned short**);
     bool _expose_isVDDOn;
-    int TotalPixelsToRead;
-    int TotalPixelsCounted;
+    unsigned long TotalPixelsToRead;
+    unsigned long TotalPixelsCounted;
     int TotalChunks, CurrentChunk;
     int DecideStrategyAndExpose(int, std::string);
     void PrepareAndExposeCCDForLargeImages(int ExposureTime, int dRows,
