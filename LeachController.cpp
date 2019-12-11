@@ -162,7 +162,7 @@ void LeachController::ApplyAllCCDClocks(void )
                            "However, you should still stop and verify the V-clock directions.";
         }
 
-        
+
         this->SetDACValueClock(7, this->ClockParams.og_lo, this->ClockParams.og_hi); //Channel 7: OG1
         this->SetDACValueClock(9, this->ClockParams.og_lo, this->ClockParams.og_hi); //Channel 9: OG2
 
@@ -204,6 +204,8 @@ void LeachController::ApplyAllBiasVoltages(void )
     //Vdd
     this->SetDACValueBias(0,BiasVoltToADC(this->BiasParams.vdd_1,0));
     this->SetDACValueBias(1,BiasVoltToADC(this->BiasParams.vdd_2,1));
+    this->_expose_isVDDOn = true;
+
     this->SetDACValueBias(2,0);
     this->SetDACValueBias(3,0);
 
@@ -246,11 +248,11 @@ void LeachController::ToggleVDD(bool VDDState){
     if (VDDState == 1 && !_expose_isVDDOn ){
         this->SetDACValueBias(0,BiasVoltToADC(this->BiasParams.vdd_1,0));
         this->SetDACValueBias(1,BiasVoltToADC(this->BiasParams.vdd_2,1));
-        _expose_isVDDOn = true;
+        this->_expose_isVDDOn = true;
     } else if (VDDState == 0 && _expose_isVDDOn){
         this->SetDACValueBias(0,0);
         this->SetDACValueBias(1,0);
-        _expose_isVDDOn = false;
+        this->_expose_isVDDOn = false;
     } else if ( (VDDState == 1 && _expose_isVDDOn) || (VDDState == 0 && !_expose_isVDDOn)) {
         printf("VDD state not changed since it is not required.\n");
     } else {

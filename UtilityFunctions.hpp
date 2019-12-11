@@ -26,6 +26,8 @@ private:
     std::chrono::system_clock::time_point start_time;
     int total_items;
 
+    int CurrentChunk, TotalChunks;
+
 public:
     ProgressBar (){};
 
@@ -35,6 +37,9 @@ public:
     }
 
     void updProgress(int new_items) { items = new_items; }
+
+    void updProgressPart(int Current_Chunk, int Total_Chunks) { CurrentChunk=Current_Chunk; TotalChunks= Total_Chunks; }
+
 
     void display() const
     {
@@ -55,6 +60,13 @@ public:
             else std::cout << incomplete_char;
         }
         std::cout << "] ";
+
+        std::string ChunkInfoCur = std::to_string(CurrentChunk);
+        ChunkInfoCur = ColouredFmtText(ChunkInfoCur, "green");
+        std::string ChunkInfoTot = std::to_string(TotalChunks);
+        ChunkInfoTot = ColouredFmtText(ChunkInfoTot, "red");
+        std::cout<<" "<<ChunkInfoCur<<"/"<<ChunkInfoTot<<" | ";
+
         std::cout << std::fixed;
         std::cout << std::setprecision(0);
         std::cout << progress * 100.0 << "% ";

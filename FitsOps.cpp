@@ -166,22 +166,29 @@ int FitsOps::WritePostExposureInfo() {
     return status;
 }
 
-int FitsOps::WriteData(int _StartRow, int _StartColumn, int _NumBlockRows, int _NumBlockColumns, unsigned short *ImageBufferVLoc) {
-    /*Assign the correct pixels to start the data*/
-    fpixel[0] = _StartColumn; //column
-    fpixel[1] = _StartRow; //row
+int FitsOps::WriteData(long _StartRow, long _StartColumn, long _NumBlockRows, long _NumBlockColumns, unsigned short *ImageBufferVLoc) {
 
     /*Write image*/
     //unsigned short *pData = (unsigned short *)pArcDev->CommonBufferVA();
     if (ImageBufferVLoc==NULL)
         printf ("Why is the data a null pointer?\n");
 
-    //fits_write_img(fptr, TUSHORT, dfpixel, nPixelsToWrite, pData, &status);
+    for (int y=0; y<_NumBlockRows; y++){
+        //for (int x=0; x<_NumBlockColumns; x++){ //We can write the whole row at once. This inner for loop is unnecessary.
 
-    for (int x=0; x<_NumBlockColumns; x++){
-        for (int y=0; y<_NumBlockRows; y++){
-            fits_write_pix(fptr, TUSHORT, fpixel, 1, &ImageBufferVLoc[y*_NumBlockRows+x], &status);
-        }
+            //unsigned short *_ptrThisDataPoint = &ImageBufferVLoc[y*_NumBlockColumns+x];
+            unsigned short *_ptrThisDataPoint = &ImageBufferVLoc[y*_NumBlockColumns+0]; //x=0 since we are writing row by row
+
+            /*Assign the correct pixel coordinates for cFITSIO to understand*/
+            //fpixel[0] = _StartColumn+x+1; //column : fortran indexed
+            fpixel[0] = _StartColumn+0+1; //column : x=0 if we write row by row
+            fpixel[1] = _StartRow+y+1; //row : fortran indexed
+
+            /*fits_write_pix(fptr, datatype, (x,y coordinate in an array with col,row), numElemToWrite, Pointer_to_first_element_to_write, &status);*/
+            //fits_write_pix(fptr, TUSHORT, fpixel, 1, _ptrThisDataPoint, &status);
+            fits_write_pix(fptr, TUSHORT, fpixel, _NumBlockColumns, _ptrThisDataPoint, &status); //numElemToWrite=the whole row=_NumBlockColumns
+
+        //}
     }
 
     /*Done*/

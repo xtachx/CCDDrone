@@ -20,7 +20,8 @@
 
 #include "FitsOps.hpp"
 
-#define MaxDataPerFrame 1073741824
+//#define MaxDataPerFrame 1073741824
+#define MaxDataPerFrame 536870912
 
 /* This "abort exposure" condition seems to get executed a lot
  * so its better to use the preprocessor to reduce clutter
@@ -49,26 +50,33 @@ int LeachController::DecideStrategyAndExpose(int ExposeSeconds, std::string OutF
     FitsOps FITSImage(OutFileName, this->CCDParams, this->BiasParams, this->ClockParams, this->ClockTimers);
 
 
-    std::cout << "Image: " << this->CCDParams.dCols << "x" << this->CCDParams.dRows << "x" << this->CCDParams.nSkipperR
-              << "\n";
-
-
     /*Parameters needed for stat tracking*/
     this->TotalPixelsCounted = 0;
     this->ReadoutProgress.SetEssentials(this->TotalPixelsToRead, this->ClockTimers.Readoutstart);
 
 
+    /*Keep the old method for full exposures,
+     * and so we have a basis of comparison if needed
+     */
+
     if (ImageMemorySize < MaxDataPerFrame) {
 
-        /*Keep the old method for full exposures,
-         * and so we have a basis of comparison if needed
-         */
+
+         /*Debugging info*/
+         std::string ExposeStrategy = "CCDDExpose strategy: 1 ";
+         ExposeStrategy = ColouredFmtText(ExposeStrategy, "magenta");
+         ExposeStrategy += " | The image will be read all at once.\n";
+         std::cout<<ExposeStrategy;
+
 
         /*Set up the FITS file header*/
         FITSImage.WriteHeader();
 
+        this->TotalChunks=1;
+        this->CurrentChunk=1;
+        this->ReadoutProgress.updProgressPart(this->CurrentChunk,this->TotalChunks);
         unsigned short *ImageBufferV;
-        this->PrepareAndExposeCCD(ExposeSeconds, ImageBufferV);
+        this->PrepareAndExposeCCD(ExposeSeconds, &ImageBufferV);
 
         /*Write the data*/
         FITSImage.WriteData(0, 0, this->CCDParams.dRows, this->CCDParams.dCols * this->CCDParams.nSkipperR,
@@ -87,8 +95,15 @@ int LeachController::DecideStrategyAndExpose(int ExposeSeconds, std::string OutF
         /*How many rows will remain after this?*/
         ReminderRows = this->CCDParams.dRows % RowsPerImageBlock;
 
-        std::string NumChunks = "The image will be read in: " + std::to_string(NumContinuousReads + 1) + " parts.";
-        NumChunks = ColouredFmtText(NumChunks, "red");
+        /*Debugging info*/
+        std::string ExposeStrategy = "CCDDExpose strategy: 2 ";
+        ExposeStrategy = ColouredFmtText(ExposeStrategy, "magenta");
+        std::string ExposeStrategyExtra = std::to_string(NumContinuousReads + 1) + " parts.";
+        ExposeStrategyExtra = ColouredFmtText(ExposeStrategyExtra, "red", "bold");
+        std::cout<<ExposeStrategy<<" | The image will be read in "<<ExposeStrategyExtra<<"\n";
+
+        this->TotalChunks=NumContinuousReads + 1;
+
 
         /*Set up the FITS file header*/
         FITSImage.WriteHeader();
@@ -96,20 +111,33 @@ int LeachController::DecideStrategyAndExpose(int ExposeSeconds, std::string OutF
         /*For loop over all the blocks of data*/
         for (int i = 0; i < NumContinuousReads; i++) {
 
-            std::cout << "Starting block " << ColouredFmtText(i, "green") << " of " << NumContinuousReads + 1 << ".\n";
+            this->CurrentChunk=i+1;
+            this->ReadoutProgress.updProgressPart(this->CurrentChunk,this->TotalChunks);
+
             unsigned short *ImageBufferV;
-            if (i == 0) //First read
-                this->PrepareAndExposeCCDForLargeImages(ExposeSeconds, RowsPerImageBlock, ImageBufferV, true, false);
-            else if (i == NumContinuousReads - 1) //last read
-                this->PrepareAndExposeCCDForLargeImages(ExposeSeconds, RowsPerImageBlock, ImageBufferV, false, true);
-            else //all other reads
-                this->PrepareAndExposeCCDForLargeImages(ExposeSeconds, RowsPerImageBlock, ImageBufferV, false, false);
+            if (i == 0) {//First read
+                this->PrepareAndExposeCCDForLargeImages(ExposeSeconds, RowsPerImageBlock, &ImageBufferV, true, false);
+                FITSImage.WriteData(i * RowsPerImageBlock, 0, RowsPerImageBlock,
+                                    this->CCDParams.dCols * this->CCDParams.nSkipperR, ImageBufferV);
 
-            /*store each block*/
-            FITSImage.WriteData(i * RowsPerImageBlock, 0, this->CCDParams.dRows,
-                                this->CCDParams.dCols * this->CCDParams.nSkipperR, ImageBufferV);
-
+            } else { //all other reads
+                this->PrepareAndExposeCCDForLargeImages(ExposeSeconds, RowsPerImageBlock, &ImageBufferV, false, false);
+                FITSImage.WriteData(i * RowsPerImageBlock, 0, RowsPerImageBlock,
+                                    this->CCDParams.dCols * this->CCDParams.nSkipperR, ImageBufferV);
+            }
         }
+
+        /*Last block of reads - in its own scope*/
+        {
+          this->CurrentChunk=NumContinuousReads+1;
+          this->ReadoutProgress.updProgressPart(this->CurrentChunk,this->TotalChunks);
+
+          unsigned short *ImageBufferV;
+          this->PrepareAndExposeCCDForLargeImages(ExposeSeconds, ReminderRows, &ImageBufferV, false, true);
+          FITSImage.WriteData(NumContinuousReads * RowsPerImageBlock, 0, ReminderRows,
+                              this->CCDParams.dCols * this->CCDParams.nSkipperR, ImageBufferV);
+        }
+
 
         /*Write the post exposure info*/
         FITSImage.WritePostExposureInfo();
@@ -133,7 +161,7 @@ int LeachController::DecideStrategyAndExpose(int ExposeSeconds, std::string OutF
 * *********************************************************************
 */
 
-void LeachController::PrepareAndExposeCCD(int ExposureTime, unsigned short *ImageBuffer) {
+void LeachController::PrepareAndExposeCCD(int ExposureTime, unsigned short **ImageBuffer) {
 
 
     try {
@@ -205,7 +233,8 @@ void LeachController::PrepareAndExposeCCD(int ExposureTime, unsigned short *Imag
 
 
         /*Set the imageBuffer before finishing*/
-        ImageBuffer = (unsigned short *) this->pArcDev->CommonBufferVA();
+        *ImageBuffer = (unsigned short *) this->pArcDev->CommonBufferVA();
+
 
         /*Calculate and store the clock durations*/
         auto ExpDuration = std::chrono::duration<double, std::milli>(
@@ -413,25 +442,17 @@ void LeachController::ExposeCCD(float fExpTime, const bool &bAbort, CExposeListe
  */
 
 void LeachController::PrepareAndExposeCCDForLargeImages(int ExposureTime, int dRows,
-                                                        unsigned short *ImageBuffer, bool FirstInSequence,
+                                                        unsigned short **ImageBuffer, bool FirstInSequence,
                                                         bool LastInSequence) {
 
-    /*Expected image memory size is the size of a "block" - we set that here*/
-    size_t ImageMemorySize = this->CCDParams.dCols * dRows * this->CCDParams.nSkipperR * sizeof(unsigned short);
-    int TotalCol = this->CCDParams.dCols * this->CCDParams.nSkipperR;
 
-    if (ImageMemorySize > pArcDev->CommonBufferSize()) {
-        printf("Image dimensions [ %d x %d x %d ] exceed buffer size: %d.",
-               this->CCDParams.dCols,
-               this->CCDParams.dRows,
-               this->CCDParams.nSkipperR,
-               pArcDev->CommonBufferSize());
-        throw std::runtime_error("Exception thrown because buffer size is too small for the image.");
-    }
+    /*Needed for callbacks during exposure*/
+    CExposeListener cExposeListener(*this);
 
 
     /*Variables needed to store status information*/
     int dDeintAlg, dRetVal;
+    int TotalCol = this->CCDParams.dCols * this->CCDParams.nSkipperR;
 
     try {
 
@@ -447,9 +468,9 @@ void LeachController::PrepareAndExposeCCDForLargeImages(int ExposureTime, int dR
 
             /*We should set the IDLE clocking OFF here*/
             /*Next in sequence is setting the exposure time*/
-            dRetVal = pArcDev->Command(TIM_ID, HLD);
+            dRetVal = pArcDev->Command(TIM_ID, STP);
             if (dRetVal != DON) {
-                printf("Stop IDLE clock failed. Reply: 0x%X\n", dRetVal);
+                printf("Stop clock failed. Reply: 0x%X\n", dRetVal);
                 throw std::runtime_error("Exception thrown because HLD command failed.");
             }
 
@@ -459,24 +480,26 @@ void LeachController::PrepareAndExposeCCDForLargeImages(int ExposureTime, int dR
              * We then turn them back on 3 seconds before the exposure ends
              */
             if (ExposureTime > 3) {
-                std::cout << "Turning VDD OFF before exposure.\n";
+                //std::cout << "Turning VDD OFF before exposure.\n";
                 this->ToggleVDD(0);
             } else {
-                std::cout << "Exposure time is too short to turn VDD off.\n";
-            }
-
-
-            /*Next in sequence is setting the exposure time*/
-            dRetVal = pArcDev->Command(TIM_ID, SET, ExposureTime * 1000.0);
-            if (dRetVal != DON) {
-                printf("Set exposure time failed. Reply: 0x%X\n", dRetVal);
-                throw std::runtime_error("Exception thrown because SET command failed.");
+                //std::cout << "Exposure time is too short to turn VDD off.\n";
             }
 
 
             /*Next is the shutter settings. We have no idea what it does*/
             bool bOpenShutter = false;
             pArcDev->SetOpenShutter(bOpenShutter);
+
+            /*Next in sequence is setting the exposure time*/
+            dRetVal = pArcDev->Command(TIM_ID, SET, int(ExposureTime*1000.0));
+            if (dRetVal != DON) {
+                printf("Set exposure time failed. Reply: 0x%X\n", dRetVal);
+                throw std::runtime_error("Exception thrown because SET command failed.");
+            }
+
+
+
 
             /*De-Interlacing part*/
             if (this->CCDParams.AmplifierDirection == "UL") {
@@ -492,13 +515,18 @@ void LeachController::PrepareAndExposeCCDForLargeImages(int ExposureTime, int dR
 
         if (FirstInSequence || LastInSequence) {
 
+            /*Expected image memory size is the size of a "block" - we set that here*/
+            size_t ImageMemorySize = this->CCDParams.dCols * dRows * this->CCDParams.nSkipperR * sizeof(unsigned short);
+
+
+
             /*This sets the NSR and NPR in the leach assembly.*/
-            pArcDev->SetImageSize(this->CCDParams.dRows, this->CCDParams.dCols);
+            pArcDev->SetImageSize(dRows, this->CCDParams.dCols);
             pArcDev->Command(TIM_ID, STC, TotalCol);
 
             pArcDev->ReMapCommonBuffer(ImageMemorySize);
-            printf("Rows %d, Cols %d | NDCMS: %d , Total number of columns: %d\n", pArcDev->GetImageRows(),
-                   pArcDev->GetImageCols(), this->CCDParams.nSkipperR, TotalCol);
+            //printf("(ASM) This block: Rows %d, Cols %d | NDCMS: %d , Total number of columns: %d\n", pArcDev->GetImageRows(),
+            //       pArcDev->GetImageCols(), this->CCDParams.nSkipperR, TotalCol);
 
 
             /*This will happen if the memory required is > kernel buffer size*/
@@ -511,44 +539,38 @@ void LeachController::PrepareAndExposeCCDForLargeImages(int ExposureTime, int dR
 
         }
 
+        if (!FirstInSequence && !LastInSequence){
+          printf("(ASM) This block: Rows %d, Cols %d | NDCMS: %d , Total number of columns: %d\n", pArcDev->GetImageRows(),
+                 pArcDev->GetImageCols(), this->CCDParams.nSkipperR, TotalCol);
+        }
+
         /*Needed for callbacks during exposure*/
         CExposeListener cExposeListener(*this);
+        this->ExposeCCDChunk(ExposureTime, dRows, FirstInSequence, false, &cExposeListener);
 
-
-        std::cout << "Starting exposure\n";
-        this->ExposeCCDChunk(ExposureTime, false, &cExposeListener);
+        /*After this part of the expose / readout is complete*/
         this->ClockTimers.ReadoutEnd = std::chrono::system_clock::now();
         this->ReadoutProgress.done();
-        std::cout << "\nExposure complete.\n";
 
         /*If two amplifiers were used, we need to de-interlace*/
         if (this->CCDParams.AmplifierDirection == "UL" || this->CCDParams.AmplifierDirection == "LU") {
             std::cout << "Since amplifier selected was UL / LU, the image will now be de-interlaced.\n";
             unsigned short *pU16Buf = (unsigned short *) pArcDev->CommonBufferVA();
             arc::deinterlace::CArcDeinterlace cDlacer;
-            cDlacer.RunAlg(pU16Buf, this->CCDParams.dRows, this->CCDParams.dCols * this->CCDParams.nSkipperR,
+            cDlacer.RunAlg(pU16Buf, dRows, this->CCDParams.dCols * this->CCDParams.nSkipperR,
                            dDeintAlg);
         }
 
 
         /*Set the imageBuffer before finishing*/
-        ImageBuffer = (unsigned short *) this->pArcDev->CommonBufferVA();
-
-        /*Calculate and store the clock durations*/
-        auto ExpDuration = std::chrono::duration<double, std::milli>(
-                this->ClockTimers.Readoutstart - this->ClockTimers.ExpStart);
-        auto RdoutDuration = std::chrono::duration<double, std::milli>(
-                this->ClockTimers.ReadoutEnd - this->ClockTimers.Readoutstart);
-        this->ClockTimers.MeasuredExp = ExpDuration.count();
-        this->ClockTimers.MeasuredReadout = RdoutDuration.count();
-
+        *ImageBuffer = (unsigned short *) this->pArcDev->CommonBufferVA();
 
         /* Exit Guard: First read
          * If this was the first read, then it is expected that the next reads onwards will use 0 second exposures*/
 
         if (FirstInSequence) {
             /*Set the exposure time to 0 for the next read*/
-            dRetVal = pArcDev->Command(TIM_ID, SET, 0);
+            dRetVal = pArcDev->Command(TIM_ID, SET, int(0));
 
             if (dRetVal != DON) {
                 printf("Set exposure time failed. Reply: 0x%X\n", dRetVal);
@@ -559,7 +581,7 @@ void LeachController::PrepareAndExposeCCDForLargeImages(int ExposureTime, int dR
         /* Exit guard - last read
          * If this was the last read, we set the exposure time to normal again*/
         if (LastInSequence) {
-            int dRetVal = pArcDev->Command(TIM_ID, SET, ExposureTime * 1000.0);
+            int dRetVal = pArcDev->Command(TIM_ID, SET, int(ExposureTime*1000.0));
 
             if (dRetVal != DON) {
                 printf("Set exposure time failed. Reply: 0x%X\n", dRetVal);
@@ -571,6 +593,14 @@ void LeachController::PrepareAndExposeCCDForLargeImages(int ExposureTime, int dR
                 printf("Set IDLE failed after last exposure. Reply: 0x%X\n", dRetVal);
                 throw std::runtime_error("Exception thrown because IDL command failed.");
             }
+
+            /*Calculate and store the clock durations*/
+            auto ExpDuration = std::chrono::duration<double, std::milli>(
+                    this->ClockTimers.Readoutstart - this->ClockTimers.ExpStart);
+            auto RdoutDuration = std::chrono::duration<double, std::milli>(
+                    this->ClockTimers.ReadoutEnd - this->ClockTimers.Readoutstart);
+            this->ClockTimers.MeasuredExp = ExpDuration.count();
+            this->ClockTimers.MeasuredReadout = RdoutDuration.count();
 
         }
 
@@ -611,7 +641,7 @@ void LeachController::PrepareAndExposeCCDForLargeImages(int ExposureTime, int dR
  */
 
 
-void LeachController::ExposeCCDChunk(float fExpTime, const bool &bAbort, CExposeListener::CExpIFace *pExpIFace) {
+void LeachController::ExposeCCDChunk(float fExpTime, int dRows, bool FirstRead, const bool &bAbort, CExposeListener::CExpIFace *pExpIFace) {
     float fRemainingTime = fExpTime;
     bool bInReadout = false;
     int dTimeoutCounter = 0;
@@ -631,7 +661,7 @@ void LeachController::ExposeCCDChunk(float fExpTime, const bool &bAbort, CExpose
     }
 
 
-    while (dPixelCount < (this->CCDParams.dRows * this->CCDParams.dCols * this->CCDParams.nSkipperR)) {
+    while (dPixelCount < (dRows * this->CCDParams.dCols * this->CCDParams.nSkipperR)) {
         if (pArcDev->IsReadout()) {
             bInReadout = true;
 
@@ -642,6 +672,9 @@ void LeachController::ExposeCCDChunk(float fExpTime, const bool &bAbort, CExpose
                 this->ClockTimers.isExp = false;
                 this->ClockTimers.rClockCounter = 1;
                 std::cout << std::endl << "Total pixels to read: " << this->TotalPixelsToRead << std::endl;
+                /*Set progressbar*/
+                if (FirstRead) this->ReadoutProgress.SetEssentials(this->TotalPixelsToRead, this->ClockTimers.Readoutstart);
+
             }
             //printf("Is in readout: %d\n",pArcDev->IsReadout());
         }
@@ -721,4 +754,3 @@ void LeachController::ExposeCCDChunk(float fExpTime, const bool &bAbort, CExpose
 
     this->TotalPixelsCounted += dPixelCount;
 }
-

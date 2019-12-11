@@ -73,27 +73,19 @@ private:
 
         void ExposeCallback( float fElapsedTime )
         {
-            printf("\rExposure time remaining: %.3f",fElapsedTime);
+            std::string VDDState;
+            if (L._expose_isVDDOn) VDDState = ColouredFmtText("VDD ON", "green");
+            else VDDState = ColouredFmtText("VDD OFF", "red");
+            printf("\rExposure time remaining: %.3f | %s ",fElapsedTime, VDDState.c_str());
+
             /*If the exposure is about to end, and VDD is off, then turn VDD back on*/
-            if (L._expose_isVDDOn == false && fElapsedTime < 3.0 ) {
-                printf("\nTurning VDD ON\n");
-                L.ToggleVDD(1);
-            }
+            if (L._expose_isVDDOn == false && fElapsedTime < 3.0 ) L.ToggleVDD(1);
         }
 
         void ReadCallback( int dPixelCount )
         {
-
             L.ReadoutProgress.updProgress(dPixelCount+L.TotalPixelsCounted);
             L.ReadoutProgress.display();
-
-            //auto _elapsedDurationMillis = std::chrono::duration<double, std::milli> (std::chrono::system_clock::now() - L.ClockTimers.Readoutstart);
-            //int _elpasedMilli = _elapsedDurationMillis.count();
-            //float fractionDone = (float)dPixelCount / (float)L.TotalPixelsToRead;
-            //float fractionRemain = 1.0-fractionDone;
-            //float _estimatedTimeRemain = fractionRemain * (float)_elpasedMilli/(1000*fractionDone);
-
-            //printf("\rPixel transfer progress: %d / %d (%0.2f \%). Est: %.02f sec",dPixelCount, L.TotalPixelsToRead, fractionDone*100, _estimatedTimeRemain);
         }
     };
 
@@ -151,14 +143,15 @@ public:
 
 
     /*LeachControllerExpose - public part*/
-    void PrepareAndExposeCCD(int, unsigned short*);
-    char _expose_isVDDOn = 0;
+    void PrepareAndExposeCCD(int, unsigned short**);
+    bool _expose_isVDDOn;
     int TotalPixelsToRead;
     int TotalPixelsCounted;
+    int TotalChunks, CurrentChunk;
     int DecideStrategyAndExpose(int, std::string);
     void PrepareAndExposeCCDForLargeImages(int ExposureTime, int dRows,
-            unsigned short *ImageBuffer, bool FirstInSequence=false, bool LastInSequence=false);
-    void ExposeCCDChunk( float fExpTime, const bool& bAbort, CExposeListener::CExpIFace* pExpIFace );
+            unsigned short **ImageBuffer, bool FirstInSequence=false, bool LastInSequence=false);
+    void ExposeCCDChunk( float fExpTime, int dRows, bool FirstRead, const bool& bAbort, CExposeListener::CExpIFace* pExpIFace );
 
 
 

@@ -36,7 +36,7 @@ public:
 
     int WriteHeader(void );
     int WritePostExposureInfo(void);
-    int WriteData(int _StartRow, int _StartColumn, int _NumBlockRows, int _NumBlockColumns, unsigned short* ImageBufferVLoc);
+    int WriteData(long _StartRow, long _StartColumn, long _NumBlockRows, long _NumBlockColumns, unsigned short* ImageBufferVLoc);
 
 };
 

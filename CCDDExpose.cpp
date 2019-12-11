@@ -71,8 +71,6 @@ int main( int argc, char **argv )
 
     if (_CCDSettingsStatus == 0){
 
-        printf ("Expose trigger\n");
-
         _ThisRunControllerInstance.CCDParams.fExpTime = ExposeSeconds;
         if (_ThisRunControllerInstance.CCDParams.CCDType=="DES")	_ThisRunControllerInstance.CCDParams.nSkipperR=1;
 
@@ -98,4 +96,3 @@ int main( int argc, char **argv )
 
     printf("CCDDrone done. Thank you.\n");
 }
-
