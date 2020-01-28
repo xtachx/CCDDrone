@@ -24,6 +24,7 @@
 
 #include "CCDControlDataTypes.hpp"
 #include "UtilityFunctions.hpp"
+#include "FitsOps.hpp"
 
 
 
@@ -59,6 +60,9 @@ private:
 
     arc::device::CArcPCIe *pArcDev;
     ProgressBar ReadoutProgress;
+    FitsOps *_FitsOps;
+
+
 
 
     // ------------------------------------------------------
@@ -88,6 +92,30 @@ private:
             L.ReadoutProgress.display();
         }
     };
+
+    // ------------------------------------------------------
+    //  Exposure Callback Class - for continuous exposures
+    //  for the Arcapi to work. ?!
+    // ------------------------------------------------------
+    class CMyConIFace : public arc::device::CConIFace
+    {
+    public:
+        LeachController &L;
+
+
+        CMyConIFace( LeachController &LO, size_t RowsPerImageBlock, int TotalFramesToRead) :  L(LO), RowsPerImageBlock(RowsPerImageBlock), TotalFramesToRead(TotalFramesToRead) {};
+        ~CMyConIFace() { };
+
+
+
+        void FrameCallback( int dFPB, int dCount, int dRows, int dCols, void* pBuf );
+            {
+                  long _StartColumn = 0;
+                  long _StartRow = dCount*_ContinuousReadoutRowsPerImageBlock;
+                  printf("Adding frame %d\n",dCount);
+                  _FitsOps->WriteData(_StartRow, _StartColumn, dRows, dCols, (unsigned short*) pBuf);
+            }
+     };
 
     CExposeListener *cExposeListener;
     //CExposeListener cExposeListener;
@@ -152,6 +180,9 @@ public:
     void PrepareAndExposeCCDForLargeImages(int ExposureTime, int dRows,
             unsigned short **ImageBuffer, bool FirstInSequence=false, bool LastInSequence=false);
     void ExposeCCDChunk( float fExpTime, int dRows, bool FirstRead, const bool& bAbort, CExposeListener::CExpIFace* pExpIFace );
+    void ExposeContinuous( int dRows, int dCols, int NDCMs, int dNumOfFrames, float fExpTime,
+                        const bool& bAbort, CMyConIFace::CConIFace* pConIFace, bool bOpenShutter );
+
 
 
 
