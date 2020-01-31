@@ -173,6 +173,8 @@ public:
     int ApplyOGWidth(double);
     int ApplySkippingRGWidth(double);
     int ApplySummingWellWidth(double);
+    int ApplyVClockWidths(double , double );
+    int ApplyHClockWidths(double , double );
 
 
 

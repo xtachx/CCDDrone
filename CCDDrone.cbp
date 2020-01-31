@@ -48,6 +48,7 @@
 		<Unit filename="LeachControllerConfigHandler.cpp" />
 		<Unit filename="LeachControllerExpose.cpp" />
 		<Unit filename="LeachControllerMiscHardwareProcedures.cpp" />
+		<Unit filename="LeachControllerTimingProcedures.cpp" />
 		<Unit filename="config/FirstTest.ini" />
 		<Extensions>
 			<code_completion />

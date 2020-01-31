@@ -67,6 +67,10 @@ void LeachController::SaveFits(std::string outFileName)
     fits_write_key(fptr, TDOUBLE, "RGWIDTH", &this->CCDParams.SKRSTWidth, "Skipping reset width (SK only)", &status);
     fits_write_key(fptr, TDOUBLE, "OGWIDTH", &this->CCDParams.OGWidth, "OG Width (SK only)", &status);
     fits_write_key(fptr, TDOUBLE, "SWWIDTH", &this->CCDParams.SWWidth, "SW Pulse Width (SK only)", &status);
+    fits_write_key(fptr, TDOUBLE, "HWIDTH", &this->CCDParams.HWidth, "H-Clock Width (SK only)", &status);
+    fits_write_key(fptr, TDOUBLE, "HOWIDTH", &this->CCDParams.HOverlapWidth, "H-Clock overlap Width (SK only)", &status);
+    fits_write_key(fptr, TDOUBLE, "VWIDTH", &this->CCDParams.VWidth, "V-Clock Width (SK only)", &status);
+    fits_write_key(fptr, TDOUBLE, "VOWIDTH", &this->CCDParams.VOverlapWidth, "V-Clock overlap Width (SK only)", &status);
 
 
     fits_write_key(fptr, TINT, "NPBIN", &this->CCDParams.ParallelBin, "Binning in the V-direction (parallel clocks)", &status);

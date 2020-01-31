@@ -33,6 +33,11 @@ struct CCDVariables{
     double SKRSTWidth;
     double SWWidth;
 
+    double VWidth;
+    double VOverlapWidth;
+    double HWidth;
+    double HOverlapWidth;
+
     int ParallelBin;
     int SerialBin;
 

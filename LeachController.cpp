@@ -78,6 +78,8 @@ void LeachController::ApplyAllCCDBasic(void ){
         this->ApplyOGWidth(this->CCDParams.OGWidth);
         this->ApplySkippingRGWidth(this->CCDParams.SKRSTWidth);
         this->ApplySummingWellWidth(this->CCDParams.SWWidth);
+        this->ApplyHClockWidths(this->CCDParams.HWidth,this->CCDParams.HOverlapWidth);
+        this->ApplyVClockWidths(this->CCDParams.VWidth,this->CCDParams.VOverlapWidth);
 
     }
 
@@ -162,7 +164,7 @@ void LeachController::ApplyAllCCDClocks(void )
                            "However, you should still stop and verify the V-clock directions.";
         }
 
-        
+
         this->SetDACValueClock(7, this->ClockParams.og_lo, this->ClockParams.og_hi); //Channel 7: OG1
         this->SetDACValueClock(9, this->ClockParams.og_lo, this->ClockParams.og_hi); //Channel 9: OG2
 
