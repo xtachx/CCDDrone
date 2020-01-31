@@ -48,7 +48,10 @@
 #define DRXN_L 0x5F5F4C
 #define DRXN_U 0x5F5F55
 #define DRXN_LU 0x5F4C55
-
+#define CSL 0x0043534C
+#define CSS 0x00435353
+#define CPL 0x0043504C
+#define CPP 0x00435050
 
 
 class LeachController
