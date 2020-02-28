@@ -284,26 +284,25 @@ int LeachController::ApplySummingWellWidth(double newSWWidth) {
  */
 int LeachController::ApplyVClockWidths(double newVClock, double newVOverlap) {
 
-    int timing_dsp = this->CalculateTiming(newVClock);
 
-    int dReply = 0;
-    dReply = pArcDev->Command( TIM_ID, CPL, timing_dsp);
-    if ( dReply == DON ) {
+    int dReplyVck = 0;
+    int dReplyVov = 0;
+
+    int timing_dsp_vck = this->CalculateTiming(newVClock);
+    int timing_dsp_ov = this->CalculateTiming(newVOverlap);
+
+
+    dReplyVck = pArcDev->Command( TIM_ID, CPP, timing_dsp_vck);
+    dReplyVov = pArcDev->Command( TIM_ID, CPL, timing_dsp_ov);
+
+
+    if ( dReplyVck == DON && dReplyVov == DON ) {
         return 0;
     } else {
-        printf("Error setting the V width / time: %X\n", dReply);
+        if (dReplyVck != DON) printf("Error setting the V clock width / time: %X\n", dReplyVck) ;
+        if (dReplyVov != DON) printf("Error setting the V overlap width / time: %X\n", dReplyVov) ;
         return -1;
     }
-
-    int timing_dsp2 = this->CalculateTiming(newVOverlap);
-    dReply = pArcDev->Command( TIM_ID, CPP, timing_dsp2);
-    if ( dReply == DON ) {
-        return 0;
-    } else {
-        printf("Error setting the V width / time: %X\n", dReply);
-        return -1;
-    }
-
 
 }
 
@@ -316,30 +315,22 @@ int LeachController::ApplyVClockWidths(double newVClock, double newVOverlap) {
  */
 int LeachController::ApplyHClockWidths(double newHClock, double newHOverlap) {
 
-    int timing_dsp = this->CalculateTiming(newHClock);
+    int dReplyHck = 0;
+    int dReplyHov = 0;
 
-    int dReply = 0;
-    dReply = pArcDev->Command( TIM_ID, CSL, timing_dsp);
-    if ( dReply == DON ) {
+    int timing_dsp_hck = this->CalculateTiming(newHClock);
+    int timing_dsp_hov = this->CalculateTiming(newHOverlap);
+
+
+    dReplyHck = pArcDev->Command( TIM_ID, CSL, timing_dsp_hck);
+    dReplyHov = pArcDev->Command( TIM_ID, CSS, timing_dsp_hov);
+
+    if ( dReplyHck == DON && dReplyHov == DON) {
         return 0;
     } else {
-        printf("Error setting the H width / time: %X\n", dReply);
+        if (dReplyHck != DON) printf("Error setting the H clock width / time: %X\n", dReplyHck);
+        if (dReplyHov != DON) printf("Error setting the H overlap width / time: %X\n", dReplyHov);
         return -1;
     }
-
-    int timing_dsp2 = this->CalculateTiming(newHOverlap);
-    dReply = pArcDev->Command( TIM_ID, CSS, timing_dsp2);
-    if ( dReply == DON ) {
-        return 0;
-    } else {
-        printf("Error setting the H width / time: %X\n", dReply);
-        return -1;
-    }
-
 
 }
-
-
-
-
-
