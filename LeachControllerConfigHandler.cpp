@@ -37,18 +37,38 @@ void LeachController::ParseCCDSettings(CCDVariables &_CCDSettings, ClockVariable
     _clockSettings.l_hclock_hi = _LeachConfig.GetReal("clocks", "l_hclock_hi", 5);
     _clockSettings.l_hclock_lo = _LeachConfig.GetReal("clocks", "l_hclock_lo", 0);
 
-    _clockSettings.tg_hi = _LeachConfig.GetReal("clocks", "tg_hi", 6);
-    _clockSettings.tg_lo = _LeachConfig.GetReal("clocks", "tg_lo", 6);
+    _clockSettings.one_tg_hi = _LeachConfig.GetReal("clocks", "one_tg_hi", 6);
+    _clockSettings.one_tg_lo = _LeachConfig.GetReal("clocks", "one_tg_lo", 6);
+    _clockSettings.two_tg_hi = _LeachConfig.GetReal("clocks", "two_tg_hi", 6);
+    _clockSettings.two_tg_lo = _LeachConfig.GetReal("clocks", "two_tg_lo", 6);
 
-    _clockSettings.dg_hi = _LeachConfig.GetReal("clocks", "dg_hi", 5);
-    _clockSettings.dg_lo = _LeachConfig.GetReal("clocks", "dg_lo", -4);
-    _clockSettings.rg_hi = _LeachConfig.GetReal("clocks", "rg_hi", -6);
-    _clockSettings.rg_lo = _LeachConfig.GetReal("clocks", "rg_lo", 0);
 
-    _clockSettings.sw_hi = _LeachConfig.GetReal("clocks", "sw_hi", 4);
-    _clockSettings.sw_lo = _LeachConfig.GetReal("clocks", "sw_lo", -4);
-    _clockSettings.og_hi = _LeachConfig.GetReal("clocks", "og_hi", 2);
-    _clockSettings.og_lo = _LeachConfig.GetReal("clocks", "og_lo", -2);
+    _clockSettings.one_dg_hi = _LeachConfig.GetReal("clocks", "one_dg_hi", 5);
+    _clockSettings.one_dg_lo = _LeachConfig.GetReal("clocks", "one_dg_lo", -4);
+    _clockSettings.two_dg_hi = _LeachConfig.GetReal("clocks", "two_dg_hi", 5);
+    _clockSettings.two_dg_lo = _LeachConfig.GetReal("clocks", "two_dg_lo", -4);
+
+
+    _clockSettings.one_rg_hi = _LeachConfig.GetReal("clocks", "one_rg_hi", -6);
+    _clockSettings.one_rg_lo = _LeachConfig.GetReal("clocks", "one_rg_lo", 0);
+    _clockSettings.two_rg_hi = _LeachConfig.GetReal("clocks", "two_rg_hi", -6);
+    _clockSettings.two_rg_lo = _LeachConfig.GetReal("clocks", "two_rg_lo", 0);
+
+
+
+    _clockSettings.one_sw_hi = _LeachConfig.GetReal("clocks", "one_sw_hi", 4);
+    _clockSettings.one_sw_lo = _LeachConfig.GetReal("clocks", "one_sw_lo", -4);
+    _clockSettings.two_sw_hi = _LeachConfig.GetReal("clocks", "two_sw_hi", 4);
+    _clockSettings.two_sw_lo = _LeachConfig.GetReal("clocks", "two_sw_lo", -4);
+
+
+
+    _clockSettings.one_og_hi = _LeachConfig.GetReal("clocks", "one_og_hi", 2);
+    _clockSettings.one_og_lo = _LeachConfig.GetReal("clocks", "one_og_lo", -2);
+    _clockSettings.two_og_hi = _LeachConfig.GetReal("clocks", "two_og_hi", 2);
+    _clockSettings.two_og_lo = _LeachConfig.GetReal("clocks", "two_og_lo", -2);
+
+
 
     /*CCD Specific settings*/
     _CCDSettings.CCDType = _LeachConfig.Get("ccd", "type", "DES");
@@ -203,5 +223,3 @@ void LeachController::LoadCCDSettingsFresh(void)
     this->ParseCCDSettings(this->CCDParams,this->ClockParams,this->BiasParams);
     this->CopyOldAndStoreFileHashes( );
 }
-
-

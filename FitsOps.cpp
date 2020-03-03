@@ -90,30 +90,53 @@ void LeachController::SaveFits(std::string outFileName)
         fits_write_key(fptr, TDOUBLE, "TwoVCKHi", &_TwoVCKPlaceholder, "V2 clock Hi", &status);
         fits_write_key(fptr, TDOUBLE, "TwoVCKLo", &_TwoVCKPlaceholder, "V2 clock Lo", &status);
     }
-    fits_write_key(fptr, TDOUBLE, "TGHi", &this->ClockParams.tg_hi, "Transfer Gate Hi", &status);
-    fits_write_key(fptr, TDOUBLE, "TGLo", &this->ClockParams.tg_lo, "Transfer Gate Lo", &status);
+    fits_write_key(fptr, TDOUBLE, "OneTGHi", &this->ClockParams.one_tg_hi, "Transfer Gate SR1 Hi", &status);
+    fits_write_key(fptr, TDOUBLE, "OneTGLo", &this->ClockParams.one_tg_lo, "Transfer Gate SR1 Lo", &status);
+    fits_write_key(fptr, TDOUBLE, "TwoTGHi", &this->ClockParams.two_tg_hi, "Transfer Gate SR2 Hi", &status);
+    fits_write_key(fptr, TDOUBLE, "TwoTGLo", &this->ClockParams.two_tg_lo, "Transfer Gate SR2 Lo", &status);
+
 
     fits_write_key(fptr, TDOUBLE, "HUHi", &this->ClockParams.u_hclock_hi, "U Serial Register H-Clocks Hi", &status);
     fits_write_key(fptr, TDOUBLE, "HULo", &this->ClockParams.u_hclock_lo, "U Serial Register H-Clocks Lo", &status);
     fits_write_key(fptr, TDOUBLE, "HLHi", &this->ClockParams.l_hclock_hi, "L Serial Register H-Clocks Hi", &status);
     fits_write_key(fptr, TDOUBLE, "HLLo", &this->ClockParams.l_hclock_lo, "L Serial Register H-Clocks Lo", &status);
 
-    fits_write_key(fptr, TDOUBLE, "RGHi", &this->ClockParams.rg_hi, "Reset Gate Hi", &status);
-    fits_write_key(fptr, TDOUBLE, "RGLo", &this->ClockParams.rg_lo, "Reset Gate Lo", &status);
-    fits_write_key(fptr, TDOUBLE, "SWHi", &this->ClockParams.sw_hi, "Summing Well Hi", &status);
-    fits_write_key(fptr, TDOUBLE, "SWLo", &this->ClockParams.sw_lo, "Summing Well Lo", &status);
+    fits_write_key(fptr, TDOUBLE, "OneRGHi", &this->ClockParams.one_rg_hi, "Reset Gates on SR1 Hi", &status);
+    fits_write_key(fptr, TDOUBLE, "OneRGLo", &this->ClockParams.one_rg_lo, "Reset Gates on SR1 Lo", &status);
+    fits_write_key(fptr, TDOUBLE, "TwoRGHi", &this->ClockParams.two_rg_hi, "Reset Gates on SR2 Hi", &status);
+    fits_write_key(fptr, TDOUBLE, "TwoRGLo", &this->ClockParams.two_rg_lo, "Reset Gates on SR2 Lo", &status);
+
+
+    fits_write_key(fptr, TDOUBLE, "OneSWHi", &this->ClockParams.one_sw_hi, "Summing Wells on SR1 Hi", &status);
+    fits_write_key(fptr, TDOUBLE, "OneSWLo", &this->ClockParams.one_sw_lo, "Summing Wells on SR1 Lo", &status);
+    fits_write_key(fptr, TDOUBLE, "TwoSWHi", &this->ClockParams.two_sw_hi, "Summing Wells on SR2 Hi", &status);
+    fits_write_key(fptr, TDOUBLE, "TwoSWLo", &this->ClockParams.two_sw_lo, "Summing Wells on SR2 Lo", &status);
+
+
 
     if(this->CCDParams.CCDType == "SK") {
-        fits_write_key(fptr, TDOUBLE, "DGHi", &this->ClockParams.dg_hi, "DG Hi (SK only)", &status);
-        fits_write_key(fptr, TDOUBLE, "DGLo", &this->ClockParams.dg_lo, "DG Lo (SK only)", &status);
-        fits_write_key(fptr, TDOUBLE, "OGHi", &this->ClockParams.og_hi, "OG Hi (SK only)", &status);
-        fits_write_key(fptr, TDOUBLE, "OGLo", &this->ClockParams.og_lo, "OG Lo (SK only)", &status);
+        fits_write_key(fptr, TDOUBLE, "OneDGHi", &this->ClockParams.one_dg_hi, "DGs on SR1 Hi (SK only)", &status);
+        fits_write_key(fptr, TDOUBLE, "OneDGLo", &this->ClockParams.one_dg_lo, "DGs on SR1 Lo (SK only)", &status);
+        fits_write_key(fptr, TDOUBLE, "TwoDGHi", &this->ClockParams.two_dg_hi, "DGs on SR2 Hi (SK only)", &status);
+        fits_write_key(fptr, TDOUBLE, "TwoDGLo", &this->ClockParams.two_dg_lo, "DGs on SR2 Lo (SK only)", &status);
+
+        fits_write_key(fptr, TDOUBLE, "OneOGHi", &this->ClockParams.one_og_hi, "OGs on SR1 Hi (SK only)", &status);
+        fits_write_key(fptr, TDOUBLE, "OneOGLo", &this->ClockParams.one_og_lo, "OGs on SR1 Lo (SK only)", &status);
+        fits_write_key(fptr, TDOUBLE, "TwoOGHi", &this->ClockParams.two_og_hi, "OGs on SR2 Hi (SK only)", &status);
+        fits_write_key(fptr, TDOUBLE, "TwoOGLo", &this->ClockParams.two_og_lo, "OGs on SR2 Lo (SK only)", &status);
+
+
     } else {
         double _DESPlaceHolder = -999.0;
-        fits_write_key(fptr, TDOUBLE, "DGHi", &_DESPlaceHolder, "DG Hi (SK only)", &status);
-        fits_write_key(fptr, TDOUBLE, "DGLo", &_DESPlaceHolder, "DG Lo (SK only)", &status);
-        fits_write_key(fptr, TDOUBLE, "OGHi", &_DESPlaceHolder, "OG Hi (SK only)", &status);
-        fits_write_key(fptr, TDOUBLE, "OGLo", &_DESPlaceHolder, "OG Lo (SK only)", &status);
+        fits_write_key(fptr, TDOUBLE, "OneDGHi", &_DESPlaceHolder, "DGs on SR1 Hi (SK only)", &status);
+        fits_write_key(fptr, TDOUBLE, "OneDGLo", &_DESPlaceHolder, "DGs on SR1 Lo (SK only)", &status);
+        fits_write_key(fptr, TDOUBLE, "TwoDGHi", &_DESPlaceHolder, "DGs on SR2 Hi (SK only)", &status);
+        fits_write_key(fptr, TDOUBLE, "TwoDGLo", &_DESPlaceHolder, "DGs on SR2 Lo (SK only)", &status);
+
+        fits_write_key(fptr, TDOUBLE, "OneOGHi", &_DESPlaceHolder, "OGs on SR1 Hi (SK only)", &status);
+        fits_write_key(fptr, TDOUBLE, "OneOGLo", &_DESPlaceHolder, "OGs on SR1 Lo (SK only)", &status);
+        fits_write_key(fptr, TDOUBLE, "TwoOGHi", &_DESPlaceHolder, "OGs on SR2 Hi (SK only)", &status);
+        fits_write_key(fptr, TDOUBLE, "TwoOGLo", &_DESPlaceHolder, "OGs on SR2 Lo (SK only)", &status);
     }
 
     /*Write the Meta keywords - Biases*/

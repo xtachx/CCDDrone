@@ -119,25 +119,25 @@ void LeachController::ApplyAllCCDClocks(void )
     if (this->CCDParams.SecondStageVersion == "UW1") {
 
 
-        this->SetDACValueClock(6, this->ClockParams.tg_lo, this->ClockParams.tg_hi); //Channel 6: TG
+        this->SetDACValueClock(6, this->ClockParams.one_tg_lo, this->ClockParams.one_tg_hi); //Channel 6: TG
 
-        this->SetDACValueClock(18, this->ClockParams.sw_lo, this->ClockParams.sw_hi); //Channel 18: SWL
-        this->SetDACValueClock(23, this->ClockParams.sw_lo, this->ClockParams.sw_hi); //Channel 23: SWU
+        this->SetDACValueClock(18, this->ClockParams.one_sw_lo, this->ClockParams.one_sw_hi); //Channel 18: SWL
+        this->SetDACValueClock(23, this->ClockParams.one_sw_lo, this->ClockParams.one_sw_hi); //Channel 23: SWU
 
         //Reset gate needs to be checked against the current timing file and be flipped if necessary
         if (this->CCDParams.InvRG) {
-            this->SetDACValueClock(20, this->ClockParams.rg_hi, this->ClockParams.rg_lo); //Channel 20: RGL
-            this->SetDACValueClock(21, this->ClockParams.rg_hi, this->ClockParams.rg_lo); //Channel 21: RGU
+            this->SetDACValueClock(20, this->ClockParams.one_rg_hi, this->ClockParams.one_rg_lo); //Channel 20: RGL
+            this->SetDACValueClock(21, this->ClockParams.one_rg_hi, this->ClockParams.one_rg_lo); //Channel 21: RGU
         } else {
-            this->SetDACValueClock(20, this->ClockParams.rg_lo, this->ClockParams.rg_hi); //Channel 20: RGL
-            this->SetDACValueClock(21, this->ClockParams.rg_lo, this->ClockParams.rg_hi); //Channel 21: RGU
+            this->SetDACValueClock(20, this->ClockParams.one_rg_lo, this->ClockParams.one_rg_hi); //Channel 20: RGL
+            this->SetDACValueClock(21, this->ClockParams.one_rg_lo, this->ClockParams.one_rg_hi); //Channel 21: RGU
         }
 
-        this->SetDACValueClock(7, this->ClockParams.og_lo, this->ClockParams.og_hi); //Channel 7: OG
-        this->SetDACValueClock(9, this->ClockParams.og_lo, this->ClockParams.og_hi); //Channel 9: OG
+        this->SetDACValueClock(7, this->ClockParams.one_og_lo, this->ClockParams.one_og_hi); //Channel 7: OG
+        this->SetDACValueClock(9, this->ClockParams.one_og_lo, this->ClockParams.one_og_hi); //Channel 9: OG
 
-        this->SetDACValueClock(8, this->ClockParams.dg_lo, this->ClockParams.dg_hi); //Channel 8: DG
-        this->SetDACValueClock(10, this->ClockParams.dg_lo, this->ClockParams.dg_hi); //Channel 10: DG
+        this->SetDACValueClock(8, this->ClockParams.one_dg_lo, this->ClockParams.one_dg_hi); //Channel 8: DG
+        this->SetDACValueClock(10, this->ClockParams.one_dg_lo, this->ClockParams.one_dg_hi); //Channel 10: DG
 
 
 
@@ -150,14 +150,14 @@ void LeachController::ApplyAllCCDClocks(void )
 
         /*You should only be able open the TG corresponding to the direction of charge movement*/
         if (this->CCDParams.VClkDirection == "1") {
-            this->SetDACValueClock(6, this->ClockParams.tg_lo, this->ClockParams.tg_hi); //Channel 6: TG1
-            this->SetDACValueClock(8, this->ClockParams.tg_hi, this->ClockParams.tg_hi); //Channel 8: TG2
+            this->SetDACValueClock(6, this->ClockParams.one_tg_lo, this->ClockParams.one_tg_hi); //Channel 6: TG1
+            this->SetDACValueClock(8, this->ClockParams.two_tg_hi, this->ClockParams.two_tg_hi); //Channel 8: TG2
         } else if (this->CCDParams.VClkDirection == "2"){
-            this->SetDACValueClock(6, this->ClockParams.tg_hi, this->ClockParams.tg_hi); //Channel 6: TG1
-            this->SetDACValueClock(8, this->ClockParams.tg_lo, this->ClockParams.tg_hi); //Channel 8: TG2
+            this->SetDACValueClock(6, this->ClockParams.one_tg_hi, this->ClockParams.one_tg_hi); //Channel 6: TG1
+            this->SetDACValueClock(8, this->ClockParams.two_tg_lo, this->ClockParams.two_tg_hi); //Channel 8: TG2
         } else {
-            this->SetDACValueClock(6, this->ClockParams.tg_lo, this->ClockParams.tg_hi); //Channel 6: TG1
-            this->SetDACValueClock(8, this->ClockParams.tg_lo, this->ClockParams.tg_hi); //Channel 8: TG2
+            this->SetDACValueClock(6, this->ClockParams.one_tg_lo, this->ClockParams.one_tg_hi); //Channel 6: TG1
+            this->SetDACValueClock(8, this->ClockParams.two_tg_lo, this->ClockParams.two_tg_hi); //Channel 8: TG2
 
             if (this->CCDParams.VClkDirection != "12")
                 std::cout<<"V-Clock direction is ambiguous, so both TG are set to enabled. "
@@ -165,25 +165,25 @@ void LeachController::ApplyAllCCDClocks(void )
         }
 
 
-        this->SetDACValueClock(7, this->ClockParams.og_lo, this->ClockParams.og_hi); //Channel 7: OG1
-        this->SetDACValueClock(9, this->ClockParams.og_lo, this->ClockParams.og_hi); //Channel 9: OG2
+        this->SetDACValueClock(7, this->ClockParams.one_og_lo, this->ClockParams.one_og_hi); //Channel 7: OG1
+        this->SetDACValueClock(9, this->ClockParams.two_og_lo, this->ClockParams.two_og_hi); //Channel 9: OG2
 
-        this->SetDACValueClock(18, this->ClockParams.sw_lo, this->ClockParams.sw_hi); //Channel 18: SWL
-        this->SetDACValueClock(23, this->ClockParams.sw_lo, this->ClockParams.sw_hi); //Channel 23: SWU
+        this->SetDACValueClock(18, this->ClockParams.one_sw_lo, this->ClockParams.one_sw_hi); //Channel 18: SWL
+        this->SetDACValueClock(23, this->ClockParams.two_sw_lo, this->ClockParams.two_sw_hi); //Channel 23: SWU
 
 
         //Reset gate needs to be checked against the current timing file and be flipped if necessary
         if (this->CCDParams.InvRG) {
-            this->SetDACValueClock(20, this->ClockParams.rg_hi, this->ClockParams.rg_lo); //Channel 20: RG1
-            this->SetDACValueClock(22, this->ClockParams.rg_hi, this->ClockParams.rg_lo); //Channel 21: RG2
+            this->SetDACValueClock(20, this->ClockParams.one_rg_hi, this->ClockParams.one_rg_lo); //Channel 20: RG1
+            this->SetDACValueClock(22, this->ClockParams.two_rg_hi, this->ClockParams.two_rg_lo); //Channel 21: RG2
         } else {
-            this->SetDACValueClock(20, this->ClockParams.rg_lo, this->ClockParams.rg_hi); //Channel 20: RG1
-            this->SetDACValueClock(22, this->ClockParams.rg_lo, this->ClockParams.rg_hi); //Channel 21: RG2
+            this->SetDACValueClock(20, this->ClockParams.one_rg_lo, this->ClockParams.one_rg_hi); //Channel 20: RG1
+            this->SetDACValueClock(22, this->ClockParams.two_rg_lo, this->ClockParams.two_rg_hi); //Channel 21: RG2
         }
 
 
-        this->SetDACValueClock(19, this->ClockParams.dg_lo, this->ClockParams.dg_hi); //Channel 18: DG1
-        this->SetDACValueClock(21, this->ClockParams.dg_lo, this->ClockParams.dg_hi); //Channel 23: DG2
+        this->SetDACValueClock(19, this->ClockParams.one_dg_lo, this->ClockParams.one_dg_hi); //Channel 18: DG1
+        this->SetDACValueClock(21, this->ClockParams.two_dg_lo, this->ClockParams.two_dg_hi); //Channel 23: DG2
 
     } else {
 

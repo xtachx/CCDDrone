@@ -53,23 +53,39 @@ struct ClockVariables{
     double two_vclock_hi;
     double two_vclock_lo;
 
-    double tg_hi;
-    double tg_lo;
+    double one_tg_hi;
+    double one_tg_lo;
+    double two_tg_hi;
+    double two_tg_lo;
+
 
     double u_hclock_hi;
     double u_hclock_lo;
     double l_hclock_hi;
     double l_hclock_lo;
 
-    double dg_hi;
-    double dg_lo;
-    double rg_hi;
-    double rg_lo;
+    double one_dg_hi;
+    double one_dg_lo;
+    double two_dg_hi;
+    double two_dg_lo;
 
-    double sw_hi;
-    double sw_lo;
-    double og_hi;
-    double og_lo;
+
+    double one_rg_hi;
+    double one_rg_lo;
+    double two_rg_hi;
+    double two_rg_lo;
+
+
+    double one_sw_hi;
+    double one_sw_lo;
+    double two_sw_hi;
+    double two_sw_lo;
+
+
+    double one_og_hi;
+    double one_og_lo;
+    double two_og_hi;
+    double two_og_lo;
 
 };
 
