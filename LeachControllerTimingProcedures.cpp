@@ -322,8 +322,8 @@ int LeachController::ApplyHClockWidths(double newHClock, double newHOverlap) {
     int timing_dsp_hov = this->CalculateTiming(newHOverlap);
 
 
-    dReplyHck = pArcDev->Command( TIM_ID, CSL, timing_dsp_hck);
-    dReplyHov = pArcDev->Command( TIM_ID, CSS, timing_dsp_hov);
+    dReplyHck = pArcDev->Command( TIM_ID, CSS, timing_dsp_hck);
+    dReplyHov = pArcDev->Command( TIM_ID, CSL, timing_dsp_hov);
 
     if ( dReplyHck == DON && dReplyHov == DON) {
         return 0;

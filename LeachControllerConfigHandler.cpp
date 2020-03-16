@@ -109,7 +109,7 @@ void LeachController::ParseCCDSettings(CCDVariables &_CCDSettings, ClockVariable
     _CCDSettings.SignalIntgWait =  _LeachConfig.GetReal("timing","SignalIntgWait",0.5);
     _CCDSettings.DGWidth =  _LeachConfig.GetReal("timing","DGWidth",0.6);
     _CCDSettings.OGWidth =  _LeachConfig.GetReal("timing","OGWidth",0.6);
-    _CCDSettings.SKRSTWidth =  _LeachConfig.GetReal("timing","SkippingRGWidth",0.6);
+    _CCDSettings.SKRSTWidth =  _LeachConfig.GetReal("timing","RGWidth",0.6);
     _CCDSettings.SWWidth =  _LeachConfig.GetReal("timing","SWPulseWidth",0.6);
     _CCDSettings.VWidth =  _LeachConfig.GetReal("timing","VWidth",20);
     _CCDSettings.VOverlapWidth =  _LeachConfig.GetReal("timing","VOverlapWidth",10);
