@@ -164,12 +164,17 @@ void LeachController::ApplyAllCCDClocks(void )
                            "However, you should still stop and verify the V-clock directions.";
         }
 
-
-        this->SetDACValueClock(7, this->ClockParams.one_og_lo, this->ClockParams.one_og_hi); //Channel 7: OG1
-        this->SetDACValueClock(9, this->ClockParams.two_og_lo, this->ClockParams.two_og_hi); //Channel 9: OG2
+        if (this->CCDParams.CCDType == "SK"){
+            this->SetDACValueClock(7, this->ClockParams.one_og_lo, this->ClockParams.one_og_hi); //Channel 7: OG1
+            this->SetDACValueClock(9, this->ClockParams.two_og_lo, this->ClockParams.two_og_hi); //Channel 9: OG2
+        } else {
+            this->SetDACValueClock(7, this->ClockParams.one_og_hi, this->ClockParams.one_og_hi); //Channel 7: OG1
+            this->SetDACValueClock(9, this->ClockParams.two_og_hi, this->ClockParams.two_og_hi); //Channel 9: OG2
+        }
 
         this->SetDACValueClock(18, this->ClockParams.one_sw_lo, this->ClockParams.one_sw_hi); //Channel 18: SWL
         this->SetDACValueClock(23, this->ClockParams.two_sw_lo, this->ClockParams.two_sw_hi); //Channel 23: SWU
+        
 
 
         //Reset gate needs to be checked against the current timing file and be flipped if necessary
@@ -182,8 +187,13 @@ void LeachController::ApplyAllCCDClocks(void )
         }
 
 
-        this->SetDACValueClock(19, this->ClockParams.one_dg_lo, this->ClockParams.one_dg_hi); //Channel 18: DG1
-        this->SetDACValueClock(21, this->ClockParams.two_dg_lo, this->ClockParams.two_dg_hi); //Channel 23: DG2
+        if (this->CCDParams.CCDType == "SK"){
+            this->SetDACValueClock(19, this->ClockParams.one_dg_lo, this->ClockParams.one_dg_hi); //Channel 18: DG1
+            this->SetDACValueClock(21, this->ClockParams.two_dg_lo, this->ClockParams.two_dg_hi); //Channel 23: DG2
+        } else {
+            this->SetDACValueClock(19, this->ClockParams.one_dg_lo, this->ClockParams.one_dg_lo); //Channel 18: DG1
+            this->SetDACValueClock(21, this->ClockParams.two_dg_lo, this->ClockParams.two_dg_lo); //Channel 23: DG2
+        }
 
     } else {
 
