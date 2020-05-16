@@ -60,7 +60,7 @@ private:
 
     arc::device::CArcPCIe *pArcDev;
     ProgressBar ReadoutProgress;
-    FitsOps *_FitsOps;
+
 
 
 
@@ -78,12 +78,17 @@ private:
         void ExposeCallback( float fElapsedTime )
         {
             std::string VDDState;
-            if (L._expose_isVDDOn) VDDState = ColouredFmtText("VDD ON", "green");
-            else VDDState = ColouredFmtText("VDD OFF", "red");
+            if (L._expose_isVDDOn) {
+                VDDState = ColouredFmtText("VDD ON", "green");
+            } else {
+                VDDState = ColouredFmtText("VDD OFF", "red");
+            }
             printf("\rExposure time remaining: %.3f | %s ",fElapsedTime, VDDState.c_str());
 
             /*If the exposure is about to end, and VDD is off, then turn VDD back on*/
-            if (L._expose_isVDDOn == false && fElapsedTime < 3.0 ) L.ToggleVDD(1);
+            if (L._expose_isVDDOn == false && fElapsedTime < 3.0 ) {
+                L.ToggleVDD(1);
+            }
         }
 
         void ReadCallback( int dPixelCount )
@@ -101,21 +106,24 @@ private:
     {
     public:
         LeachController &L;
+        size_t RowsPerImageBlock;
+        int TotalFramesToRead;
+        FitsOps* _FitsFile;
 
 
-        CMyConIFace( LeachController &LO, size_t RowsPerImageBlock, int TotalFramesToRead) :  L(LO), RowsPerImageBlock(RowsPerImageBlock), TotalFramesToRead(TotalFramesToRead) {};
+        CMyConIFace( LeachController &LO, size_t RowsPerImageBlock, int TotalFramesToRead, FitsOps* _FFits) :  L(LO), RowsPerImageBlock(RowsPerImageBlock), TotalFramesToRead(TotalFramesToRead), _FitsFile(_FFits)  {
+        };
         ~CMyConIFace() { };
 
 
-
-        void FrameCallback( int dFPB, int dCount, int dRows, int dCols, void* pBuf );
-            {
-                  long _StartColumn = 0;
-                  long _StartRow = dCount*_ContinuousReadoutRowsPerImageBlock;
-                  printf("Adding frame %d\n",dCount);
-                  _FitsOps->WriteData(_StartRow, _StartColumn, dRows, dCols, (unsigned short*) pBuf);
-            }
-     };
+        void FrameCallback( int dFPB, int dCount, int dRows, int dCols, void* pBuf )
+        {
+            long _StartColumn = 0;
+            long _StartRow = dCount*RowsPerImageBlock;
+            printf("Adding frame %d\n",dCount);
+            _FitsFile->WriteData(_StartRow, _StartColumn, dRows, dCols, (unsigned short*) pBuf);
+        }
+    };
 
     CExposeListener *cExposeListener;
     //CExposeListener cExposeListener;
@@ -178,13 +186,15 @@ public:
     int TotalChunks, CurrentChunk;
     int DecideStrategyAndExpose(int, std::string);
     void PrepareAndExposeCCDForLargeImages(int ExposureTime, int dRows,
-            unsigned short **ImageBuffer, bool FirstInSequence=false, bool LastInSequence=false);
+                                           unsigned short **ImageBuffer, bool FirstInSequence=false, bool LastInSequence=false);
     void ExposeCCDChunk( float fExpTime, int dRows, bool FirstRead, const bool& bAbort, CExposeListener::CExpIFace* pExpIFace );
     void ExposeContinuous( int dRows, int dCols, int NDCMs, int dNumOfFrames, float fExpTime,
-                        const bool& bAbort, CMyConIFace::CConIFace* pConIFace, bool bOpenShutter );
+                           const bool& bAbort, CMyConIFace::CConIFace* pConIFace, bool bOpenShutter );
 
 
 
+    /*ContinuousExposure*/
+    int ContinuousExposeC(int ExposeSeconds, std::string OutFileName, int numFrames);
 
     /*LeachControllerMiscHardwareProcedures - public part*/
     void CCDBiasToggle(bool );

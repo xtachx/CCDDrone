@@ -5,6 +5,7 @@
 #ifndef CCDCONTROL_DTYPES
 #define CCDCONTROL_DTYPES
 #include <chrono>
+#include <string>
 
 
 struct CCDVariables{

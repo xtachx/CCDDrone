@@ -2,7 +2,7 @@
 #define FITSOPS_HPP
 
 #include "fitsio.h"
-#include "LeachController.hpp"
+//#include "LeachController.hpp"
 #include "CCDControlDataTypes.hpp"
 
 class FitsOps{
