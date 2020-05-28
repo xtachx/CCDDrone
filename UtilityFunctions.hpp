@@ -24,21 +24,33 @@ private:
     const char complete_char = '=';
     const char incomplete_char = ' ';
     std::chrono::system_clock::time_point start_time;
+    std::chrono::system_clock::time_point start_time_frame;
     unsigned long total_items;
 
-    int CurrentChunk, TotalChunks;
+    int CurrentFrame=1;
+    int TotalFrame=1;
+    float TotalItemsInPastFrames=0;
 
 public:
     ProgressBar (){};
 
-    void SetEssentials(unsigned long total_items, std::chrono::system_clock::time_point sttime) {
+    void SetEssentials(unsigned long total_items, std::chrono::system_clock::time_point sttime, int Total_Frame=1) {
         this->total_items=total_items;
         this->start_time=sttime;
+        this->start_time_frame=sttime;
+        this->TotalFrame=Total_Frame;
     }
 
     void updProgress(unsigned long new_items) { items = new_items; }
 
-    void updProgressPart(int Current_Chunk, int Total_Chunks) { CurrentChunk=Current_Chunk; TotalChunks= Total_Chunks; }
+    void updProgressFrame(int Current_Frame) {
+
+        this->CurrentFrame=Current_Frame+1;
+        this->start_time_frame=std::chrono::system_clock::now();
+        this->TotalItemsInPastFrames = this->items * Current_Frame;
+
+    }
+
 
 
     void display() const
@@ -46,10 +58,18 @@ public:
         float progress = (float) items / (float) total_items;
         int pos = (int) (bar_width * progress);
 
-        auto _elapsedDurationMillis = std::chrono::duration<double, std::milli> (std::chrono::system_clock::now() - start_time);
+        /*This frame*/
+        auto _elapsedDurationMillis = std::chrono::duration<double, std::milli> (std::chrono::system_clock::now() - start_time_frame);
         int _elpasedMilli = _elapsedDurationMillis.count();
         float fractionRemain = 1.0-progress;
         float _estimatedTimeRemain = fractionRemain * (float)_elpasedMilli/(1000.0*progress);
+        /*All Frames*/
+        auto _elapsedDurationMillisAll = std::chrono::duration<double, std::milli> (std::chrono::system_clock::now() - start_time);
+        int _elpasedMilliAll = _elapsedDurationMillisAll.count();
+        float progressAll = (float) (TotalItemsInPastFrames+items) / (float) (total_items*TotalFrame);
+        float fractionRemainAll = 1.0-progressAll;
+        float _estimatedTimeRemainAll = fractionRemainAll * (float)_elpasedMilliAll/(1000.0*progressAll);
+
 
 
         std::cout << "[";
@@ -60,17 +80,18 @@ public:
             else std::cout << incomplete_char;
         }
         std::cout << "] ";
-
-        std::string ChunkInfoCur = std::to_string(CurrentChunk);
-        ChunkInfoCur = ColouredFmtText(ChunkInfoCur, "green");
-        std::string ChunkInfoTot = std::to_string(TotalChunks);
-        ChunkInfoTot = ColouredFmtText(ChunkInfoTot, "red");
-        std::cout<<" "<<ChunkInfoCur<<"/"<<ChunkInfoTot<<" | ";
-
         std::cout << std::fixed;
         std::cout << std::setprecision(0);
         std::cout << progress * 100.0 << "% ";
-        if (!std::isnan(_estimatedTimeRemain) ) std::cout<< " | Est. time remaining: " << _estimatedTimeRemain << " sec   ";
+
+        std::string ChunkInfoCur = std::to_string(CurrentFrame);
+        ChunkInfoCur = ColouredFmtText(ChunkInfoCur, "green");
+        std::string ChunkInfoTot = std::to_string(TotalFrame);
+        ChunkInfoTot = ColouredFmtText(ChunkInfoTot, "red");
+        std::cout<<" Frame: "<<ChunkInfoCur<<"/"<<ChunkInfoTot<<" | ";
+
+        if (!std::isnan(_estimatedTimeRemain) ) std::cout<< " | Est. time remain#  Frame: " << ColouredFmtText(_estimatedTimeRemain,"green")
+                                                        << " All: ("<<ColouredFmtText(_estimatedTimeRemainAll,"red")<<") sec   ";
         std::cout<< "\r";
         std::cout.flush();
     }

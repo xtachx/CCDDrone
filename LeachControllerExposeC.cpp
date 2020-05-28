@@ -1,6 +1,13 @@
 /* *********************************************************************
- * This file contains all the exposure related routines of the Leach CCD
- * control - CCDDrone.
+ * This is the continuous exposure routine for the Leach system. This
+ * is a part of the CCDDrone suites to run the Leach system with the
+ * "SuperSequencer" allowing for the ability to run Skipper CCDs.
+ * The default pinouts use the UW configuration, but are changeable.
+ *
+ * Designed and written by Pitam Mitra,
+ * at the University of Washington for the DAMIC-M collaboration.
+ *
+ *
  * *********************************************************************
  */
 
@@ -21,7 +28,7 @@
 
 //#define MaxDataPerFrame 1073741824
 //#define MaxDataPerFrame 536870912
-#define MaxDataPerFrame 1200000
+#define MaxDataPerFrame 524288000
 #define NumRowsInContReadout 20
 
 #define OverrideExposeStrategy 1
@@ -37,96 +44,69 @@
     throw std::runtime_error("Expose Aborted!"); \
   }
 
+
+
+
+
 int LeachController::ContinuousExposeC(int ExposeSeconds,
-                                       std::string OutFileName, int numFrames)
+                                       std::string OutFileName, size_t NumContinuousReads)
 {
-    /* Strategy: Get the max memory possible or 1 GB whichever one is lower.
-     * We will stick with 1 GB chunks or close to 1 GB to complete a row.
+
+    /*ContinuousExposure should be in blocks. Its better if each image size is
+     *half the total allowable frame size, so lets calculate this first
+     *and set it here.
      */
 
     size_t RowsPerImageBlock;
-    size_t NumContinuousReads;
     size_t ReminderRows;
 
-    this->TotalPixelsToRead =
-        this->CCDParams.dCols * this->CCDParams.dRows * this->CCDParams.nSkipperR;
-    size_t ImageMemorySize = this->CCDParams.dCols * this->CCDParams.dRows *
-                             this->CCDParams.nSkipperR * sizeof(unsigned short);
-    int TotalCol = this->CCDParams.dCols * this->CCDParams.nSkipperR;
-    FitsOps FITSImage(OutFileName, this->CCDParams, this->BiasParams,
-                      this->ClockParams, this->ClockTimers);
+    /*Total pixels to read (per frame) is cols*rows*NDCMs*/
+    this->TotalPixelsToRead = this->CCDParams.dCols * this->CCDParams.dRows * this->CCDParams.nSkipperR;
+    /*The memory required for reading a full frame is numPixels*2 (actually sizeof(short)) since we have 2 bytes/pixel*/
+    size_t ImageMemorySize = this->TotalPixelsToRead * sizeof(unsigned short);
+
+
+
+    /*Each "line" in the image will have these many pixels*/
+    size_t TotalCol = this->CCDParams.dCols * this->CCDParams.nSkipperR;
+    /*Size of each row in bytes*/
+    size_t SingleRow = TotalCol * sizeof(unsigned short);
+
 
     /*Parameters needed for stat tracking*/
     this->TotalPixelsCounted = 0;
-    this->ReadoutProgress.SetEssentials(this->TotalPixelsToRead,
-                                        this->ClockTimers.Readoutstart);
-
-
-    /*Keep the old method for full exposures,
-     * and so we have a basis of comparison if needed
-     */
+    //this->ReadoutProgress.SetEssentials(this->TotalPixelsToRead, this->ClockTimers.Readoutstart, NumContinuousReads);
 
 
 
-//        this->TotalChunks = 1;
-//        this->CurrentChunk = 1;
-//        this->ReadoutProgress.updProgressPart(this->CurrentChunk,
-//                                              this->TotalChunks);
-//        unsigned short* ImageBufferV;
-//        this->PrepareAndExposeCCD(ExposeSeconds, &ImageBufferV);
-//
-//        /*Write the data*/
-//        FITSImage.WriteData(0, 0, this->CCDParams.dRows,
-//                            this->CCDParams.dCols * this->CCDParams.nSkipperR,
-//                            ImageBufferV);
-//
-//        /*Write the post exposure info*/
-//        FITSImage.WritePostExposureInfo();
-
-
-    /* ******************************************
-     * Expose strategy 3 - continuous exposure
-     *
-     * In this mode, the Leach system itself performs
-     * a continuous readout of many frames and stores
-     * these frames in a ringbuffer like situation.
-     * *******************************************/
-
-
-    /*Size of each row*/
-    size_t SingleRow = this->CCDParams.dCols * this->CCDParams.nSkipperR *
-                       sizeof(unsigned short);
-    /*Size of each block */
-    size_t BlockSize = SingleRow * NumRowsInContReadout;
-    /*How many blocks do we need to fill the entire image?*/
-    NumContinuousReads = numFrames;
-
-    /*Debugging info*/
+    /*Text display info*/
     std::string ExposeStrategyTxt = "CCDDExposeC (continuous readout)";
     ExposeStrategyTxt = ColouredFmtText(ExposeStrategyTxt, "magenta");
-    std::string ExposeStrategyExtra =
-        std::to_string(NumContinuousReads) + " parts.";
-    ExposeStrategyExtra = ColouredFmtText(ExposeStrategyExtra, "red", "bold");
-    std::cout << ExposeStrategyTxt << " | The image will be read in "
-              << ExposeStrategyExtra << "\n";
 
+    std::string ExposeStrategyExtra = std::to_string(NumContinuousReads);
+    ExposeStrategyExtra = ColouredFmtText(ExposeStrategyExtra, "red", "bold");
+
+    std::cout << ExposeStrategyTxt << " | Number of continuous reads: " << ExposeStrategyExtra << "\n";
     this->TotalChunks = NumContinuousReads;
 
+
+    /*FITS file storage initialization*/
+    FitsOps FITSImage(OutFileName, this->CCDParams, this->BiasParams, this->ClockParams, this->ClockTimers);
     /*Set up the FITS file header*/
     FITSImage.WriteHeader();
 
 
+
     /*Perform readout*/
     //this->_FitsFile = &FITSImage; //This is for cConIface to modify the fits file.
-    CMyConIFace cMyConIFace(*this, NumRowsInContReadout, NumContinuousReads, &FITSImage);
+    CMyConIFace cMyConIFace(*this, NumContinuousReads, &FITSImage);
 
 
 
     this->ExposeContinuous(NumRowsInContReadout, this->CCDParams.dCols, this->CCDParams.nSkipperR,
                            NumContinuousReads, this->CCDParams.fExpTime,
                            false,
-                           &cMyConIFace,
-                           false);
+                           &cMyConIFace);
 
     /*Write the post exposure info*/
     FITSImage.WritePostExposureInfo();
@@ -153,14 +133,9 @@ int LeachController::ContinuousExposeC(int ExposeSeconds,
 // |                    exposing or image readout. Default: false
 // |  <IN> -> pConIFace - Function pointer to callback for frame completion.
 // |                       NULL by default.
-// |  <IN> -> bOpenShutter - 'true' to open the shutter during expose; 'false'
-// |                         otherwise.
 // +----------------------------------------------------------------------------
-void LeachController::ExposeContinuous(int dRows, int dCols, int NDCMs,
-                                       int dNumOfFrames, float fExpTime,
-                                       const bool& bAbort,
-                                       CMyConIFace::CConIFace* pConIFace,
-                                       bool bOpenShutter)
+void LeachController::ExposeContinuous(int dRows, int dCols, int NDCMs, int dNumOfFrames, float fExpTime,
+                                       const bool& bAbort, CMyConIFace* pConIFace)
 {
     int dFramesPerBuffer = 0;
     int dPCIFrameCount = 0;
@@ -169,6 +144,7 @@ void LeachController::ExposeContinuous(int dRows, int dCols, int NDCMs,
 
     float fRemainingTime = fExpTime;
     bool bInReadout = false;
+    bool bLastInReadoutState = false;
     int dTimeoutCounter = 0;
     int dLastPixelCount = 0;
     int dPixelCount = 0;
@@ -176,53 +152,58 @@ void LeachController::ExposeContinuous(int dRows, int dCols, int NDCMs,
 
     int dRetVal;
 
-    /*Number of pixels to read*/
+    /*Number of pixels to read in each frame*/
     size_t dExpectedPixelsEachFrame = dRows * dCols * NDCMs;
     size_t dImageSizeEachFrame = dExpectedPixelsEachFrame * sizeof(unsigned short);
-
     int TotalCol = dCols * NDCMs;
+
     /*This sets the NSR and NPR in the leach assembly.*/
     pArcDev->SetImageSize(dRows, dCols);
     pArcDev->Command(TIM_ID, STC, TotalCol);
 
 
-    //Buffer for 2x the frame size
+
+
+    //Buffer for 2x the frame size + 2 bytes to prevent overfill, but check where the boundary is
     size_t _setCommonBufferSize = dImageSizeEachFrame*2+2;
     pArcDev->ReMapCommonBuffer(_setCommonBufferSize);
 
-    printf("Rows %d, Cols %d | NDCMS: %d , Total number of columns: %d\n",
-           pArcDev->GetImageRows(), pArcDev->GetImageCols(),
-           this->CCDParams.nSkipperR, TotalCol);
+
+    /*Check what has been set so far*/
+    printf("Each frame: Rows %d, Cols %d | NDCMS: %d | Total columns: %d | Pixels: %d\n",
+           pArcDev->GetImageRows(), pArcDev->GetImageCols(), this->CCDParams.nSkipperR, TotalCol, dExpectedPixelsEachFrame);
 
 
-    // Check for adequate buffer size
+
+    /* Check for adequate buffer size */
     if (dImageSizeEachFrame > pArcDev->CommonBufferSize())
     {
-        printf("Image dimensions [ %d x %d ] exceed buffer size: %d.\n", dCols,
-               dRows, pArcDev->CommonBufferSize());
-        throw std::runtime_error("Image dimensions exceed buffer size.");
+        printf("Frame dimensions [ %d x %d ] exceed buffer size: %d.\n", dCols, dRows, pArcDev->CommonBufferSize());
+        /*Guidance on how many NDCMs can be accomodated*/
+        size_t BufferSize = pArcDev->CommonBufferSize();
+        int MaxAllowableNDCMs = (BufferSize-2) / (dRows*dCols*sizeof(unsigned short));
+        printf("Max allowable NDCMs for a single frame with dimensions [ %d x %d ] is %d\n",dRows, dCols, MaxAllowableNDCMs);
+
+        /*Quit execution*/
+        throw std::runtime_error("Image dimensions of each frame exceed the allowable buffer size.");
     }
+
+
 
     // Check for valid frame count
     if (dNumOfFrames <= 0)
-        throw std::runtime_error("The number of frames is less than 0.");
-
+        throw std::runtime_error("The number of frames must be > 0.");
     ChkAbortExposure;
 
-    // int/size_t will get promoted to size_t since its unsigned.
-    printf ("Checkpoint 1\n");
+
+
+    /* We have made it thus far, so we will calculate the frames per buffer
+     * This will be 2 for very large images, and more otherwise.
+     */
     dFramesPerBuffer = (int)pArcDev->CommonBufferSize() / dImageSizeEachFrame;
 
-    printf("CommonBufferSize: %d\n",pArcDev->CommonBufferSize());
-    printf("dImageSizeEachFrame: %d\n",dImageSizeEachFrame);
-    printf("Frames per buffer: %d\n",dFramesPerBuffer);
-    printf("DNumofFrames: %d\n",dNumOfFrames);
 
-    ChkAbortExposure;
-
-
-    printf ("Checkpoint 2\n");
-
+    /*Try to acquire the frames!*/
     try
     {
         // Skipper CCD related parameters
@@ -231,12 +212,9 @@ void LeachController::ExposeContinuous(int dRows, int dCols, int NDCMs,
         else
             this->CCDParams.nSkipperR = 1;
 
-        printf ("Checkpoint 3\n");
 
-
-        // Set the frames-per-buffer
+        /* Continuous readout parameter 1 : Frames per buffer -> SuperSequencer */
         dRetVal = pArcDev->Command(TIM_ID, FPB, dFramesPerBuffer);
-
         if (dRetVal != DON)
         {
             printf("Set FramePerBuffer command failed. Reply: 0x%X\n", dRetVal);
@@ -245,9 +223,11 @@ void LeachController::ExposeContinuous(int dRows, int dCols, int NDCMs,
 
         ChkAbortExposure;
 
-        printf ("Checkpoint 4\n");
 
-        // Set the number of frames-to-take
+        /* Continuous readout parameter 2 : Set the number of frames-to-take -> SuperSequencer
+         * This is what the supersequencer uses to "know" that it is in the
+         * continuous readout mode
+         */
         dRetVal = pArcDev->Command(TIM_ID, SNF, dNumOfFrames);
         if (dRetVal != DON)
         {
@@ -257,168 +237,163 @@ void LeachController::ExposeContinuous(int dRows, int dCols, int NDCMs,
 
         ChkAbortExposure;
 
-        printf ("Checkpoint 5\n");
-
-        // Set the shutter position
-        // SetOpenShutter( bOpenShutter );
 
         // Set the exposure time
         int dExpTime = (int)(fExpTime * 1000.0);
         dRetVal = pArcDev->Command(TIM_ID, SET, dExpTime);
-
         if (dRetVal != DON)
         {
             printf("Set exposure time failed. Reply: 0x%X\n", dRetVal);
             throw std::runtime_error("Exception thrown because SET command failed.");
         }
 
-        //
-        // Start the exposure
-        //
-        dRetVal = pArcDev->Command(TIM_ID, SEX);
 
+        // Start the exposure
+        dRetVal = pArcDev->Command(TIM_ID, SEX);
         if (dRetVal != DON)
         {
-            printf("Set exposure command failed. Reply: 0x%X\n", dRetVal);
+            printf("Start exposure command failed. Reply: 0x%X\n", dRetVal);
             throw std::runtime_error("Exception thrown because SEX command failed.");
         }
 
         ChkAbortExposure;
 
-        printf ("Checkpoint 6\n");
 
+
+        /* Iterate on all frames to read */
         while (dPCIFrameCount < dNumOfFrames)
         {
-
             ChkAbortExposure;
-            dPCIFrameCount = pArcDev->GetFrameCount();
-            printf("\nPCI FrameCount: %d, Expected %d",dPCIFrameCount,dNumOfFrames);
-            printf("InReadout %d\n",pArcDev->IsReadout());
 
-            //while (dPixelCount < dExpectedPixelsEachFrame)
+            //What is the current frame count?
+            dPCIFrameCount = pArcDev->GetFrameCount();
+
             //{
-            printf ("Checkpoint 7\n");
-            if (pArcDev->IsReadout()) {
+            if (pArcDev->IsReadout())
+            {
                 bInReadout = true;
             }
-//
-//                /*Set the clock timers to readout mode*/
-//                if (this->ClockTimers.rClockCounter == 0) {
-//                    this->ClockTimers.Readoutstart = std::chrono::system_clock::now();
-//                    this->ClockTimers.isReadout = true;
-//                    this->ClockTimers.isExp = false;
-//                    this->ClockTimers.rClockCounter = 1;
-//                    this->ReadoutProgress.SetEssentials(this->TotalPixelsToRead,
-//                                                        this->ClockTimers.Readoutstart);
-//                    std::cout << std::endl
-//                            << "Total pixels to read: " << this->TotalPixelsToRead
-//                            << std::endl;
-//                }
-//                // printf("Is in readout: %d\n",pArcDev->IsReadout());
-//            }
 
-                // ----------------------------
-                // READ ELAPSED EXPOSURE TIME
-                // ----------------------------
-                // Checking the elapsed time > 1 sec. is to prevent race conditions with
-                // sending RET while the PCI board is going into readout. Added check
-                // for exposure_time > 1 sec. to prevent RET error.
-                if (!bInReadout && fRemainingTime > 1.1f && dExposeCounter >= 5 &&
-                        fExpTime > 1.0f)
+            /* If we just moved from exposure to radout, then set the clocks
+             * to reflect this
+             */
+
+            if (bLastInReadoutState != bInReadout && bLastInReadoutState==false)
+            {
+
+                /*Set the clock timers to readout mode*/
+                if (this->ClockTimers.rClockCounter == 0)
                 {
-                    // Ignore all RET timeouts
-                    try
-                    {
-                        // Read the elapsed exposure time.
-                        dRetVal = pArcDev->Command(TIM_ID, RET);
+                    this->ClockTimers.Readoutstart = std::chrono::system_clock::now();
+                    this->ClockTimers.isReadout = true;
+                    this->ClockTimers.isExp = false;
+                    this->ClockTimers.rClockCounter = 1;
+                    this->ReadoutProgress.SetEssentials(dExpectedPixelsEachFrame,
+                                                        this->ClockTimers.Readoutstart, dNumOfFrames);
+                }
+            }
+            // ----------------------------
+            // READ ELAPSED EXPOSURE TIME
+            // ----------------------------
+            // Checking the elapsed time > 1 sec. is to prevent race conditions with
+            // sending RET while the PCI board is going into readout. Added check
+            // for exposure_time > 1 sec. to prevent RET error.
+            if (!bInReadout && fRemainingTime > 1.1f && dExposeCounter >= 5 &&
+                    fExpTime > 1.0f)
+            {
+                // Ignore all RET timeouts
+                try
+                {
+                    // Read the elapsed exposure time.
+                    dRetVal = pArcDev->Command(TIM_ID, RET);
 
-                        if (dRetVal != ROUT)
+                    if (dRetVal != ROUT)
+                    {
+                        if (pArcDev->ContainsError(dRetVal) ||
+                                pArcDev->ContainsError(dRetVal, 0, int(fExpTime * 1000)))
                         {
-                            if (pArcDev->ContainsError(dRetVal) ||
-                                    pArcDev->ContainsError(dRetVal, 0, int(fExpTime * 1000)))
-                            {
-                                pArcDev->StopExposure();
-                                throw std::runtime_error("Failed to read elapsed time!");
-                            }
-
-                            ChkAbortExposure;
-
-                            dExposeCounter = 0;
-                            fRemainingTime = fExpTime - (float)(dRetVal / 1000);
-
-                            //if (pExpIFace != NULL) {
-                            printf("\rExposure time remaining: %.3f ",fRemainingTime);
-
-                            //}
+                            pArcDev->StopExposure();
+                            throw std::runtime_error("Failed to read elapsed time!");
                         }
+
+                        ChkAbortExposure;
+
+                        dExposeCounter = 0;
+                        fRemainingTime = fExpTime - (float)(dRetVal / 1000);
+
+                        //if (pExpIFace != NULL) {
+                        printf("\rExposure time remaining: %.3f ",fRemainingTime);
+
+                        //}
                     }
-                    catch (...)
-                    {
-                    }
                 }
-
-                dExposeCounter++;
-
-                // ----------------------------
-                // READOUT PIXEL COUNT
-                // ----------------------------
-                ChkAbortExposure;
-
-                // Save the last pixel count for use by the timeout counter.
-                dLastPixelCount = dPixelCount;
-                dPixelCount = pArcDev->GetPixelCount();
-                printf("\nPixels read: %d of %d ",dPixelCount, dExpectedPixelsEachFrame);
-
-                if (pArcDev->ContainsError(dPixelCount))
+                catch (...)
                 {
-                    pArcDev->StopExposure();
-                    throw std::runtime_error("Failed to read pixel count!");
                 }
+            }
 
-                ChkAbortExposure;
+            dExposeCounter++;
 
-                if (bInReadout)
-                {
-                    printf("\nPixels read: %d of %d ",dPixelCount, dExpectedPixelsEachFrame);
-                    //pExpIFace->ReadCallback(dPixelCount);
-                }
+            // ----------------------------
+            // READOUT PIXEL COUNT
+            // ----------------------------
+            ChkAbortExposure;
 
-                ChkAbortExposure;
-
-                // If the controller's in READOUT, then increment the timeout
-                // counter. Checking for readout prevents timeouts when clearing
-                // large and/or slow arrays.
-                if (bInReadout && dPixelCount == dLastPixelCount)
-                {
-                    dTimeoutCounter++;
-                }
-                else
-                {
-                    dTimeoutCounter = 0;
-                }
-
-                ChkAbortExposure;
-
-                if (dTimeoutCounter >= pArcDev->READ_TIMEOUT)
-                {
-                    pArcDev->StopExposure();
-                    throw std::runtime_error("Read timeout!");
-                }
+            // Save the last pixel count for use by the timeout counter.
+            dLastPixelCount = dPixelCount;
+            dPixelCount = pArcDev->GetPixelCount();
 
 
+            if (pArcDev->ContainsError(dPixelCount))
+            {
+                pArcDev->StopExposure();
+                throw std::runtime_error("Failed to read pixel count!");
+            }
 
-                //}
+            ChkAbortExposure;
+
+            if (bInReadout)
+            {
+                //printf("\nPixels read: %d of %d ",dPixelCount, dExpectedPixelsEachFrame);
+                pConIFace->ReadCallbackPixel(dPixelCount);
+            }
+
+            ChkAbortExposure;
+
+            // If the controller's in READOUT, then increment the timeout
+            // counter. Checking for readout prevents timeouts when clearing
+            // large and/or slow arrays.
+            if (bInReadout && dPixelCount == dLastPixelCount)
+            {
+                dTimeoutCounter++;
+            }
+            else
+            {
+                dTimeoutCounter = 0;
+            }
+
+            ChkAbortExposure;
+
+            if (dTimeoutCounter >= pArcDev->READ_TIMEOUT)
+            {
+                pArcDev->StopExposure();
+                throw std::runtime_error("Read timeout!");
+            }
 
 
-                // Read the images
-                // while (dPCIFrameCount < dNumOfFrames) {
+
+            //}
 
 
-                //     ChkAbortExposure;
+            // Read the images
+            // while (dPCIFrameCount < dNumOfFrames) {
+
+
+            //     ChkAbortExposure;
 
 
 
-                Arc_Sleep(50);
+            Arc_Sleep(50);
 
             //}
 
@@ -430,12 +405,13 @@ void LeachController::ExposeContinuous(int dRows, int dCols, int NDCMs,
             dPCIFrameCount = pArcDev->GetFrameCount();
             if (dPCIFrameCount > dLastPCIFrameCount)
             {
-                //         // Call external deinterlace and fits file functions here
-                //         if (pConIFace != NULL) {
-                //             pConIFace->FrameCallback(dFPBCount, dPCIFrameCount, dRows, dCols,
-                //                                      ((unsigned char*)pArcDev->CommonBufferVA()) +
-                //                                      dFPBCount * dBoundedImageSize);
-                //         }
+                // Call external deinterlace and fits file functions here
+                if (pConIFace != NULL)
+                {
+                    pConIFace->FrameCallback(dFPBCount, dPCIFrameCount, dRows, dCols,
+                                             ((unsigned char*)pArcDev->CommonBufferVA()) +
+                                             dFPBCount * dImageSizeEachFrame);
+                }
 
                 dLastPCIFrameCount = dPCIFrameCount;
                 dFPBCount++;
@@ -447,6 +423,7 @@ void LeachController::ExposeContinuous(int dRows, int dCols, int NDCMs,
             /*Reset pixel counters*/
             dLastPixelCount = 0;
             dPixelCount = 0;
+            bLastInReadoutState = bInReadout;
 
 
         }

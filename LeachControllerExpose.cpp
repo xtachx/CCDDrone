@@ -95,8 +95,7 @@ int LeachController::DecideStrategyAndExpose(int ExposeSeconds,
 
         this->TotalChunks = 1;
         this->CurrentChunk = 1;
-        this->ReadoutProgress.updProgressPart(this->CurrentChunk,
-                                              this->TotalChunks);
+        //this->ReadoutProgress.updProgressPart(this->CurrentChunk, this->TotalChunks);
         unsigned short* ImageBufferV;
         this->PrepareAndExposeCCD(ExposeSeconds, &ImageBufferV);
 
@@ -137,8 +136,7 @@ int LeachController::DecideStrategyAndExpose(int ExposeSeconds,
         /*For loop over all the blocks of data*/
         for (int i = 0; i < NumContinuousReads; i++) {
             this->CurrentChunk = i + 1;
-            this->ReadoutProgress.updProgressPart(this->CurrentChunk,
-                                                  this->TotalChunks);
+            //this->ReadoutProgress.updProgressPart(this->CurrentChunk, this->TotalChunks);
 
             unsigned short* ImageBufferV;
             if (i == 0) {  // First read
@@ -160,8 +158,7 @@ int LeachController::DecideStrategyAndExpose(int ExposeSeconds,
         /*Last block of reads - in its own scope*/
         {
             this->CurrentChunk = NumContinuousReads + 1;
-            this->ReadoutProgress.updProgressPart(this->CurrentChunk,
-                                                  this->TotalChunks);
+            //this->ReadoutProgress.updProgressPart(this->CurrentChunk, this->TotalChunks);
 
             unsigned short* ImageBufferV;
             this->PrepareAndExposeCCDForLargeImages(ExposeSeconds, ReminderRows,
@@ -187,42 +184,41 @@ int LeachController::DecideStrategyAndExpose(int ExposeSeconds,
          * *******************************************/
 
     } else if (ExposeStrategy == 3) {
-        /*Size of each row*/
-        size_t SingleRow = this->CCDParams.dCols * this->CCDParams.nSkipperR *
-                           sizeof(unsigned short);
-        /*Size of each block */
-        size_t BlockSize = SingleRow * NumRowsInContReadout;
-        /*How many blocks do we need to fill the entire image?*/
-        NumContinuousReads = 1 + this->CCDParams.dRows / NumRowsInContReadout;
-
-        /*Debugging info*/
-        std::string ExposeStrategyTxt = "Strategy: 3 (continuous readout)";
-        ExposeStrategyTxt = ColouredFmtText(ExposeStrategyTxt, "magenta");
-        std::string ExposeStrategyExtra =
-            std::to_string(NumContinuousReads) + " parts.";
-        ExposeStrategyExtra = ColouredFmtText(ExposeStrategyExtra, "red", "bold");
-        std::cout << ExposeStrategyTxt << " | The image will be read in "
-                  << ExposeStrategyExtra << "\n";
-
-        this->TotalChunks = NumContinuousReads;
-
-        /*Set up the FITS file header*/
-        FITSImage.WriteHeader();
-
-
-        /*Perform readout*/
-        //this->_FitsFile = &FITSImage; //This is for cConIface to modify the fits file.
-        CMyConIFace cMyConIFace(*this, NumRowsInContReadout, NumContinuousReads, &FITSImage);
-
-
-        this->ExposeContinuous(NumRowsInContReadout, this->CCDParams.dCols, this->CCDParams.nSkipperR,
-                               NumContinuousReads, this->CCDParams.fExpTime,
-                               false,
-                               &cMyConIFace,
-                               false);
-
-        /*Write the post exposure info*/
-        FITSImage.WritePostExposureInfo();
+//        /*Size of each row*/
+//        size_t SingleRow = this->CCDParams.dCols * this->CCDParams.nSkipperR *
+//                           sizeof(unsigned short);
+//        /*Size of each block */
+//        size_t BlockSize = SingleRow * NumRowsInContReadout;
+//        /*How many blocks do we need to fill the entire image?*/
+//        NumContinuousReads = 1 + this->CCDParams.dRows / NumRowsInContReadout;
+//
+//        /*Debugging info*/
+//        std::string ExposeStrategyTxt = "Strategy: 3 (continuous readout)";
+//        ExposeStrategyTxt = ColouredFmtText(ExposeStrategyTxt, "magenta");
+//        std::string ExposeStrategyExtra =
+//            std::to_string(NumContinuousReads) + " parts.";
+//        ExposeStrategyExtra = ColouredFmtText(ExposeStrategyExtra, "red", "bold");
+//        std::cout << ExposeStrategyTxt << " | The image will be read in "
+//                  << ExposeStrategyExtra << "\n";
+//
+//        this->TotalChunks = NumContinuousReads;
+//
+//        /*Set up the FITS file header*/
+//        FITSImage.WriteHeader();
+//
+//
+//        /*Perform readout*/
+//        //this->_FitsFile = &FITSImage; //This is for cConIface to modify the fits file.
+//        CMyConIFace cMyConIFace(*this, NumRowsInContReadout, NumContinuousReads, &FITSImage);
+//
+//
+//        this->ExposeContinuous(NumRowsInContReadout, this->CCDParams.dCols, this->CCDParams.nSkipperR,
+//                               NumContinuousReads, this->CCDParams.fExpTime,
+//                               false,
+//                               &cMyConIFace);
+//
+//        /*Write the post exposure info*/
+//        FITSImage.WritePostExposureInfo();
     }
 
     return 0;

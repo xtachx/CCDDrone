@@ -98,33 +98,6 @@ private:
         }
     };
 
-    // ------------------------------------------------------
-    //  Exposure Callback Class - for continuous exposures
-    //  for the Arcapi to work. ?!
-    // ------------------------------------------------------
-    class CMyConIFace : public arc::device::CConIFace
-    {
-    public:
-        LeachController &L;
-        size_t RowsPerImageBlock;
-        int TotalFramesToRead;
-        FitsOps* _FitsFile;
-
-
-        CMyConIFace( LeachController &LO, size_t RowsPerImageBlock, int TotalFramesToRead, FitsOps* _FFits) :  L(LO), RowsPerImageBlock(RowsPerImageBlock), TotalFramesToRead(TotalFramesToRead), _FitsFile(_FFits)  {
-        };
-        ~CMyConIFace() { };
-
-
-        void FrameCallback( int dFPB, int dCount, int dRows, int dCols, void* pBuf )
-        {
-            long _StartColumn = 0;
-            long _StartRow = dCount*RowsPerImageBlock;
-            printf("Adding frame %d\n",dCount);
-            _FitsFile->WriteData(_StartRow, _StartColumn, dRows, dCols, (unsigned short*) pBuf);
-        }
-    };
-
     CExposeListener *cExposeListener;
     //CExposeListener cExposeListener;
 
@@ -153,6 +126,39 @@ public:
 
     LeachController(std::string );
     ~LeachController();
+
+    // ------------------------------------------------------
+    //  Exposure Callback Class - for continuous exposures
+    // ------------------------------------------------------
+    class CMyConIFace : public arc::device::CConIFace
+    {
+    public:
+        LeachController &L;
+        int TotalFramesToRead;
+        FitsOps* _FitsFile;
+
+
+        CMyConIFace( LeachController &LO, int TotalFramesToRead, FitsOps* _FFits) :  L(LO), TotalFramesToRead(TotalFramesToRead), _FitsFile(_FFits)  {
+        };
+        ~CMyConIFace() { };
+
+        void ReadCallbackPixel( int dPixelCount )
+        {
+            L.ReadoutProgress.updProgress(dPixelCount+L.TotalPixelsCounted);
+            L.ReadoutProgress.display();
+        }
+
+
+        void FrameCallback( int dFPB, int dCount, int dRows, int dCols, void* pBuf )
+        {
+            /*Update display*/
+            L.ReadoutProgress.updProgressFrame(dCount);
+            //long _StartColumn = 0;
+            //long _StartRow = dCount*RowsPerImageBlock;
+            //printf("Adding frame %d\n",dCount);
+            //_FitsFile->WriteData(_StartRow, _StartColumn, dRows, dCols, (unsigned short*) pBuf);
+        }
+    };
 
     /*Variables that will need to be set before exposure*/
     std::string INIFileLoc;
@@ -189,12 +195,12 @@ public:
                                            unsigned short **ImageBuffer, bool FirstInSequence=false, bool LastInSequence=false);
     void ExposeCCDChunk( float fExpTime, int dRows, bool FirstRead, const bool& bAbort, CExposeListener::CExpIFace* pExpIFace );
     void ExposeContinuous( int dRows, int dCols, int NDCMs, int dNumOfFrames, float fExpTime,
-                           const bool& bAbort, CMyConIFace::CConIFace* pConIFace, bool bOpenShutter );
+                           const bool& bAbort, CMyConIFace* pConIFace );
 
 
 
     /*ContinuousExposure*/
-    int ContinuousExposeC(int ExposeSeconds, std::string OutFileName, int numFrames);
+    int ContinuousExposeC(int ExposeSeconds, std::string OutFileName, size_t NumContinuousReads);
 
     /*LeachControllerMiscHardwareProcedures - public part*/
     void CCDBiasToggle(bool );
