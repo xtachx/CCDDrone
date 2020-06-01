@@ -22,7 +22,6 @@
 #include "CArcPCIe.h"
 #include "CConIFace.h"
 #include "CExpIFace.h"
-#include "FitsOps.hpp"
 #include "LeachController.hpp"
 #include "UtilityFunctions.hpp"
 
@@ -45,6 +44,16 @@
   }
 
 
+
+void LeachController::SetIntermediateClocks(void){
+
+    /*Calculate and store the clock durations*/
+    this->ClockTimers.ReadoutEnd = std::chrono::system_clock::now();
+    auto RdoutDuration = std::chrono::duration<double, std::milli> (this->ClockTimers.ReadoutEnd - this->ClockTimers.Readoutstart);
+    this->ClockTimers.MeasuredReadout = RdoutDuration.count();
+
+
+}
 
 
 
@@ -91,25 +100,24 @@ int LeachController::ContinuousExposeC(int ExposeSeconds,
 
 
     /*FITS file storage initialization*/
-    FitsOps FITSImage(OutFileName, this->CCDParams, this->BiasParams, this->ClockParams, this->ClockTimers);
-    /*Set up the FITS file header*/
-    FITSImage.WriteHeader();
+    this->outFileName=OutFileName;
+    this->outTarFile=OutFileName+".tar";
 
 
 
     /*Perform readout*/
     //this->_FitsFile = &FITSImage; //This is for cConIface to modify the fits file.
-    CMyConIFace cMyConIFace(*this, NumContinuousReads, &FITSImage);
+    CMyConIFace cMyConIFace(*this, NumContinuousReads);
 
 
 
-    this->ExposeContinuous(NumRowsInContReadout, this->CCDParams.dCols, this->CCDParams.nSkipperR,
+    this->ExposeContinuous(this->CCDParams.dRows, this->CCDParams.dCols, this->CCDParams.nSkipperR,
                            NumContinuousReads, this->CCDParams.fExpTime,
                            false,
                            &cMyConIFace);
 
-    /*Write the post exposure info*/
-    FITSImage.WritePostExposureInfo();
+    /*Gzip the tarball archive*/
+    //this->WritePostExposureInfo();
 
     return 0;
 }
@@ -155,6 +163,7 @@ void LeachController::ExposeContinuous(int dRows, int dCols, int NDCMs, int dNum
     /*Number of pixels to read in each frame*/
     size_t dExpectedPixelsEachFrame = dRows * dCols * NDCMs;
     size_t dImageSizeEachFrame = dExpectedPixelsEachFrame * sizeof(unsigned short);
+    this->FrameMemorySize = dImageSizeEachFrame;
     int TotalCol = dCols * NDCMs;
 
     /*This sets the NSR and NPR in the leach assembly.*/
@@ -165,9 +174,8 @@ void LeachController::ExposeContinuous(int dRows, int dCols, int NDCMs, int dNum
 
 
     //Buffer for 2x the frame size + 2 bytes to prevent overfill, but check where the boundary is
-    size_t _setCommonBufferSize = dImageSizeEachFrame*2+2;
+    size_t _setCommonBufferSize = dImageSizeEachFrame*2;
     pArcDev->ReMapCommonBuffer(_setCommonBufferSize);
-
 
     /*Check what has been set so far*/
     printf("Each frame: Rows %d, Cols %d | NDCMS: %d | Total columns: %d | Pixels: %d\n",
@@ -176,7 +184,7 @@ void LeachController::ExposeContinuous(int dRows, int dCols, int NDCMs, int dNum
 
 
     /* Check for adequate buffer size */
-    if (dImageSizeEachFrame > pArcDev->CommonBufferSize())
+    if (dImageSizeEachFrame*2 > pArcDev->CommonBufferSize())
     {
         printf("Frame dimensions [ %d x %d ] exceed buffer size: %d.\n", dCols, dRows, pArcDev->CommonBufferSize());
         /*Guidance on how many NDCMs can be accomodated*/
@@ -187,8 +195,6 @@ void LeachController::ExposeContinuous(int dRows, int dCols, int NDCMs, int dNum
         /*Quit execution*/
         throw std::runtime_error("Image dimensions of each frame exceed the allowable buffer size.");
     }
-
-
 
     // Check for valid frame count
     if (dNumOfFrames <= 0)
@@ -284,6 +290,13 @@ void LeachController::ExposeContinuous(int dRows, int dCols, int NDCMs, int dNum
                 /*Set the clock timers to readout mode*/
                 if (this->ClockTimers.rClockCounter == 0)
                 {
+
+
+                    /*Calculate and store the clock durations*/
+                    auto ExpDuration = std::chrono::duration<double, std::milli> (std::chrono::system_clock::now() - this->ClockTimers.ExpStart);
+                    this->ClockTimers.MeasuredExp = ExpDuration.count();
+
+                    /*Start readout clocks*/
                     this->ClockTimers.Readoutstart = std::chrono::system_clock::now();
                     this->ClockTimers.isReadout = true;
                     this->ClockTimers.isExp = false;
@@ -381,18 +394,6 @@ void LeachController::ExposeContinuous(int dRows, int dCols, int NDCMs, int dNum
             }
 
 
-
-            //}
-
-
-            // Read the images
-            // while (dPCIFrameCount < dNumOfFrames) {
-
-
-            //     ChkAbortExposure;
-
-
-
             Arc_Sleep(50);
 
             //}
@@ -405,6 +406,7 @@ void LeachController::ExposeContinuous(int dRows, int dCols, int NDCMs, int dNum
             dPCIFrameCount = pArcDev->GetFrameCount();
             if (dPCIFrameCount > dLastPCIFrameCount)
             {
+
                 // Call external deinterlace and fits file functions here
                 if (pConIFace != NULL)
                 {
@@ -416,7 +418,8 @@ void LeachController::ExposeContinuous(int dRows, int dCols, int NDCMs, int dNum
                 dLastPCIFrameCount = dPCIFrameCount;
                 dFPBCount++;
 
-
+                /*Frame transfer complete - set the clock timings for the next read*/
+                this->ClockTimers.Readoutstart = std::chrono::system_clock::now();
 
             }
 

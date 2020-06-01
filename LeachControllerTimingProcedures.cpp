@@ -274,3 +274,62 @@ int LeachController::ApplySummingWellWidth(double newSWWidth) {
     }
 
 }
+
+/*!
+ * ApplyVClockWidths may be used to change the width of the V-clocks.
+ * @param newVClock Summing well width in micro-seconds.
+ * @param newVOverlap Summing well width in micro-seconds.
+ * @return 0 for success and -1 otherwise.
+ */
+int LeachController::ApplyVClockWidths(double newVClock, double newVOverlap) {
+
+
+    int dReplyVck = 0;
+    int dReplyVov = 0;
+
+    int timing_dsp_vck = this->CalculateTiming(newVClock);
+    int timing_dsp_ov = this->CalculateTiming(newVOverlap);
+
+
+    dReplyVck = pArcDev->Command( TIM_ID, CPP, timing_dsp_vck);
+    dReplyVov = pArcDev->Command( TIM_ID, CPL, timing_dsp_ov);
+
+
+    if ( dReplyVck == DON && dReplyVov == DON ) {
+        return 0;
+    } else {
+        if (dReplyVck != DON) printf("Error setting the V clock width / time: %X\n", dReplyVck) ;
+        if (dReplyVov != DON) printf("Error setting the V overlap width / time: %X\n", dReplyVov) ;
+        return -1;
+    }
+
+}
+
+
+/*!
+ * ApplyHClockWidths may be used to change the width of the H-clocks.
+ * @param newHClock Summing well width in micro-seconds.
+ * @param newHOverlap Summing well width in micro-seconds.
+ * @return 0 for success and -1 otherwise.
+ */
+int LeachController::ApplyHClockWidths(double newHClock, double newHOverlap) {
+
+    int dReplyHck = 0;
+    int dReplyHov = 0;
+
+    int timing_dsp_hck = this->CalculateTiming(newHClock);
+    int timing_dsp_hov = this->CalculateTiming(newHOverlap);
+
+
+    dReplyHck = pArcDev->Command( TIM_ID, CSS, timing_dsp_hck);
+    dReplyHov = pArcDev->Command( TIM_ID, CSL, timing_dsp_hov);
+
+    if ( dReplyHck == DON && dReplyHov == DON) {
+        return 0;
+    } else {
+        if (dReplyHck != DON) printf("Error setting the H clock width / time: %X\n", dReplyHck);
+        if (dReplyHov != DON) printf("Error setting the H overlap width / time: %X\n", dReplyHov);
+        return -1;
+    }
+
+}

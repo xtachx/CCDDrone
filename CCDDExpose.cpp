@@ -82,12 +82,11 @@ int main( int argc, char **argv )
 
 
         /*Expose*/
-        // unsigned short *ImageBufferV;
-        //_ThisRunControllerInstance.PrepareAndExposeCCD(ExposeSeconds, ImageBufferV);
-        _ThisRunControllerInstance.DecideStrategyAndExpose(ExposeSeconds, OutFileName);
+        _ThisRunControllerInstance.PrepareAndExposeCCD(ExposeSeconds);
 
         /*Save FITS*/
-        //_ThisRunControllerInstance.SaveFits(OutFileName);
+        void *ImageBufferV = _ThisRunControllerInstance.GetCommonBufferVA();
+        _ThisRunControllerInstance.SaveFits(OutFileName, ImageBufferV);
     } else {
         if (config) std::cout<<"Error: The config file has changed but the new settings were not uploaded.\n";
         if (sequencer) std::cout<<"Error: The sequencer has changed but it was not uploaded.\n";
@@ -96,3 +95,4 @@ int main( int argc, char **argv )
 
     printf("CCDDrone done. Thank you.\n");
 }
+

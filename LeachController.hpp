@@ -24,7 +24,6 @@
 
 #include "CCDControlDataTypes.hpp"
 #include "UtilityFunctions.hpp"
-#include "FitsOps.hpp"
 
 
 
@@ -50,6 +49,10 @@
 #define DRXN_U 0x5F5F55
 #define DRXN_LU 0x5F4C55
 #define HLD 0x00484C44
+#define CSL 0x0043534C
+#define CSS 0x00435353
+#define CPL 0x0043504C
+#define CPP 0x00435050
 
 
 
@@ -61,9 +64,8 @@ private:
     arc::device::CArcPCIe *pArcDev;
     ProgressBar ReadoutProgress;
 
-
-
-
+    std::string outFileName;
+    size_t FrameMemorySize;
 
     // ------------------------------------------------------
     //  Exposure Callback Class - this crazy construction is needed
@@ -135,10 +137,8 @@ public:
     public:
         LeachController &L;
         int TotalFramesToRead;
-        FitsOps* _FitsFile;
 
-
-        CMyConIFace( LeachController &LO, int TotalFramesToRead, FitsOps* _FFits) :  L(LO), TotalFramesToRead(TotalFramesToRead), _FitsFile(_FFits)  {
+        CMyConIFace( LeachController &LO, int TotalFramesToRead) :  L(LO), TotalFramesToRead(TotalFramesToRead)  {
         };
         ~CMyConIFace() { };
 
@@ -153,6 +153,19 @@ public:
         {
             /*Update display*/
             L.ReadoutProgress.updProgressFrame(dCount);
+
+            std::string _thisFrameOutFileName = L.outFileName+"_"+std::to_string(dCount)+".fits";
+
+            /*Set the readout timers*/
+            L.SetIntermediateClocks();
+
+            /*Write the FITS file for this segment*/
+            L.SaveFits(_thisFrameOutFileName, pBuf, dCount, TotalFramesToRead, dFPB);
+            L.AppendTarball(_thisFrameOutFileName, L.outTarFile);
+
+            /*Re-set the timers*/
+
+
             //long _StartColumn = 0;
             //long _StartRow = dCount*RowsPerImageBlock;
             //printf("Adding frame %d\n",dCount);
@@ -185,22 +198,19 @@ public:
 
 
     /*LeachControllerExpose - public part*/
-    void PrepareAndExposeCCD(int, unsigned short**);
+    void PrepareAndExposeCCD(int);
     bool _expose_isVDDOn;
-    unsigned long TotalPixelsToRead;
-    unsigned long TotalPixelsCounted;
-    int TotalChunks, CurrentChunk;
-    int DecideStrategyAndExpose(int, std::string);
-    void PrepareAndExposeCCDForLargeImages(int ExposureTime, int dRows,
-                                           unsigned short **ImageBuffer, bool FirstInSequence=false, bool LastInSequence=false);
-    void ExposeCCDChunk( float fExpTime, int dRows, bool FirstRead, const bool& bAbort, CExposeListener::CExpIFace* pExpIFace );
-    void ExposeContinuous( int dRows, int dCols, int NDCMs, int dNumOfFrames, float fExpTime,
-                           const bool& bAbort, CMyConIFace* pConIFace );
 
 
 
     /*ContinuousExposure*/
+    unsigned long TotalPixelsToRead;
+    unsigned long TotalPixelsCounted;
+    int TotalChunks, CurrentChunk;
+    void ExposeContinuous( int dRows, int dCols, int NDCMs, int dNumOfFrames, float fExpTime,
+                           const bool& bAbort, CMyConIFace* pConIFace );
     int ContinuousExposeC(int ExposeSeconds, std::string OutFileName, size_t NumContinuousReads);
+    void SetIntermediateClocks(void);
 
     /*LeachControllerMiscHardwareProcedures - public part*/
     void CCDBiasToggle(bool );
@@ -220,15 +230,21 @@ public:
     int ApplyOGWidth(double);
     int ApplySkippingRGWidth(double);
     int ApplySummingWellWidth(double);
+    int ApplyVClockWidths(double , double );
+    int ApplyHClockWidths(double , double );
 
 
 
     /*FitsOps*/
-    //void SaveFitsHeader(std::string );
+    std::string outTarFile;
+    void SaveFitsHeader(std::string );
+    void SaveFits(std::string outFileName, void* pData, int numFrame = 1, int totalFrames = 1, int FPBCount=0);
+    void AppendTarball(std::string fitsFile, std::string TarFile);
+    void ArchiveTarball(std::string Tarball);
 
 
-
-
+    /*Access routines - defined here*/
+    void* GetCommonBufferVA(void) {return this->pArcDev->CommonBufferVA();};
 
 };
 

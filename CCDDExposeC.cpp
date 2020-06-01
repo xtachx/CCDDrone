@@ -95,7 +95,8 @@ int main( int argc, char **argv )
         //_ThisRunControllerInstance.PrepareAndExposeCCD(ExposeSeconds, ImageBufferV);
         _ThisRunControllerInstance.ContinuousExposeC(ExposeSeconds, OutFileName,NumContinuousFrames);
 
-        /*Save FITS*/
+        /*Save Tar.gz*/
+        _ThisRunControllerInstance.ArchiveTarball(_ThisRunControllerInstance.outTarFile);
         //_ThisRunControllerInstance.SaveFits(OutFileName);
     } else {
         if (config) std::cout<<"Error: The config file has changed but the new settings were not uploaded.\n";
