@@ -232,6 +232,7 @@ public:
     int ApplySummingWellWidth(double);
     int ApplyVClockWidths(double , double );
     int ApplyHClockWidths(double , double );
+    void ApplyAllPositive(double );
 
 
 

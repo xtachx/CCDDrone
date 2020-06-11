@@ -24,9 +24,36 @@
 #include "LeachController.hpp"
 #include "CCDControlDataTypes.hpp"
 
+/*
+ * Apply +12V to all clocks in effect making the
+ * CCD have a uniform electric potential at the top.
+ * Used for: Charge erase procedure.
+ */
+
+void LeachController::ApplyAllPositive(double RefVoltage)
+{
+
+    /*Limit the ref voltage to 12V*/
+    if (RefVoltage > 12.0) RefVoltage = 12.0;
+    if (RefVoltage < -12.0) RefVoltage = -12.0;
+
+    /*Set H and V Clocks*/
+    std::vector<int> HandVClockLines {0,1,2,12,13,14,15,16,17,3,4,5};
+    for (int ClockLine : HandVClockLines) this->SetDACValueClock(ClockLine, RefVoltage, RefVoltage);
+    
+    /*Set the amplifier related clocks. This is a separate block so we can disable it easily if need be*/
+    /*6,8: TG1,2 | 7,9: OG1,2 | 18,23 : SWL,U | 20,22: RG1,2 | 19,21 : DG1,2 */
+    std::vector<int> AmplifierClockLines {6,8,7,9,18,23,20,22,19,21};
+    for (int ClockLine : AmplifierClockLines) this->SetDACValueClock(ClockLine, RefVoltage, RefVoltage);
+
+}
+
+
+
+
 
 /*
- * Apply +9V to all H-clocks in effect making the
+ * Apply +12V to all H-clocks in effect making the
  * pixel array have a uniform electric potential at the top.
  * Used for: Charge erase procedure.
  */
@@ -100,8 +127,8 @@ void LeachController::StartupController(void )
 void LeachController::PerformEraseProcedure(void)
 {
 
-    std::cout<<"Setting pixel array to (9V,9V)\n";
-    this->ApplyAllPositiveVPixelArray();
+    std::cout<<"Setting pixel array to (11V,11V)\n";
+    this->ApplyAllPositive(11.0);
 
     std::cout<<"Switching Vsub / relay OFF (pin 11) and wait 5 seconds.\n";
     this->CCDBiasToggle(0);
@@ -110,7 +137,7 @@ void LeachController::PerformEraseProcedure(void)
     std::cout<<"Switch Vsub / relay ON (pin 11). After 5 seconds, the clock voltages will be restored.\n";
     this->CCDBiasToggle(1);
     std::this_thread::sleep_for(std::chrono::seconds(5));
-    this->RestoreVClockVoltages();
+    this->ApplyAllCCDClocks();
     std::cout<<"Clock voltages restored. Erase procedure is now complete.\n";
 
 }
