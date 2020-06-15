@@ -11,7 +11,7 @@
 
 
 #define USAGE( x ) \
-            ( std::cout << std::endl << "Usage: ./" << x << " [exp time (s) : Default=5] [Output file name: Default Image.fits]" << std::endl)
+            ( std::cout << std::endl << "Usage: ./" << x << " [exp time (s) : Default=5] [Output file name: Default Image.fits] [Num continuous frames: Default 2]" << std::endl)
 
 
 
@@ -44,6 +44,15 @@ int main( int argc, char **argv )
     {
         OutFileName = "Image.fits";
         std::cout << "Output file name is set to Image.fits since no name was provided.";
+    }
+
+    int NumContinuousFrames;
+    try {
+        NumContinuousFrames = atoi(argv[3]);
+    } catch (...)
+    {
+        NumContinuousFrames = 2;
+        std::cout << "NumContinuousFrames was not set correctly. Using a default value of 2.";
     }
 
     /*Check if the output filename exists. If so, we end the program immediately.*/
@@ -82,17 +91,18 @@ int main( int argc, char **argv )
 
 
         /*Expose*/
-        _ThisRunControllerInstance.PrepareAndExposeCCD(ExposeSeconds);
+        // unsigned short *ImageBufferV;
+        //_ThisRunControllerInstance.PrepareAndExposeCCD(ExposeSeconds, ImageBufferV);
+        _ThisRunControllerInstance.ContinuousExposeC(ExposeSeconds, OutFileName,NumContinuousFrames);
 
-        /*Save FITS*/
-        void *ImageBufferV = _ThisRunControllerInstance.GetCommonBufferVA();
-        _ThisRunControllerInstance.SaveFits(OutFileName, ImageBufferV);
+        /*Save Tar.gz*/
+        _ThisRunControllerInstance.ArchiveTarball(_ThisRunControllerInstance.outTarFile);
+        //_ThisRunControllerInstance.SaveFits(OutFileName);
     } else {
         if (config) std::cout<<"Error: The config file has changed but the new settings were not uploaded.\n";
         if (sequencer) std::cout<<"Error: The sequencer has changed but it was not uploaded.\n";
         std::cout<<"CCD was not exposed and an image was not taken. Please resolve the conflicts in the config section first.\n";
     }
 
-    printf("CCDDrone done. Thank you.\n");
+    printf("\nCCDDrone done. Thank you.\n");
 }
-

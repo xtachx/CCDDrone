@@ -35,20 +35,27 @@
 		<Unit filename="CCDControlDataTypes.hpp" />
 		<Unit filename="CCDDApplyNewSettings.cpp" />
 		<Unit filename="CCDDExpose.cpp" />
+		<Unit filename="CCDDExposeC.cpp" />
 		<Unit filename="CCDDPerformEraseProcedure.cpp" />
 		<Unit filename="CCDDStartupAndErase.cpp" />
+		<Unit filename="CCDDUnitTests.cpp" />
 		<Unit filename="CMakeLists.txt" />
 		<Unit filename="FitsOps.cpp">
 			<Option compile="0" />
 			<Option link="0" />
 		</Unit>
+		<Unit filename="FitsOps.hpp" />
 		<Unit filename="LeachController.cpp" />
 		<Unit filename="LeachController.hpp" />
 		<Unit filename="LeachControllerClkBiasMethods.cpp" />
 		<Unit filename="LeachControllerConfigHandler.cpp" />
 		<Unit filename="LeachControllerExpose.cpp" />
+		<Unit filename="LeachControllerExpose.cpp.autosave" />
+		<Unit filename="LeachControllerExposeC.cpp" />
 		<Unit filename="LeachControllerMiscHardwareProcedures.cpp" />
 		<Unit filename="LeachControllerTimingProcedures.cpp" />
+		<Unit filename="UtilityFunctions.cpp" />
+		<Unit filename="UtilityFunctions.hpp" />
 		<Unit filename="config/FirstTest.ini" />
 		<Extensions>
 			<code_completion />

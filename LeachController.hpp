@@ -52,6 +52,7 @@
 #define CSS 0x00435353
 #define CPL 0x0043504C
 #define CPP 0x00435050
+#define HLD 0x00484C44
 
 
 class LeachController
@@ -61,6 +62,9 @@ private:
 
     arc::device::CArcPCIe *pArcDev;
     ProgressBar ReadoutProgress;
+
+    std::string outFileName;
+    size_t FrameMemorySize;
 
     // ------------------------------------------------------
     //  Exposure Callback Class - this crazy construction is needed
@@ -74,27 +78,24 @@ private:
 
         void ExposeCallback( float fElapsedTime )
         {
-            printf("\rExposure time remaining: %.3f",fElapsedTime);
+            std::string VDDState;
+            if (L._expose_isVDDOn) {
+                VDDState = ColouredFmtText("VDD ON", "green");
+            } else {
+                VDDState = ColouredFmtText("VDD OFF", "red");
+            }
+            printf("\rExposure time remaining: %.3f | %s ",fElapsedTime, VDDState.c_str());
+
             /*If the exposure is about to end, and VDD is off, then turn VDD back on*/
             if (L._expose_isVDDOn == false && fElapsedTime < 3.0 ) {
-                printf("\nTurning VDD ON\n");
                 L.ToggleVDD(1);
             }
         }
 
         void ReadCallback( int dPixelCount )
         {
-
-            L.ReadoutProgress.updProgress(dPixelCount);
+            L.ReadoutProgress.updProgress(dPixelCount+L.TotalPixelsCounted);
             L.ReadoutProgress.display();
-
-            //auto _elapsedDurationMillis = std::chrono::duration<double, std::milli> (std::chrono::system_clock::now() - L.ClockTimers.Readoutstart);
-            //int _elpasedMilli = _elapsedDurationMillis.count();
-            //float fractionDone = (float)dPixelCount / (float)L.TotalPixelsToRead;
-            //float fractionRemain = 1.0-fractionDone;
-            //float _estimatedTimeRemain = fractionRemain * (float)_elpasedMilli/(1000*fractionDone);
-
-            //printf("\rPixel transfer progress: %d / %d (%0.2f \%). Est: %.02f sec",dPixelCount, L.TotalPixelsToRead, fractionDone*100, _estimatedTimeRemain);
         }
     };
 
@@ -127,6 +128,59 @@ public:
     LeachController(std::string );
     ~LeachController();
 
+    // ------------------------------------------------------
+    //  Exposure Callback Class - for continuous exposures
+    // ------------------------------------------------------
+    class CMyConIFace : public arc::device::CConIFace
+    {
+    public:
+        LeachController &L;
+        int TotalFramesToRead;
+
+        CMyConIFace( LeachController &LO, int TotalFramesToRead) :  L(LO), TotalFramesToRead(TotalFramesToRead)  {
+        };
+        ~CMyConIFace() { };
+
+        void ReadCallbackPixel( int dPixelCount )
+        {
+            L.ReadoutProgress.updProgress(dPixelCount+L.TotalPixelsCounted);
+            L.ReadoutProgress.display();
+        }
+
+
+        void FrameCallback( int dFPB, int dCount, int dRows, int dCols, void* pBuf )
+        {
+            /*Update display*/
+            L.ReadoutProgress.updProgressFrame(dCount);
+
+            std::string _thisFrameOutFileName = L.outFileName+"_"+std::to_string(dCount)+".fits";
+
+            /*Set the readout timers*/
+            L.SetIntermediateClocks();
+
+            /*De-Interlacing part - If two amplifiers were used, we need to de-interlace*/
+            if (this->CCDParams.AmplifierDirection == "UL" || this->CCDParams.AmplifierDirection == "LU") {
+                std::cout << "Since amplifier selected was UL / LU, the image will now be de-interlaced.\n";
+                unsigned short *pU16Buf = (unsigned short *) pBuf;
+                arc::deinterlace::CArcDeinterlace cDlacer;
+                int dDeintAlg = arc::deinterlace::CArcDeinterlace::DEINTERLACE_SERIAL;
+                cDlacer.RunAlg(pU16Buf, this->CCDParams.dRows, this->CCDParams.dCols * this->CCDParams.nSkipperR, dDeintAlg);
+            }
+
+            /*Write the FITS file for this segment*/
+            L.SaveFits(_thisFrameOutFileName, pBuf, dCount, TotalFramesToRead, dFPB);
+            L.AppendTarball(_thisFrameOutFileName, L.outTarFile);
+
+            /*Re-set the timers*/
+
+
+            //long _StartColumn = 0;
+            //long _StartRow = dCount*RowsPerImageBlock;
+            //printf("Adding frame %d\n",dCount);
+            //_FitsFile->WriteData(_StartRow, _StartColumn, dRows, dCols, (unsigned short*) pBuf);
+        }
+    };
+
     /*Variables that will need to be set before exposure*/
     std::string INIFileLoc;
     CCDVariables CCDParams;
@@ -152,11 +206,19 @@ public:
 
 
     /*LeachControllerExpose - public part*/
-    void PrepareAndExposeCCD(int, unsigned short*);
-    char _expose_isVDDOn = 0;
-    int TotalPixelsToRead;
-    int DecideExposeStrategy(void);
+    void PrepareAndExposeCCD(int);
+    bool _expose_isVDDOn;
 
+
+
+    /*ContinuousExposure*/
+    unsigned long TotalPixelsToRead;
+    unsigned long TotalPixelsCounted;
+    int TotalChunks, CurrentChunk;
+    void ExposeContinuous( int dRows, int dCols, int NDCMs, int dNumOfFrames, float fExpTime,
+                           const bool& bAbort, CMyConIFace* pConIFace );
+    int ContinuousExposeC(int ExposeSeconds, std::string OutFileName, size_t NumContinuousReads);
+    void SetIntermediateClocks(void);
 
     /*LeachControllerMiscHardwareProcedures - public part*/
     void CCDBiasToggle(bool );
@@ -178,14 +240,18 @@ public:
     int ApplySummingWellWidth(double);
     int ApplyVClockWidths(double , double );
     int ApplyHClockWidths(double , double );
-
-
+    void ApplyAllPositive(double );
 
     /*FitsOps*/
-    void SaveFits(std::string );
+    std::string outTarFile;
+    void SaveFitsHeader(std::string );
+    void SaveFits(std::string outFileName, void* pData, int numFrame = 1, int totalFrames = 1, int FPBCount=0);
+    void AppendTarball(std::string fitsFile, std::string TarFile);
+    void ArchiveTarball(std::string Tarball);
 
 
-
+    /*Access routines - defined here*/
+    void* GetCommonBufferVA(void) {return this->pArcDev->CommonBufferVA();};
 
 };
 

@@ -7,23 +7,26 @@ find_package( CFITSIO )
 #find_package(sqlite3 REQUIRED)
 #MESSAGE( STATUS "Found : ${SQLITE3_LIBRARIES}" )
 
-SET(CMAKE_CXX_FLAGS "-std=gnu++1y -O2 -march=native -m64")
+SET(CMAKE_CXX_FLAGS "-std=gnu++1y -g3 -march=native -m64")
 
 
 set(SOURCE
    ${CMAKE_CURRENT_SOURCE_DIR}/LeachController.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/LeachControllerExpose.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/LeachControllerExposeC.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/LeachControllerClkBiasMethods.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/LeachControllerConfigHandler.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/LeachControllerMiscHardwareProcedures.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/LeachControllerTimingProcedures.cpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/FitsOps.cpp)
+   ${CMAKE_CURRENT_SOURCE_DIR}/FitsOps.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/UtilityFunctions.cpp)
 set(HEADERS
    ${CMAKE_CURRENT_SOURCE_DIR}/picosha2.h
    ${CMAKE_CURRENT_SOURCE_DIR}/LeachController.hpp
    ${CMAKE_CURRENT_SOURCE_DIR}/CCDControlDataTypes.hpp
    ${CMAKE_CURRENT_SOURCE_DIR}/INIReader.h
-   ${CMAKE_CURRENT_SOURCE_DIR}/UtilityFunctions.hpp)
+   ${CMAKE_CURRENT_SOURCE_DIR}/UtilityFunctions.hpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/FitsOps.hpp)
 
 INCLUDE_DIRECTORIES(
     ${CMAKE_CURRENT_SOURCE_DIR}/ArcAPI/CArcDevice/src
@@ -47,6 +50,9 @@ set_target_properties(LeachController PROPERTIES
 #-lcurl seems to be required by fitsio!
 add_executable( CCDDExpose CCDDExpose.cpp )
 target_link_libraries( CCDDExpose -lCArcDeinterlace -lCArcDevice LeachController -lcurl ${CFITSIO_LIBRARIES})
+
+add_executable( CCDDExposeC CCDDExposeC.cpp )
+target_link_libraries( CCDDExposeC -lCArcDeinterlace -lCArcDevice LeachController -lcurl ${CFITSIO_LIBRARIES})
 
 add_executable( CCDDStartupAndErase CCDDStartupAndErase.cpp)
 target_link_libraries( CCDDStartupAndErase -lCArcDeinterlace -lCArcDevice LeachController -lcurl ${CFITSIO_LIBRARIES})

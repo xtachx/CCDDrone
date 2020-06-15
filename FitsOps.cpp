@@ -1,9 +1,7 @@
-#ifndef FITSOPS_HPP
-#define FITSOPS_HPP
-
 #include "fitsio.h"
 #include "LeachController.hpp"
 #include "CCDControlDataTypes.hpp"
+#include "unistd.h"
 
 /*Function needed to convert time points to string*/
 static std::string timePointAsString(const std::chrono::system_clock::time_point& tp)
@@ -16,7 +14,7 @@ static std::string timePointAsString(const std::chrono::system_clock::time_point
 
 
 /*Function to write an SK Merged image as a FITS file.*/
-void LeachController::SaveFits(std::string outFileName)
+void LeachController::SaveFits(std::string outFileName, void *data_ptr, int numFrame, int totalFrames, int FPBCount)
 {
 
     /*These are the temporary FITS variables we need to open the file
@@ -171,8 +169,22 @@ void LeachController::SaveFits(std::string outFileName)
     fits_write_key(fptr, TDOUBLE, "MExp", &this->ClockTimers.MeasuredExp, "Measured exposure time (ms)", &status);
     fits_write_key(fptr, TDOUBLE, "MRead", &this->ClockTimers.MeasuredReadout, "Measured readout time (ms)", &status);
 
+    /*Meta keywords for continuous readout*/
+    fits_write_key(fptr, TINT, "IFRAME", &numFrame, "Which frame is this in sequence (continuous exposure)", &status);
+    fits_write_key(fptr, TINT, "NFRAMES", &totalFrames, "Total number of frames (continuous exposure)", &status);
+
+
     /*Write image*/
-    unsigned short *pData = (unsigned short *)pArcDev->CommonBufferVA();
+    unsigned short *pData = (unsigned short *)data_ptr;
+    //void* pDataPtr = pArcDev->CommonBufferVA();
+    //printf("Original ptr: %x\n", pDataPtr);
+    //void* pDataPtr2 = pDataPtr+FPBCount*this->FrameMemorySize;
+    //printf("Mod ptr: %x\n", pDataPtr2);
+    //printf("nPixelsToWrite %d\n",nPixelsToWrite);
+    //printf("Common buffer size: %d\n",pArcDev->CommonBufferSize());
+    //unsigned short *pData = (unsigned short*)pArcDev->CommonBufferVA();
+
+
     if (pData==NULL)
         printf ("Why is the data a null pointer?\n");
     fits_write_img(fptr, TUSHORT, dfpixel, nPixelsToWrite, pData, &status);
@@ -181,4 +193,39 @@ void LeachController::SaveFits(std::string outFileName)
     fits_report_error(stderr, status);
 }
 
-#endif
+
+void LeachController::AppendTarball(std::string fitsFile, std::string TarFile){
+
+    /*Check if the Tar file exists. If not, create it*/
+    bool TarballExists = ( access( TarFile.c_str(), F_OK ) != -1 );
+
+    std::string _executeTarCommand;
+
+    if (!TarballExists){
+        _executeTarCommand = "tar --remove-files --create --file="+TarFile+" "+fitsFile;
+    } else {
+        _executeTarCommand = "tar --remove-files --append --file="+TarFile+" "+fitsFile;
+    }
+
+    //TODO: Sanitize inputs
+    system(_executeTarCommand.c_str());
+
+}
+
+
+void LeachController::ArchiveTarball(std::string Tarball){
+
+    /*Check if the Tar file exists. If not, create it*/
+    bool TarballExists = ( access( Tarball.c_str(), F_OK ) != -1 );
+
+    if (TarballExists){
+        std::string _executeGzCommand = "gzip "+Tarball;
+        //TODO: Sanitize inputs
+        system(_executeGzCommand.c_str());
+
+    } else {
+        std::cout<<"Error: Could not locate tarball."<<"\n";
+    }
+
+
+}

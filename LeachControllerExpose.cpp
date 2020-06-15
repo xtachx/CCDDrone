@@ -29,12 +29,6 @@
                             }
 
 
-int LeachController::DecideExposeStrategy(void){
-
-
-
-    return 0;
-}
 
 
 
@@ -48,11 +42,23 @@ int LeachController::DecideExposeStrategy(void){
 * *********************************************************************
 */
 
-void LeachController::PrepareAndExposeCCD(int ExposureTime, unsigned short *ImageBuffer)
+void LeachController::PrepareAndExposeCCD(int ExposureTime)
 {
 
 
     try {
+
+        /* In case we are in the continuous readout mode, set it back to single images */
+        dRetVal = pArcDev->Command(TIM_ID, SNF, 1);
+        if (dRetVal != DON)
+        {
+            printf("Could not set device back to single image mode. Reply: 0x%X\n",
+                   dRetVal);
+            throw std::runtime_error(
+                "Exception thrown because SNF 1 command failed.");
+        }
+
+
 
         if (this->CCDParams.CCDType == "SK") this->SetSSR();
         else this->CCDParams.nSkipperR = 1;
@@ -117,7 +123,7 @@ void LeachController::PrepareAndExposeCCD(int ExposureTime, unsigned short *Imag
 
 
         /*Set the imageBuffer before finishing*/
-        ImageBuffer = (unsigned short *) this->pArcDev->CommonBufferVA();
+        //ImageBuffer = (unsigned short *) this->pArcDev->CommonBufferVA();
 
         /*Calculate and store the clock durations*/
         auto ExpDuration = std::chrono::duration<double, std::milli> (this->ClockTimers.Readoutstart - this->ClockTimers.ExpStart);
