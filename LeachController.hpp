@@ -159,12 +159,12 @@ public:
             L.SetIntermediateClocks();
 
             /*De-Interlacing part - If two amplifiers were used, we need to de-interlace*/
-            if (this->CCDParams.AmplifierDirection == "UL" || this->CCDParams.AmplifierDirection == "LU") {
+            if (L.CCDParams.AmplifierDirection == "UL" || L.CCDParams.AmplifierDirection == "LU") {
                 std::cout << "Since amplifier selected was UL / LU, the image will now be de-interlaced.\n";
                 unsigned short *pU16Buf = (unsigned short *) pBuf;
                 arc::deinterlace::CArcDeinterlace cDlacer;
                 int dDeintAlg = arc::deinterlace::CArcDeinterlace::DEINTERLACE_SERIAL;
-                cDlacer.RunAlg(pU16Buf, this->CCDParams.dRows, this->CCDParams.dCols * this->CCDParams.nSkipperR, dDeintAlg);
+                cDlacer.RunAlg(pU16Buf, L.CCDParams.dRows, L.CCDParams.dCols * L.CCDParams.nSkipperR, dDeintAlg);
             }
 
             /*Write the FITS file for this segment*/

@@ -49,7 +49,7 @@ void LeachController::PrepareAndExposeCCD(int ExposureTime)
     try {
 
         /* In case we are in the continuous readout mode, set it back to single images */
-        dRetVal = pArcDev->Command(TIM_ID, SNF, 1);
+        int dRetVal = pArcDev->Command(TIM_ID, SNF, 1);
         if (dRetVal != DON)
         {
             printf("Could not set device back to single image mode. Reply: 0x%X\n",
