@@ -48,6 +48,18 @@ void LeachController::PrepareAndExposeCCD(int ExposureTime)
 
     try {
 
+        /* In case we are in the continuous readout mode, set it back to single images */
+        dRetVal = pArcDev->Command(TIM_ID, SNF, 1);
+        if (dRetVal != DON)
+        {
+            printf("Could not set device back to single image mode. Reply: 0x%X\n",
+                   dRetVal);
+            throw std::runtime_error(
+                "Exception thrown because SNF 1 command failed.");
+        }
+
+
+
         if (this->CCDParams.CCDType == "SK") this->SetSSR();
         else this->CCDParams.nSkipperR = 1;
 
