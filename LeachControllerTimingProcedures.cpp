@@ -275,6 +275,7 @@ int LeachController::ApplySummingWellWidth(double newSWWidth) {
 
 }
 
+
 /*!
  * ApplyVClockWidths may be used to change the width of the V-clocks.
  * @param newVClock Summing well width in micro-seconds.

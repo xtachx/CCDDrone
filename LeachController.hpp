@@ -48,12 +48,11 @@
 #define DRXN_L 0x5F5F4C
 #define DRXN_U 0x5F5F55
 #define DRXN_LU 0x5F4C55
-#define HLD 0x00484C44
 #define CSL 0x0043534C
 #define CSS 0x00435353
 #define CPL 0x0043504C
 #define CPP 0x00435050
-
+#define HLD 0x00484C44
 
 
 class LeachController
@@ -242,8 +241,6 @@ public:
     int ApplyVClockWidths(double , double );
     int ApplyHClockWidths(double , double );
     void ApplyAllPositive(double );
-
-
 
     /*FitsOps*/
     std::string outTarFile;
