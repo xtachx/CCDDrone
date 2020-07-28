@@ -12,6 +12,7 @@
 #include "picosha2.h"
 #include "INIReader.h"
 #include "CCDControlDataTypes.hpp"
+#include "SRSPowerSupplyController.hpp"
 
 
 
@@ -129,9 +130,22 @@ void LeachController::ParseCCDSettings(CCDVariables &_CCDSettings, ClockVariable
     _biasSettings.opg_1 = _LeachConfig.GetReal("bias", "opg_1", -2.21);
     _biasSettings.opg_2 = _LeachConfig.GetReal("bias", "opg_2", -2.21);
     _biasSettings.battrelay = _LeachConfig.GetReal("bias", "battrelay", -4.88);
+    _biasSettings.vsub = _LeachConfig.GetReal("bias", "vsub", 45.);  
+    _biasSettings.rampdownrate = _LeachConfig.GetReal("bias","ramp_down_rate",15); 
+    _biasSettings.rampuprate = _LeachConfig.GetReal("bias","ramp_up_rate",45);     
+    _biasSettings.holdtime = _LeachConfig.GetReal("bias","hold_vsuboff_seconds",0.5); 
+    _biasSettings.restartvoltage = _LeachConfig.GetReal("bias","restart_clock_voltage",10); 
+    _biasSettings.turnoffvoltage = _LeachConfig.GetReal("bias","turnoff_clock_voltage",10); 
+    _biasSettings.useSRSsupply   =  _LeachConfig.GetBoolean("bias", "use_srs_supply", false );
+    _biasSettings.SRSSerialPort  =  _LeachConfig.Get("bias", "srs_serial_port", "/dev/ttyUSB0");
     _biasSettings.video_offsets_U = _LeachConfig.GetInteger("bias", "video_offsets_U", 0);
     _biasSettings.video_offsets_L = _LeachConfig.GetInteger("bias", "video_offsets_L", 0);
 
+    if(_biasSettings.useSRSsupply){
+        SRSSupply = SRSPowerSupplyController(_biasSettings.SRSSerialPort);
+    }else{
+        SRSSupply = SRSPowerSupplyController();
+    }
 }
 
 

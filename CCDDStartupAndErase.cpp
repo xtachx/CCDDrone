@@ -59,7 +59,11 @@ int main( int argc, char **argv )
 	std::cout<<"Set IDLE clocks to ON and then start erase procedure in 5 seconds.\n";
     _ThisRunControllerInstance.IdleClockToggle();
     std::this_thread::sleep_for(std::chrono::seconds(5));
-    _ThisRunControllerInstance.PerformEraseProcedure();
+    if(_ThisRunControllerInstance.BiasParams.useSRSsupply){
+      _ThisRunControllerInstance.PerformEraseProcedureWithSRS();
+    }else{
+      _ThisRunControllerInstance.PerformEraseProcedure();
+    }
 
 
     std::cout<<"Leach system is now ready to take data.\n";

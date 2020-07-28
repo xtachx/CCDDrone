@@ -101,6 +101,14 @@ struct BiasVariables{
     double opg_1;
     double opg_2;
     double battrelay;
+    double vsub; 
+    double rampdownrate; 
+    double rampuprate; 
+    double holdtime; 
+    double turnoffvoltage; 
+    double restartvoltage; 
+    bool useSRSsupply;
+    std::string SRSSerialPort;
     int video_offsets_U;
     int video_offsets_L;
 

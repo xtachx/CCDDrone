@@ -203,7 +203,45 @@ void LeachController::ApplyAllCCDClocks(void )
 
 }
 
+void LeachController::TurnOffCCDClocks(void )
+{
+    /*Set Clocks*/
 
+    /*These sets of clocks are common and did not change between Second stage generations.*/
+
+    this->SetDACValueClock(0,0.,0.); //Channel 0: V1
+    this->SetDACValueClock(1,0.,0.); //Channel 1: V2
+    this->SetDACValueClock(2,0.,0.); //Channel 2: V3
+
+    this->SetDACValueClock(12,0.,0.); //Channel 12: H1L
+    this->SetDACValueClock(13,0.,0.); //Channel 13: H2L
+    this->SetDACValueClock(14,0.,0.); //Channel 14: H3L
+    this->SetDACValueClock(15,0.,0.); //Channel 15: H1U
+    this->SetDACValueClock(16,0.,0.); //Channel 16: H2U
+    this->SetDACValueClock(17,0.,0.); //Channel 17: H3U
+
+
+    this->SetDACValueClock(3,0.,0.); //Channel 3: 2V1
+    this->SetDACValueClock(4,0.,0.); //Channel 4: 2V2
+    this->SetDACValueClock(5,0.,0.); //Channel 5: 2V3
+
+
+    this->SetDACValueClock(6,0.,0.);//Channel 6: TG1
+    this->SetDACValueClock(8,0.,0.); //Channel 8: TG2
+
+    this->SetDACValueClock(7,0.,0.); //Channel 7: OG1
+    this->SetDACValueClock(9,0.,0.); //Channel 9: OG2
+
+
+    this->SetDACValueClock(18,0.,0.); //Channel 18: SWL
+    this->SetDACValueClock(23,0.,0.); //Channel 23: SWU
+
+    this->SetDACValueClock(20,0.,0.); //Channel 20: RG1
+    this->SetDACValueClock(22,0.,0.); //Channel 21: RG2
+
+    this->SetDACValueClock(19,0.,0.); //Channel 18: DG1
+    this->SetDACValueClock(21,0.,0.); //Channel 23: DG2
+}
 
 /*
  * Function to apply the bias voltages.
@@ -239,8 +277,10 @@ void LeachController::ApplyAllBiasVoltages(void )
     this->SetDACValueBias(11,BiasVoltToADC(this->BiasParams.battrelay,11));
 
     //VSUB
-    //this->SetDACValueBias(pArcDev, 12,0);
-    //this->SetDACValueBias(pArcDev, 13,0);
+    if(this->BiasParams.useSRSsupply){
+	std::cout << "Should set VSub to : " << this->BiasParams.vsub << std::endl;
+	this->SetVSUB(this->BiasParams.vsub);
+    }
 
     //Video Offsets, channels 2 and 3 on the video board. 3 is R and 2 is L
     this->SetDACValueVideoOffset(2, this->BiasParams.video_offsets_U);
@@ -248,6 +288,48 @@ void LeachController::ApplyAllBiasVoltages(void )
 
 }
 
+void LeachController::TurnOffVSUB(void )
+{
+    //VSUB - added by KR
+    std::cout << "Setting VSub to : 0 V" << std::endl;
+    this->SetVSUB(0.);
+}
+
+void LeachController::TurnOffBiasVoltages(void )
+{
+
+    /*Set Biases*/
+    //Vdd
+    this->SetDACValueBias(0,0.);
+    this->SetDACValueBias(1,0.);
+    this->SetDACValueBias(2,0.);
+    this->SetDACValueBias(3,0.);
+
+
+    //VRef 
+    this->SetDACValueBias(4,0.);
+    this->SetDACValueBias(5,0.);
+
+    //Drain1 and Drain2 
+    this->SetDACValueBias(6,0.);
+    this->SetDACValueBias(7,0.);
+
+
+    //OpG for DES CCDs. 
+    this->SetDACValueBias(8,0.);
+    this->SetDACValueBias(9,0.);
+
+
+    this->SetDACValueBias(10,0.);
+    //Controls Relay for battery box
+    this->SetDACValueBias(11,0.);
+
+
+    //Video Offsets, channels 2 and 3 on the video board. 3 is R and 2 is L
+    this->SetDACValueVideoOffset(2,0.);
+    this->SetDACValueVideoOffset(3,0.);
+
+}
 
 /*
  * The Vdd toggling function

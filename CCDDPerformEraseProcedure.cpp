@@ -42,7 +42,11 @@ int main( int argc, char **argv )
 
     if (_CCDSettingsStatus == 0){
         std::this_thread::sleep_for(std::chrono::seconds(5));
-        _ThisRunControllerInstance.PerformEraseProcedure();
+        if(_ThisRunControllerInstance.BiasParams.useSRSsupply){
+          _ThisRunControllerInstance.PerformEraseProcedureWithSRS();
+        }else{
+          _ThisRunControllerInstance.PerformEraseProcedure();
+        }
         _ThisRunControllerInstance.IdleClockToggle();
         std::cout<<"Leach system is now ready to take data.\n";
     } else {

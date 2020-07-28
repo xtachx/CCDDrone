@@ -24,6 +24,7 @@
 
 #include "CCDControlDataTypes.hpp"
 #include "UtilityFunctions.hpp"
+#include "SRSPowerSupplyController.hpp"
 
 
 
@@ -62,6 +63,7 @@ private:
 
     arc::device::CArcPCIe *pArcDev;
     ProgressBar ReadoutProgress;
+    SRSPowerSupplyControler SRSSupply;
 
     std::string outFileName;
     size_t FrameMemorySize;
@@ -195,6 +197,10 @@ public:
     void ApplyAllBiasVoltages(void );
     void ToggleVDD(bool);
 
+    /* Added by KR */
+    void TurnOffCCDClocks(void );
+    void TurnOffBiasVoltages(void ) ;
+    void TurnOffVSUB (void ); 
 
     /*Routines - Generic and organized by filename*/
 
@@ -224,6 +230,11 @@ public:
     void CCDBiasToggle(bool );
     void StartupController(void );
     void PerformEraseProcedure(void);
+    void PerformEPurgeProcedure(void);
+    void PerformEraseProcedureWithSRS(void);
+    void RampDownProcedure(double, double); 
+    void RampUpProcedure(double, double); 
+    void SetVSUB(double); // Added by KR - for VSub
     void ApplyAllPositiveVPixelArray(void );
     void RestoreVClockVoltages (void);
     void IdleClockToggle(void );
