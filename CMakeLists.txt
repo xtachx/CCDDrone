@@ -19,13 +19,17 @@ set(SOURCE
    ${CMAKE_CURRENT_SOURCE_DIR}/LeachControllerMiscHardwareProcedures.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/LeachControllerTimingProcedures.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/FitsOps.cpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/UtilityFunctions.cpp)
+   ${CMAKE_CURRENT_SOURCE_DIR}/UtilityFunctions.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/SerialDeviceT.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/SRSPowerSupplyController.cpp)
 set(HEADERS
    ${CMAKE_CURRENT_SOURCE_DIR}/picosha2.h
    ${CMAKE_CURRENT_SOURCE_DIR}/LeachController.hpp
    ${CMAKE_CURRENT_SOURCE_DIR}/CCDControlDataTypes.hpp
    ${CMAKE_CURRENT_SOURCE_DIR}/INIReader.h
    ${CMAKE_CURRENT_SOURCE_DIR}/UtilityFunctions.hpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/SerialDeviceT.hpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/SRSPowerSupplyController.hpp
    )
 
 INCLUDE_DIRECTORIES(
@@ -65,3 +69,6 @@ target_link_libraries( CCDDApplyNewSettings -lCArcDeinterlace -lCArcDevice Leach
 
 #add_executable( CCDDUnitTests CCDDUnitTests.cpp ${SOURCE} ${HEADERS})
 #target_link_libraries( CCDDUnitTests -lCArcDeinterlace -lCArcDevice ${CFITSIO_LIBRARIES})
+
+add_executable( SRSDrone SRSPowerSupplyDrone.cpp ${SOURCE} ${HEADERS})
+target_link_libraries( SRSDrone -lCArcDeinterlace -lCArcDevice LeachController -lcurl ${CFITSIO_LIBRARIES} )
