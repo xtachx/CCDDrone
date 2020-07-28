@@ -22,8 +22,8 @@ SRSPowerSupplyController::SRSPowerSupplyController(std::string SerialPort) : Ser
         }
 
 
-        this->currentVoltage = this->GetPSVoltage();
-        this->currentOutputStatus = this->GetPSOutput();
+        this->currentVoltage = this->ReadPSVoltage();
+        this->currentOutputStatus = this->ReadPSOutput();
         this->WriteString("RANGE100");
 
 
@@ -35,23 +35,23 @@ SRSPowerSupplyController::~SRSPowerSupplyController(){
 }
 
 double SRSPowerSupplyController::ReadPSVoltage(){
-	std::string srsCmd = "SOUT?";
+	std::string srsCmd = "VOLT?\n";
 
 	this->WriteString(srsCmd);
 	std::string srsReturn = this->ReadLine();
 
 	 try {
-        this->currentOutputStatus = std::stoi(srsReturn);
+        this->currentVoltage = std::stoi(srsReturn);
     } catch(...){
         printf("Error in ReadPSOutput\n");
     }
 
-    return this->currentOutputStatus;
+    return this->currentVoltage;
 }
 
 bool SRSPowerSupplyController::ReadPSOutput(){
 
-	std::string srsCmd = "SOUT?";
+	std::string srsCmd = "SOUT?\n";
 
 	this->WriteString(srsCmd);
 	std::string srsReturn = this->ReadLine();
@@ -67,7 +67,7 @@ bool SRSPowerSupplyController::ReadPSOutput(){
 }
 
 void SRSPowerSupplyController::WritePSVoltage(double voltage){
-	std::string srsCmd = "VOLT " + std::to_string(voltage);
+	std::string srsCmd = "VOLT " + std::to_string(voltage) +"\n";
 
 	// Write to power supply
 	this->WriteString(srsCmd);
@@ -76,38 +76,40 @@ void SRSPowerSupplyController::WritePSVoltage(double voltage){
 }
 
 void SRSPowerSupplyController::WritePSOutput(bool output){
-	std::string srsCmd = "SOUT " + std::to_string(output);
+	std::string srsCmd = "SOUT " + std::to_string(output) + "\n";
 
 	// Write to power supply
 	this->WriteString(srsCmd);
 
-	currentOutputStatus = this->ReadPSOuput();
+	currentOutputStatus = this->ReadPSOutput();
 }
 
 void SRSPowerSupplyController::VoltageRamp(double startScanVoltage, double stopScanVoltage, double scanTime, bool display){
 
 	// Define ramp parmaeters
 	std::string srsCmd;
-    std::srsCmd = "SCAR RANGE" + std::to_string(100);
+    srsCmd = "SCAR RANGE" + std::to_string(100) + "\n";
     this->WriteString(srsCmd);
 
     // Ramp start voltage
-    srsCmd = "SCAB " + std::to_string(startScanVoltage);
+    srsCmd = "SCAB " + std::to_string(startScanVoltage) + "\n";
     this->WriteString(srsCmd); 
 
     // Ramp stop voltage
-    srsCmd = "SCAE " + std::to_string(stopScanVoltage);
+    srsCmd = "SCAE " + std::to_string(stopScanVoltage) + "\n";
     this->WriteString(srsCmd);
 
     // Ramp time
-    srsCmd = "SCAT " + std::to_string(scanTime);
+    srsCmd = "SCAT " + std::to_string(scanTime) + "\n";
     this->WriteString(srsCmd);
 
     // Other options necessary for ramp
     this->WritePSOutput(true);
-    srsCmd = "SCAD ON";
+    srsCmd = "SCAD ON\n";
     this->WriteString(srsCmd);
-    srsCmd = "SCAA 1";
+    srsCmd = "SCAA 1\n";
+    this->WriteString(srsCmd);
+    srsCmd = "*TRG\n";
     this->WriteString(srsCmd);
 
 }

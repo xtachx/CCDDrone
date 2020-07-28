@@ -63,7 +63,7 @@ private:
 
     arc::device::CArcPCIe *pArcDev;
     ProgressBar ReadoutProgress;
-    SRSPowerSupplyControler SRSSupply;
+    SRSPowerSupplyController SRSSupply;
 
     std::string outFileName;
     size_t FrameMemorySize;

@@ -1,4 +1,4 @@
-#include "SRSPowerSupplyController.h"
+#include "SRSPowerSupplyController.hpp"
 #include <iostream>
 #include <string>
 
@@ -15,12 +15,11 @@ int main(int argc, char const *argv[])
 	sleep(setVoltageTime);
 
 	printf("Test Ramp up....\n");
-	srsSupply->VoltageRamp(0, 75, 4, true);
-	sleep(setVoltageTime);
+	srsSupply->VoltageRamp(0, 75, 10, true);
+	sleep(15);
 
-	prinf("Test Ramp down....\n");
-	srsSupply->VoltageRamp(srsSupply->ReadPSVoltage(), 0, 4, true);
-
+	printf("Test Ramp down....\n");
+	srsSupply->VoltageRamp(srsSupply->ReadPSVoltage(), 0, 10, true);
 
 
 	return 0;
