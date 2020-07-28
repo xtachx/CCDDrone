@@ -1,8 +1,8 @@
 #include "SRSPowerSupplyController.hpp"
 
 SRSPowerSupplyController::SRSPowerSupplyController(){
-	this->currentVoltage = this->GetPSVoltage();
-    this->currentOutputStatus = this->GetP
+	this->currentVoltage = 0;
+    this->currentOutputStatus = 0;
     printf("Dummy instance of class. No serial communication available");
 }
 
@@ -24,12 +24,8 @@ SRSPowerSupplyController::SRSPowerSupplyController(std::string SerialPort) : Ser
 
         this->currentVoltage = this->GetPSVoltage();
         this->currentOutputStatus = this->GetPSOutput();
-        this->WatchdogFuse = 1;
-        this->valveState = 0;
-        this->timeBetweenFillState = 0;
-        this->overflowVoltage = 0;
-        this->timeInCurrentState = 0;
-        this->isOverflow = 0;
+        this->WriteString("RANGE100");
+
 
         printf("SRS Power Supply is now ready to accept instructions.\n");
 }
