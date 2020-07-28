@@ -144,18 +144,10 @@ void LeachController::PerformEraseProcedure(void)
 
 void LeachController::SetVSUB(double VSub)
 {
-    std::string part1 = "sed -i -e 's/VOLT [0-9+.]\\{1,\\}/VOLT ";
-    std::string vs = std::to_string(VSub);
-    std::string part2 = "/g' set_vsub.sh"; 
 
-    std::string command = part1 + vs + part2;
-
-    //std::cout << command << std::endl;
-
-    std::string trigger = "socat SYSTEM:./set_vsub.sh TCP:128.135.52.195:100";
-	
-    system(command.c_str());
-    system(trigger.c_str());
+    this->SRSSupply.WritePSOutput(0);
+    this->SRSSupply.WritePSVoltage(VSub);
+    this->SRSSupply.WritePSOutput(1);
 
 }
 
