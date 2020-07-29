@@ -145,9 +145,9 @@ void LeachController::PerformEraseProcedure(void)
 void LeachController::SetVSUB(double VSub)
 {
 
-    this->SRSSupply.WritePSOutput(0);
-    this->SRSSupply.WritePSVoltage(VSub);
-    this->SRSSupply.WritePSOutput(1);
+    this->SRSSupply->WritePSOutput(0);
+    this->SRSSupply->WritePSVoltage(VSub);
+    this->SRSSupply->WritePSOutput(1);
 
 }
 
@@ -173,7 +173,7 @@ void LeachController::PerformEraseProcedureWithSRS(void)
     std::cout<<"Paolo: Commented some printout to avoid timing issues in the erase, wait till it says the procedure is completed  \n";
     
     // Ramp voltage down
-    this->SRSSupply.VoltageRamp(this->BiasParams.vsub, 0, rmpdownS, true);
+    this->SRSSupply->VoltageRamp(this->BiasParams.vsub, 0, rmpdownS, true);
     std::this_thread::sleep_for(std::chrono::milliseconds(turnoffMS));
     
     std::cout<<"Setting pixel array to +V\n";
@@ -184,7 +184,7 @@ void LeachController::PerformEraseProcedureWithSRS(void)
 
     std::cout<<"Ramping Vsub ON over " << rmpupS << " seconds, " << rsttimeMS << " ms into which the clock voltages will be restored.\n";
     // Ramp voltage up
-    this->SRSSupply.VoltageRamp(0, this->BiasParams.vsub, rmpupS, true);
+    this->SRSSupply->VoltageRamp(0, this->BiasParams.vsub, rmpupS, true);
     std::this_thread::sleep_for(std::chrono::milliseconds(rsttimeMS));
     this->RestoreVClockVoltages();
     std::this_thread::sleep_for(std::chrono::milliseconds(rmpupremainderMS));

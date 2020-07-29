@@ -46,7 +46,7 @@ LeachController::LeachController(std::string INIFileLoc)
 
 LeachController::~LeachController()
 {
-
+    delete SRSSupply;
     pArcDev->Close();
 
 }
