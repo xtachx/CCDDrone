@@ -71,4 +71,4 @@ target_link_libraries( CCDDApplyNewSettings -lCArcDeinterlace -lCArcDevice Leach
 #target_link_libraries( CCDDUnitTests -lCArcDeinterlace -lCArcDevice ${CFITSIO_LIBRARIES})
 
 add_executable( SRSRampDownVoltage SRSPowerSupplyDrone.cpp ${SOURCE} ${HEADERS})
-target_link_libraries( SRSDrone -lCArcDeinterlace -lCArcDevice LeachController -lcurl ${CFITSIO_LIBRARIES} )
+target_link_libraries( SRSRampDownVoltage -lCArcDeinterlace -lCArcDevice LeachController -lcurl ${CFITSIO_LIBRARIES} )
