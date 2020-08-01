@@ -146,7 +146,16 @@ void LeachController::SetVSUB(double VSub)
 {
 
     // this->SRSSupply->WritePSOutput(0);
-    this->SRSSupply->WritePSVoltage(VSub);
+    double currentVoltage = this->SRSSupply->ReadPSVoltage();
+    double deltaVoltage = VSub - currentVoltage;
+    double rampTime = 1;
+    if(deltaVoltage > 0){
+        rampTime = deltaVoltage / this->BiasParams.rampuprate;
+    }else{
+        rampTime = -1 * deltaVoltage / this->BiasParams.rampdownrate;
+    }
+
+    this->SRSSupply->VoltageRamp(currentVoltage, VSub, rampTime, true);
     // this->SRSSupply->WritePSOutput(1);
 
 }
