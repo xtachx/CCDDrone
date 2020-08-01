@@ -145,9 +145,9 @@ void LeachController::PerformEraseProcedure(void)
 void LeachController::SetVSUB(double VSub)
 {
 
-    this->SRSSupply->WritePSOutput(0);
+    // this->SRSSupply->WritePSOutput(0);
     this->SRSSupply->WritePSVoltage(VSub);
-    this->SRSSupply->WritePSOutput(1);
+    // this->SRSSupply->WritePSOutput(1);
 
 }
 

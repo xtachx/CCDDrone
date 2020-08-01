@@ -22,8 +22,8 @@ SRSPowerSupplyController::SRSPowerSupplyController(std::string SerialPort) : Ser
         }
 
 
-        this->currentOutputStatus = 0;
-        this->WritePSOutput(this->currentOutputStatus);
+        this->currentOutputStatus = this->ReadPSOutput();
+        // this->WritePSOutput(this->currentOutputStatus);
         this->currentVoltage = this->ReadPSVoltage();
         this->WriteString("RANGE100\n");
 

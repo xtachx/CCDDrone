@@ -141,6 +141,7 @@ void LeachController::ParseCCDSettings(CCDVariables &_CCDSettings, ClockVariable
     _biasSettings.video_offsets_U = _LeachConfig.GetInteger("bias", "video_offsets_U", 0);
     _biasSettings.video_offsets_L = _LeachConfig.GetInteger("bias", "video_offsets_L", 0);
 
+    // delete SRSSupply;
     if(_biasSettings.useSRSsupply){
         SRSSupply = new SRSPowerSupplyController(_biasSettings.SRSSerialPort);
     }else{
