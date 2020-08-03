@@ -32,8 +32,6 @@ SRSPowerSupplyController::SRSPowerSupplyController(std::string SerialPort) : Ser
 }
 
 SRSPowerSupplyController::~SRSPowerSupplyController(){
-    this->currentOutputStatus = 0;
-    this->WritePSOutput(this->currentOutputStatus);
 	close(USB);
 }
 
