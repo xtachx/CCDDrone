@@ -182,7 +182,7 @@ void LeachController::PerformEraseProcedureWithSRS(void)
     std::cout<<"Paolo: Commented some printout to avoid timing issues in the erase, wait till it says the procedure is completed  \n";
     
     // Ramp voltage down
-    this->SRSSupply->VoltageRamp(this->BiasParams.vsub, 0, rmpdownS, true);
+    this->SRSSupply->VoltageRamp(this->SRSSupply->ReadPSVoltage(), 0, rmpdownS, true);
     std::this_thread::sleep_for(std::chrono::milliseconds(turnoffMS));
     
     std::cout<<"Setting pixel array to +V\n";
