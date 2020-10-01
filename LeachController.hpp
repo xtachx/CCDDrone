@@ -24,7 +24,6 @@
 
 #include "CCDControlDataTypes.hpp"
 #include "UtilityFunctions.hpp"
-#include "SRSPowerSupplyController.hpp"
 
 
 

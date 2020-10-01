@@ -137,16 +137,9 @@ void LeachController::ParseCCDSettings(CCDVariables &_CCDSettings, ClockVariable
     _biasSettings.restartvoltage = _LeachConfig.GetReal("bias","restart_clock_voltage",10); 
     _biasSettings.turnoffvoltage = _LeachConfig.GetReal("bias","turnoff_clock_voltage",10); 
     _biasSettings.useSRSsupply   =  _LeachConfig.GetBoolean("bias", "use_srs_supply", false );
-    _biasSettings.SRSSerialPort  =  _LeachConfig.Get("bias", "srs_serial_port", "/dev/ttyUSB0");
     _biasSettings.video_offsets_U = _LeachConfig.GetInteger("bias", "video_offsets_U", 0);
     _biasSettings.video_offsets_L = _LeachConfig.GetInteger("bias", "video_offsets_L", 0);
-
-    // delete SRSSupply;
-    if(_biasSettings.useSRSsupply){
-        SRSSupply = new SRSPowerSupplyController(_biasSettings.SRSSerialPort);
-    }else{
-        SRSSupply = new SRSPowerSupplyController();
-    }
+    
 }
 
 
