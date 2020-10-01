@@ -3,6 +3,8 @@
 //
 #include "UtilityFunctions.hpp"
 #include <map>
+#include <unistd.h>
+#include <iostream>
 /*
 Basic Colours:
 
@@ -28,6 +30,8 @@ inverse off      27
 
 
 std::string ColouredFmtText(std::string text, std::string colour, std::string fmt){
+
+    
 
     std::map<std::string, int> colour_to_int;
     colour_to_int["black"] = 30;
@@ -56,7 +60,12 @@ std::string ColouredFmtText(std::string text, std::string colour, std::string fm
         formatted_string =  "\033["+std::to_string(fmt_to_int[fmt])+";"+std::to_string(colour_to_int[colour])+"m"+text+"\033[0m";
     }
 
-    return formatted_string;
+    if (isatty (1))
+        return formatted_string; //fprintf (stdout, "Outputting to a terminal.");
+    else
+        return text; //fprintf (stdout, "Not outputting to a terminal.");
+
+    
 
 }
 
