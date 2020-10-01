@@ -63,13 +63,13 @@ public:
         int _elpasedMilli = _elapsedDurationMillis.count();
         float fractionRemain = 1.0-progress;
         float _estimatedTimeRemain = fractionRemain * (float)_elpasedMilli/(1000.0*progress);
+
         /*All Frames*/
         auto _elapsedDurationMillisAll = std::chrono::duration<double, std::milli> (std::chrono::system_clock::now() - start_time);
         int _elpasedMilliAll = _elapsedDurationMillisAll.count();
         float progressAll = (float) (TotalItemsInPastFrames+items) / (float) (total_items*TotalFrame);
         float fractionRemainAll = 1.0-progressAll;
         float _estimatedTimeRemainAll = fractionRemainAll * (float)_elpasedMilliAll/(1000.0*progressAll);
-
 
 
         std::cout << "[";
@@ -82,16 +82,23 @@ public:
         std::cout << "] ";
         std::cout << std::fixed;
         std::cout << std::setprecision(0);
-        std::cout << progress * 100.0 << "% ";
+        std::cout << std::setfill(' ') << std::setw(3) << progress * 100.0 << "% ";
 
-        std::string ChunkInfoCur = std::to_string(CurrentFrame);
-        ChunkInfoCur = ColouredFmtText(ChunkInfoCur, "green");
-        std::string ChunkInfoTot = std::to_string(TotalFrame);
-        ChunkInfoTot = ColouredFmtText(ChunkInfoTot, "red");
-        std::cout<<" Frame: "<<ChunkInfoCur<<"/"<<ChunkInfoTot<<" | ";
+        if (this->TotalFrame != 1){
+            std::string ChunkInfoCur = std::to_string(CurrentFrame);
+            ChunkInfoCur = ColouredFmtText(ChunkInfoCur, "green");
+            std::string ChunkInfoTot = std::to_string(TotalFrame);
+            ChunkInfoTot = ColouredFmtText(ChunkInfoTot, "red");
+            std::cout<<" Frame: "<<ChunkInfoCur<<"/"<<ChunkInfoTot;
+        }
 
-        if (!std::isnan(_estimatedTimeRemain) ) std::cout<< " | Est. time remain#  Frame: " << ColouredFmtText(_estimatedTimeRemain,"green")
-                                                        << " All: ("<<ColouredFmtText(_estimatedTimeRemainAll,"red")<<") sec   ";
+        if (!std::isnan(_estimatedTimeRemain) && (progress > 0.005 ) ){
+
+            if (this->TotalFrame != 1) std::cout<< " | Time remaining:  Frame/All " << ColouredFmtText(_estimatedTimeRemain,"green") << "/"<<ColouredFmtText(_estimatedTimeRemainAll,"red")<<" sec   ";
+            else std::cout<< " | Time remaining:  " << ColouredFmtText(_estimatedTimeRemain,"green") <<" sec   ";
+        } 
+
+
         std::cout<< "\r";
         std::cout.flush();
     }
