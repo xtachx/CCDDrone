@@ -22,6 +22,7 @@ set(SOURCE
    ${CMAKE_CURRENT_SOURCE_DIR}/LeachControllerTimingProcedures.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/FitsOps.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/UtilityFunctions.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/LeachControllerPlusSRS.cpp
    )
 set(HEADERS
    ${CMAKE_CURRENT_SOURCE_DIR}/picosha2.h
@@ -32,15 +33,10 @@ set(HEADERS
    )
 
 
-set(SOURCESRS
-   ${CMAKE_CURRENT_SOURCE_DIR}/LeachControllerPlusSRS.cpp
-)
-
-
 
 INCLUDE_DIRECTORIES(
-    ${CMAKE_CURRENT_SOURCE_DIR}/ArcAPI/CArcDevice/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/ArcAPI/CArcDeinterlace/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/ArcAPI/CArcDevice/src/
+    ${CMAKE_CURRENT_SOURCE_DIR}/ArcAPI/CArcDeinterlace/src/
     ${CFITSIO_INCLUDE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/rpclib/
     )
@@ -60,23 +56,23 @@ set_target_properties(LeachController PROPERTIES
 
 #-lcurl seems to be required by fitsio!
 add_executable( CCDDExpose CCDDExpose.cpp )
-target_link_libraries( CCDDExpose -lCArcDeinterlace -lCArcDevice LeachController -lcurl ${CFITSIO_LIBRARIES})
+target_link_libraries( CCDDExpose -lCArcDeinterlace -lCArcDevice LeachController -lcurl -lpthread ${rpclib} ${CFITSIO_LIBRARIES})
 
 add_executable( CCDDExposeC CCDDExposeC.cpp )
-target_link_libraries( CCDDExposeC -lCArcDeinterlace -lCArcDevice LeachController -lcurl ${CFITSIO_LIBRARIES})
+target_link_libraries( CCDDExposeC -lCArcDeinterlace -lCArcDevice LeachController -lcurl -lpthread ${rpclib} ${CFITSIO_LIBRARIES})
 
 add_executable( CCDDStartupAndErase CCDDStartupAndErase.cpp)
-target_link_libraries( CCDDStartupAndErase -lCArcDeinterlace -lCArcDevice LeachController -lcurl ${rpclib} ${SOURCESRS} ${CFITSIO_LIBRARIES})
+target_link_libraries( CCDDStartupAndErase -lCArcDeinterlace -lCArcDevice LeachController -lcurl -lpthread ${rpclib} ${CFITSIO_LIBRARIES})
 
 add_executable( CCDDPerformEraseProcedure CCDDPerformEraseProcedure.cpp)
-target_link_libraries( CCDDPerformEraseProcedure -lCArcDeinterlace -lCArcDevice LeachController -lcurl  ${rpclib} ${SOURCESRS} ${CFITSIO_LIBRARIES})
+target_link_libraries( CCDDPerformEraseProcedure -lCArcDeinterlace -lCArcDevice LeachController -lcurl -lpthread ${rpclib} ${CFITSIO_LIBRARIES})
 
 add_executable( CCDDApplyNewSettings CCDDApplyNewSettings.cpp)
-target_link_libraries( CCDDApplyNewSettings -lCArcDeinterlace -lCArcDevice LeachController -lcurl  ${rpclib} ${SOURCESRS} ${CFITSIO_LIBRARIES} )
+target_link_libraries( CCDDApplyNewSettings -lCArcDeinterlace -lCArcDevice LeachController -lcurl -lpthread ${rpclib} ${SOURCESRS} ${CFITSIO_LIBRARIES} )
 
 #add_executable( CCDDUnitTests CCDDUnitTests.cpp ${SOURCE} ${HEADERS})
 #target_link_libraries( CCDDUnitTests -lCArcDeinterlace -lCArcDevice ${CFITSIO_LIBRARIES})
 
 add_executable( VSubRampDown VSubRampDown.cpp)
-target_link_libraries( VSubRampDown ${rpclib} )
+target_link_libraries( VSubRampDown -lpthread ${rpclib} )
 set_property(TARGET VSubRampDown PROPERTY CXX_STANDARD 14)

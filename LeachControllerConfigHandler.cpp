@@ -12,7 +12,6 @@
 #include "picosha2.h"
 #include "INIReader.h"
 #include "CCDControlDataTypes.hpp"
-#include "SRSPowerSupplyController.hpp"
 
 
 

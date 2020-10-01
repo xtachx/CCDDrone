@@ -13,14 +13,6 @@
 #include <chrono>
 #include <thread>
 
-#include "CArcDevice.h"
-#include "CArcPCIe.h"
-#include "CArcPCI.h"
-#include "CArcDeinterlace.h"
-#include "CExpIFace.h"
-#include "ArcDefs.h"
-
-
 #include "LeachController.hpp"
 #include "CCDControlDataTypes.hpp"
 
@@ -54,7 +46,7 @@ void LeachController::PerformEraseProcedureWithSRS(void)
     // Ramp voltage down
     //float CurrentVoltage = SRSClient.call("ReadPSVoltage");
     float CurrentVoltage = SRSClient.call("ReadMemVoltage").as<float>();
-    SRSClient.call("VoltageRamp",CurrentVoltage, 0, rmpdownS, true)
+    SRSClient.call("VoltageRamp",CurrentVoltage, 0, rmpdownS, true);
     std::this_thread::sleep_for(std::chrono::milliseconds(turnoffMS));
     std::cout<<"Setting pixel array to +V\n";
     this->ApplyAllPositiveVPixelArray();
@@ -63,7 +55,7 @@ void LeachController::PerformEraseProcedureWithSRS(void)
 
     std::cout<<"Ramping Vsub ON over " << rmpupS << " seconds, " << rsttimeMS << " ms into which the clock voltages will be restored.\n";
     // Ramp voltage up
-    SRSClient.call("VoltageRamp",0, this->BiasParams.vsub, rmpupS, true)
+    SRSClient.call("VoltageRamp",0, this->BiasParams.vsub, rmpupS, true);
     std::this_thread::sleep_for(std::chrono::milliseconds(rsttimeMS));
     this->RestoreVClockVoltages();
     std::this_thread::sleep_for(std::chrono::milliseconds(rmpupremainderMS));

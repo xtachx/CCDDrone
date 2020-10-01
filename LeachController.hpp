@@ -62,7 +62,6 @@ private:
 
     arc::device::CArcPCIe *pArcDev;
     ProgressBar ReadoutProgress;
-    SRSPowerSupplyController * SRSSupply;
 
     std::string outFileName;
     size_t FrameMemorySize;
@@ -233,7 +232,7 @@ public:
     void PerformEraseProcedureWithSRS(void);
     void RampDownProcedure(double, double); 
     void RampUpProcedure(double, double); 
-    void SetVSUB(double); // Added by KR - for VSub
+    void SetVSUB(float); // KR,AP,PM
     void ApplyAllPositiveVPixelArray(void );
     void RestoreVClockVoltages (void);
     void IdleClockToggle(void );
